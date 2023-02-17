@@ -5,11 +5,12 @@ import miraeassetmobile.backend.domain.TestInfo;
 import miraeassetmobile.backend.service.TestService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
-
+@RequestMapping("/api")
 @RestController
 public class TestController {
 
@@ -23,10 +24,6 @@ public class TestController {
 
     @GetMapping("/test")
     public TestInfo getTestInfo(@RequestParam(required = false, value = "id") Integer id){
-
-        TestInfo testInfo = testService.getTestInfo(id);
-        System.out.println(testInfo.getTitle());
-
         return testService.getTestInfo(id);
     }
 
