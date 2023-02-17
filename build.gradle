@@ -22,11 +22,22 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	//lombok관련
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly ('com.mysql:mysql-connector-j')
 	annotationProcessor 'org.projectlombok:lombok'
+
+
+	//db관련
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly ('com.mysql:mysql-connector-j') //특히 이 부분 application.yml에서 에러 해결
+
+	//test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	//swagger
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
+
 }
 
 tasks.named('test') {
