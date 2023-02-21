@@ -108,4 +108,25 @@ public class JobService {
 
 
 
+    //필수직업 삭제 불가능
+    public void unavailableJobDelete(Long jobId){
+        if(jobRepository.findById(jobId).get().getClassId() == 1){ //master job인 경우
+            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_DELETE_JOB); // 삭제 불가능한 것을 삭제하려고 한다.
+        }
+    }
+
+    public void isExistJob(Long jobId){
+
+        if(!jobRepository.existsById(jobId)){
+            throw new NotExistException(ErrorCode.NOT_EXIST_JOB);
+        }
+    }
+
+    public void isExistClass(Long classId){
+        if(!classRepository.existsById(classId)){
+            throw new NotExistException(ErrorCode.NOT_EXIST_CLASS);
+        }
+    }
+
+
 }
