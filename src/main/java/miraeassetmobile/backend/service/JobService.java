@@ -1,7 +1,12 @@
 package miraeassetmobile.backend.service;
 
+import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobListDto;
 import miraeassetmobile.backend.domain.entity.Job;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.UnavailableException;
+import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,24 +21,29 @@ public class JobService {
 
 
     private final JobRepository jobRepository;
+    private final ClassRepository classRepository;
 
 
-    public JobService(JobRepository jobRepository){
+    public JobService(JobRepository jobRepository, ClassRepository classRepository){
         this.jobRepository = jobRepository;
+        this.classRepository = classRepository;
     }
-
 
 
 
     /*
     공통직업(classId=1로 등록)을 포함한 직업을 page에 따라 10개씩 반환하는 함수
      */
-    public JobListDto getJobListByClass(int classId, int page){
+    public JobListDto getJobListByClass(Long classId, int page){
+
+        //존재하는 학급인지
+        isExistClass(classId);
+
 
         int pageSize = 10;
 
         //총 직업의 수
-        int totalNum = jobRepository.countByClassId(classId) + jobRepository.countByClassId(1); // 1로 지정된 것은 공통 직업임
+        int totalNum = jobRepository.countByClassId(classId) + jobRepository.countByClassId(1L); // 1로 지정된 것은 공통 직업임
 
         //총 페이지의 수
         int totalPageNum = (int) Math.ceil(totalNum/pageSize);
