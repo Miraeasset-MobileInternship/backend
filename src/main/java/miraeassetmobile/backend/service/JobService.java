@@ -53,11 +53,11 @@ public class JobService {
         -> 결과로 전부다 공통 직업만 내보내야함
          */
 
-        if(jobRepository.countByClassId(1) >= (page+1) * 10){
+        if(jobRepository.countByClassId(1L) >= (page+1) * 10){
 
             //공통직업을 구함
             Pageable paging = PageRequest.of(page,pageSize); //한페이지당 10개 반환
-            List<Job> jobs = jobRepository.findByClassId(1, paging).getContent();
+            List<Job> jobs = jobRepository.findByClassId(1L, paging).getContent();
 
             JobListDto jobData = JobListDto.builder()
                     .totalNum(totalNum)
@@ -77,11 +77,11 @@ public class JobService {
 
             //공통 직업을 가져오기
             Pageable firstPaging = PageRequest.of(page,pageSize); //한페이지당 10개 반환(근데 10개 미만임)
-            List<Job> firstJobs = jobRepository.findByClassId(1, firstPaging).getContent();
+            List<Job> firstJobs = jobRepository.findByClassId(1L, firstPaging).getContent();
 
 
             //공통직업이 포함되었으므로, 그만큼 페이지가 적어져야함
-            int secondPage = page - jobRepository.countByClassId(1)/pageSize;
+            int secondPage = page - jobRepository.countByClassId(1L)/pageSize;
 
             // 공통직업이 부족한 만큼 Job가져오기
             Pageable secondPaging = PageRequest.of(secondPage, pageSize-firstJobs.size()); // 부족한 갯수만큼 학급에서 가져오기
