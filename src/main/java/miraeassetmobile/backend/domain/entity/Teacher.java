@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
-    private int id;
+    private Long id;
     @NotNull
     @Column(name = "teacher_name", length = 10)
     private String name;

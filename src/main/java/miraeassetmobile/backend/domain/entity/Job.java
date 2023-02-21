@@ -22,10 +22,10 @@ public class Job {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
-    private int id;
+    private Long id;
     @NotNull
     @Column(name = "class_id")
-    private int classId;
+    private Long classId;
 
 
     @NotNull
@@ -71,7 +71,7 @@ public class Job {
 
 
     @Builder
-    public Job(int classId, String title, int monthlySalary, String detail, int creditLimit, boolean isWithdrawStudent, boolean isWithdrawClass, boolean isModifyCredit){
+    public Job(Long classId, String title, int monthlySalary, String detail, int creditLimit, boolean isWithdrawStudent, boolean isWithdrawClass, boolean isModifyCredit){
         this.classId= classId;
         this.title=title;
         this.monthlySalary=monthlySalary;

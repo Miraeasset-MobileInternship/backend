@@ -17,14 +17,14 @@ public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
-    private int id;
+    private Long id;
     @NotNull
     @Column(name = "class_id")
-    private int classId;
+    private Long classId;
 
     @NotNull
     @Column(name = "job_id")
-    private int jobId;
+    private Long jobId;
 
 
     @NotNull
