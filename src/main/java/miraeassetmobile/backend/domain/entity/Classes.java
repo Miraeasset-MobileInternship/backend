@@ -2,11 +2,9 @@ package miraeassetmobile.backend.domain.entity;
 
 //entity: DB와 직접적으로 연결됨
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,17 +12,17 @@ import java.sql.Timestamp;
 
 
 @Entity
-@Table(name="teacher")
+@Table(name="class")
 @Getter
 @NoArgsConstructor
-public class Class {
+public class Classes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
-    private int id;
+    private Long id;
     @NotNull
     @Column(name = "teacher_id")
-    private int teacherId;
+    private Long teacherId;
 
 
     @NotNull
@@ -58,7 +56,7 @@ public class Class {
 
     // default 제외 나머지
     @Builder
-    public Class(int teacherId, String title, int grade, int classNum, String currency){
+    public Classes(Long teacherId, String title, int grade, int classNum, String currency){
         this.teacherId = teacherId;
         this.title = title;
         this.grade=grade;
