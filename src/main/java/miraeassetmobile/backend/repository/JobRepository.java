@@ -7,12 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface JobRepository extends JpaRepository<Job,Long> {
 
     //해당 학급이 가진 직업을 전부 조회함
-    Page<Job> findByClassId(Long classId, Pageable pageable);
+    List<Job> findByClassId(Long classId);
 
     int countByClassId(Long classId);
 

@@ -25,10 +25,8 @@ public class JobController {
     //선생님 직업조회 페이지 -> 해당 학급에 모든 직업을 조회
     //특정 학급에서 생성된 전체 직업 과 공통 직업에 대한 정보를 page에 따라 10개씩 조회
     @GetMapping("/class/{class_id}")
-    public ResponseEntity<JobListDto> jobListByClass(@PathVariable(value = "class_id")Long classId,
-                                                     @RequestParam(value="page", defaultValue = "0") int page){
-
-        return ResponseEntity.ok(jobService.getJobListByClass(classId,page));
+    public ResponseEntity<JobListDto> jobListByClass(@PathVariable(value = "class_id")Long classId){
+        return ResponseEntity.ok(jobService.getJobListByClass(classId));
     }
 
 

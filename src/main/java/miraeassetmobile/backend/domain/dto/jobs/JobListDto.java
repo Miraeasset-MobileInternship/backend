@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class JobListDto {
 
-    int totalPageNum; //총 페이지의 갯수
+//    int totalPageNum; //총 페이지의 갯수 ->pagenation 기능 요청으로 삭제
 
     int totalNum; //총 직업의 갯수
 
