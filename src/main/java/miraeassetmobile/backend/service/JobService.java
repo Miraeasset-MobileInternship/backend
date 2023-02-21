@@ -108,6 +108,20 @@ public class JobService {
 
 
 
+    public void deleteJob(Long id){
+
+        //예외처리들
+        //존재하는 직업인가
+        isExistJob(id);
+        //삭제 가능한 직업인가
+        unavailableJobDelete(id);
+
+        //삭제
+        jobRepository.deleteById(id);
+
+    }
+
+
     //필수직업 삭제 불가능
     public void unavailableJobDelete(Long jobId){
         if(jobRepository.findById(jobId).get().getClassId() == 1){ //master job인 경우
