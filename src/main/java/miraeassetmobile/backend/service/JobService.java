@@ -108,6 +108,29 @@ public class JobService {
 
 
 
+    //
+    public JobDto getJobInfo(Long id){
+
+
+        //존재하는 직업인지
+        isExistJob(id);
+
+
+        Job job = jobRepository.findById(id).get();
+
+        //필요한 것만 dto에 담아서 전달
+        return JobDto.builder().id(job.getId())
+                .title(job.getTitle())
+                .monthlySalary(job.getMonthlySalary())
+                .detail(job.getDetail())
+                .creditLimit(job.getCreditLimit())
+                .isWithdrawClass(job.isWithdrawClass())
+                .isWithdrawStudent(job.isWithdrawStudent())
+                .isModifyCredit(job.isModifyCredit())
+                .build();
+
+    }
+
     public void deleteJob(Long id){
 
         //예외처리들
