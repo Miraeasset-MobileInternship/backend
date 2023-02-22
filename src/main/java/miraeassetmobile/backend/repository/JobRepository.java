@@ -26,4 +26,9 @@ public interface JobRepository extends JpaRepository<Job,Long> {
 
 
     boolean existsById(Long id);
+
+    boolean existsByClassIdAndTitle(Long classId, String title);
+
+
+
 }

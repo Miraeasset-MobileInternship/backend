@@ -115,8 +115,8 @@ public class JobService {
         return JobDto.builder().id(job.getId())
                 .title(job.getTitle())
                 .monthlySalary(job.getMonthlySalary())
-                .detail(job.getDetail())
                 .creditLimit(job.getCreditLimit())
+                .detail(job.getDetail())
                 .isWithdrawClass(job.isWithdrawClass())
                 .isWithdrawStudent(job.isWithdrawStudent())
                 .isModifyCredit(job.isModifyCredit())
@@ -138,6 +138,47 @@ public class JobService {
     }
 
 
+   //신규직업등록
+    public URI createJob(JobCreateDto jobCreateDto){
+
+        //존재하는 학급인지
+        isExistClass(jobCreateDto.getClassId());
+
+        //등록가능한 직업명인지 확인
+        validateJobNameInClass(jobCreateDto.getClassId(), jobCreateDto.getJobTitle());
+
+
+        //직업등록
+        Job newJob = jobCreateDto.toJob(jobCreateDto.getClassId(), jobCreateDto.getJobTitle(), jobCreateDto.getDetail(), jobCreateDto.getMonthlySalary(), jobCreateDto.isWithdrawStudent(), jobCreateDto.isWithdrawClass()); //save에서 에러난다
+
+
+        Job j = jobRepository.save(newJob);
+
+
+        return createJobUri(j.getId()); //등록된 직업에 대해 URI를 같이 반환함
+
+    }
+
+
+    //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
+    public URI createJobUri(Long jobId){
+        URI uri = UriComponentsBuilder.newInstance()
+//                .scheme("https")
+//                .host("m-crew.iptime.org")
+//                .port(8001)
+                .scheme("http")
+                .host("localhost")
+                .port(8080)
+                .path("/api/job/" + jobId)
+                .build()
+                .toUri(); //UriComponents into URI
+
+        return uri;
+
+    }
+
+
+
     //필수직업 삭제 불가능
     public void unavailableJobDelete(Long jobId){
         if(jobRepository.findById(jobId).get().getClassId() == 1){ //master job인 경우
@@ -156,6 +197,15 @@ public class JobService {
         if(!classRepository.existsById(classId)){
             throw new NotExistException(ErrorCode.NOT_EXIST_CLASS);
         }
+    }
+
+
+    public void validateJobNameInClass(Long classId, String title){
+
+        if(jobRepository.existsByClassIdAndTitle(classId, title)){ //해당 학급에 같은 이름의 직업이 이미 존재함
+            throw new AlreadyExistException(ErrorCode.ALREADY_EXIST_JOB);
+        }
+
     }
 
 
