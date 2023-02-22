@@ -1,13 +1,12 @@
 package miraeassetmobile.backend.controller;
 
-import miraeassetmobile.backend.domain.dto.jobs.JobCreateDto;
+import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
-import miraeassetmobile.backend.domain.dto.jobs.JobListDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
+import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +41,7 @@ public class JobController {
 
     //반아이들 전체의 직업조회
     @GetMapping("/class/{class_id}/student/all")
-    public ResponseEntity<List<StudentJobDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
+    public ResponseEntity<List<StudentJobListResponseDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
         return ResponseEntity.ok(jobService.getAllStduentJobList(classId));
     }
 
@@ -68,7 +67,7 @@ public class JobController {
 
 
     @PostMapping("/create")
-    public ResponseEntity createJob(@RequestBody @Valid JobCreateDto jobInfo){
+    public ResponseEntity createJob(@RequestBody @Valid JobCreateRequestDto jobInfo){
 
         /*
         @Valid : 유효한 JobCreateDto객체인지 검사해준다.

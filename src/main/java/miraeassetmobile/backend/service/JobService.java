@@ -1,9 +1,9 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.domain.dto.jobs.JobCreateDto;
+import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
-import miraeassetmobile.backend.domain.dto.jobs.JobListDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
+import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.error.exception.AlreadyExistException;
@@ -14,7 +14,6 @@ import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -76,16 +75,16 @@ public class JobService {
 
 
     //특정 학급의 아이들의 전체 직업과 정보를 넘김
-    public List<StudentJobDto> getAllStduentJobList(Long classId){
+    public List<StudentJobListResponseDto> getAllStduentJobList(Long classId){
         List<Student> students = studentRepository.findByClassId(classId);
 
-        List<StudentJobDto> studentJobs = new ArrayList<StudentJobDto>();
+        List<StudentJobListResponseDto> studentJobs = new ArrayList<StudentJobListResponseDto>();
 
         for (Student student : students) {
 
             Job job = jobRepository.findById(student.getJobId()).get();
 
-            studentJobs.add(StudentJobDto.builder()
+            studentJobs.add(StudentJobListResponseDto.builder()
                     .id(student.getId())
                     .number(student.getNumber())
                     .studentName(student.getName())
@@ -139,29 +138,29 @@ public class JobService {
 
 
    //신규직업등록
-    public URI createJob(JobCreateDto jobCreateDto){
+    public URI createJob(JobCreateRequestDto jobCreateRequestDto){
 
         //존재하는 학급인지
-        isExistClass(jobCreateDto.getClassId());
+        isExistClass(jobCreateRequestDto.getClassId());
 
         //등록가능한 직업명인지 확인
-        validateJobNameInClass(jobCreateDto.getClassId(), jobCreateDto.getJobTitle());
+        validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
 
 
         //직업등록
-        Job newJob = jobCreateDto.toJob(jobCreateDto.getClassId(), jobCreateDto.getJobTitle(), jobCreateDto.getDetail(), jobCreateDto.getMonthlySalary(), jobCreateDto.isWithdrawStudent(), jobCreateDto.isWithdrawClass()); //save에서 에러난다
+        Job newJob = jobCreateRequestDto.toJob(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle(), jobCreateRequestDto.getDetail(), jobCreateRequestDto.getMonthlySalary(), jobCreateRequestDto.isWithdrawStudent(), jobCreateRequestDto.isWithdrawClass()); //save에서 에러난다
 
 
         Job j = jobRepository.save(newJob);
 
 
-        return createJobUri(j.getId()); //등록된 직업에 대해 URI를 같이 반환함
+        return createUri(j.getId(), "job"); //등록된 직업에 대해 URI를 같이 반환함
 
     }
 
 
     //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
-    public URI createJobUri(Long jobId){
+    public URI createUri(Long id, String newOne){
         URI uri = UriComponentsBuilder.newInstance()
 //                .scheme("https")
 //                .host("m-crew.iptime.org")
