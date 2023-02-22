@@ -22,8 +22,13 @@ public enum ErrorCode {
 
 
 
+    //이미 존재하는 것을 등록하려고 할 때
+    // 같은 학급에 같은 직업 등록 , 회원가입 중복
+    ALREADY_EXIST_JOB(HttpStatus.FORBIDDEN, "이미 존재하는 직업입니다."),
+
+
     //common error
-    SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 에러가 발생했습니다.");
+    SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 에러가 발생했습니다.")
 
     ;
 

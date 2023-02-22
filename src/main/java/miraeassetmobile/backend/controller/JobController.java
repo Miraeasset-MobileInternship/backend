@@ -50,11 +50,29 @@ public class JobController {
     }
 
 
+
+    //특정 직업 삭제
     @DeleteMapping("/{job_id}/delete")
     public ResponseEntity<Void> deleteJob(@PathVariable(value = "job_id") Long jobId){
         jobService.deleteJob(jobId);
         return ResponseEntity.ok().build();
     }
+
+
+    @PostMapping("/create")
+    public ResponseEntity createJob(@RequestBody @Valid JobCreateDto jobInfo){
+
+        /*
+        @Valid : 유효한 JobCreateDto객체인지 검사해준다.
+        httpstatus 201 CREATED URI를 같이 RETURN한다
+         */
+        return ResponseEntity.created(jobService.createJob(jobInfo)).build(); //id를 같이 반환하기
+
+
+    }
+
+
+
 
 
 }
