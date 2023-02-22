@@ -6,7 +6,7 @@ import miraeassetmobile.backend.domain.entity.Job;
 
 @Getter
 @Builder
-public class JobCreateDto {
+public class JobCreateRequestDto {
 
 
     private Long classId;

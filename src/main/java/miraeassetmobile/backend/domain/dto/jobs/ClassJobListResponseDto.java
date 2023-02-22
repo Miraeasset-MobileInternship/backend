@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class JobListDto {
+public class ClassJobListResponseDto {
 
 //    int totalPageNum; //총 페이지의 갯수 ->pagenation 기능 요청으로 삭제
 

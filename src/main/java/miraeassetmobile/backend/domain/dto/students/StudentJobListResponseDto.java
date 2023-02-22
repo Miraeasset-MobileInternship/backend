@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class StudentJobDto {
+public class StudentJobListResponseDto {
 
     //학생의 pk
     Long id;
