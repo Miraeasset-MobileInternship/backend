@@ -177,6 +177,13 @@ public class JobService {
     }
 
 
+    public void updateAllStudentJob(List<StudentJobUpdateRequestDto> studentJobList){
+        for (StudentJobUpdateRequestDto studentJob : studentJobList) {
+            updateStudentJob(studentJob);
+        }
+    }
+
+
     public URI updateStudentJob(StudentJobUpdateRequestDto studentJob){
 
 

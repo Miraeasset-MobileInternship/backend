@@ -79,10 +79,11 @@ public class JobController {
     }
 
 
-//    @PutMapping("/update/all")
-//    public ResponseEntity updateJobStudentAll(@RequestBody @Valid List<StudentJobUpdateRequestDto> jobList){
-//
-//    }
+    @PutMapping("/update/all")
+    public ResponseEntity updateJobStudentAll(@RequestBody @Valid List<StudentJobUpdateRequestDto> jobList){
+        jobService.updateAllStudentJob(jobList);
+        return ResponseEntity.ok().build();
+    }
 
 
     @PutMapping("/update/{student_id}")
