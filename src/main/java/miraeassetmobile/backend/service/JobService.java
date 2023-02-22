@@ -193,6 +193,13 @@ public class JobService {
         }
     }
 
+    public void isExistStudent(Long studentId){
+
+        if(!studentRepository.existsById(studentId)){
+            throw new NotExistException(ErrorCode.NOT_EXIST_STUDENT);
+        }
+    }
+
     public void isExistClass(Long classId){
         if(!classRepository.existsById(classId)){
             throw new NotExistException(ErrorCode.NOT_EXIST_CLASS);
