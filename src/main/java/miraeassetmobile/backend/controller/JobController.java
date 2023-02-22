@@ -80,7 +80,17 @@ public class JobController {
     }
 
 
+//    @PutMapping("/update/all")
+//    public ResponseEntity updateJobStudentAll(@RequestBody @Valid List<StudentJobUpdateRequestDto> jobList){
+//
+//    }
 
+
+    @PutMapping("/update/{student_id}")
+    public ResponseEntity updateJobStudent(@RequestBody @Valid StudentJobUpdateRequestDto studentJobUpdateRequestDto,
+                                           @PathVariable(value = "student_id") Long studentId){
+        return ResponseEntity.created(jobService.updateStudentJob(studentJobUpdateRequestDto)).build(); //id를 같이 반환하기
+    }
 
 
 }

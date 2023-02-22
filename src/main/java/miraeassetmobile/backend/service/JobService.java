@@ -178,6 +178,28 @@ public class JobService {
     }
 
 
+    public URI updateStudentJob(StudentJobUpdateRequestDto studentJob){
+
+
+        //존재하는 학생인가
+        isExistStudent(studentJob.getStudentId());
+
+        //존재하는 직업인가
+        isExistJob(studentJob.getJobId());
+
+
+        Student student = studentRepository.findById(studentJob.getStudentId()).get();
+
+        //객체의 직업을 변경
+        Student updateStudent = student.updateJob(studentJob.getJobId());
+
+        studentRepository.save(updateStudent);
+
+        return createUri(updateStudent.getId(), "student");
+
+    }
+
+
 
     //필수직업 삭제 불가능
     public void unavailableJobDelete(Long jobId){

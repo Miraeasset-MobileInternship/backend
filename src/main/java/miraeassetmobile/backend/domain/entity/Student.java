@@ -52,6 +52,12 @@ public class Student extends BaseTimeEntity{
 
 
 
+    public Student updateJob(Long jobId){
+        this.jobId = jobId;
+
+        return this;
+    }
+
 
     // default 제외 나머지
     @Builder
@@ -61,6 +67,8 @@ public class Student extends BaseTimeEntity{
         this.money=money;
         this.phoneNum=phoneNum;
     }
+
+
 
 
 }
