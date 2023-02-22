@@ -168,7 +168,7 @@ public class JobService {
                 .scheme("http")
                 .host("localhost")
                 .port(8080)
-                .path("/api/job/" + jobId)
+                .path("/api/"+ newOne + "/" + id)
                 .build()
                 .toUri(); //UriComponents into URI
 
