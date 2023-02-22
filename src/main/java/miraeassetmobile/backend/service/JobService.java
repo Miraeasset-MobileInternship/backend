@@ -1,15 +1,23 @@
 package miraeassetmobile.backend.service;
 
+import miraeassetmobile.backend.domain.dto.jobs.JobCreateDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobListDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.entity.Job;
+import miraeassetmobile.backend.domain.entity.Student;
+import miraeassetmobile.backend.error.exception.AlreadyExistException;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.error.exception.UnavailableException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
+import miraeassetmobile.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +28,13 @@ public class JobService {
 
     private final JobRepository jobRepository;
     private final ClassRepository classRepository;
+    private final StudentRepository studentRepository;
 
 
-    public JobService(JobRepository jobRepository, ClassRepository classRepository){
+    public JobService(JobRepository jobRepository, ClassRepository classRepository, StudentRepository studentRepository){
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
+        this.studentRepository = studentRepository;
     }
 
 
@@ -32,31 +42,21 @@ public class JobService {
     /*
     공통직업(classId=1로 등록)을 포함한 직업을 page에 따라 10개씩 반환하는 함수
      */
-    public JobListDto getJobListByClass(Long classId){
+    public List<Job> getJobListByClass(Long classId){
 
         //존재하는 학급인지
         isExistClass(classId);
 
         if(classId == 1){ //공통직업을 조회한 경우
 
-            //총 직업의 수
-            int totalNum = jobRepository.countByClassId(1L);
-
 
             List<Job> publicJob = jobRepository.findByClassId(1L); //공통직업리스트
 
-            //builder로 내보내기
-            JobListDto jobData = JobListDto.builder()
-                    .totalNum(totalNum)
-                    .jobs(publicJob)
-                    .build();
 
-            return jobData;
+            return publicJob;
 
         }else{ //특정 학급의 직업을 조회한 경우
 
-            //총 직업의 수
-            int totalNum = jobRepository.countByClassId(classId) + jobRepository.countByClassId(1L);
 
             List<Job> publicJob = jobRepository.findByClassId(1L); //공통직업리스트
 
@@ -69,22 +69,39 @@ public class JobService {
             jobs.addAll(publicJob);
             jobs.addAll(localJobs);
 
-
-            //합치기
-            JobListDto jobData = JobListDto.builder()
-                    .totalNum(totalNum)
-                    .jobs(jobs)
-                    .build();
-
-
-            return jobData;
+            return jobs;
         }
 
     }
 
 
+    //특정 학급의 아이들의 전체 직업과 정보를 넘김
+    public List<StudentJobDto> getAllStduentJobList(Long classId){
+        List<Student> students = studentRepository.findByClassId(classId);
 
-    //
+        List<StudentJobDto> studentJobs = new ArrayList<StudentJobDto>();
+
+        for (Student student : students) {
+
+            Job job = jobRepository.findById(student.getJobId()).get();
+
+            studentJobs.add(StudentJobDto.builder()
+                    .id(student.getId())
+                    .number(student.getNumber())
+                    .studentName(student.getName())
+                    .jobId(student.getJobId())
+                    .jobTitle(job.getTitle())
+                    .build());
+
+        }
+
+        return studentJobs;
+
+    }
+
+
+
+    //특정 job의 정보를 조회함
     public JobDto getJobInfo(Long id){
 
 

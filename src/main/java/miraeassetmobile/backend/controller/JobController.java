@@ -15,19 +15,31 @@ import org.springframework.web.bind.annotation.*;
 public class JobController {
 
     private JobService jobService;
+    private StudentService studentService;
 
-    public JobController(JobService jobService){
+    public JobController(JobService jobService, StudentService studentService){
         this.jobService=jobService;
+        this.studentService=studentService;
     }
 
 
 
-    //선생님 직업조회 페이지 -> 해당 학급에 모든 직업을 조회
-    //특정 학급에서 생성된 전체 직업 과 공통 직업에 대한 정보를 page에 따라 10개씩 조회
+    //선생님 직업조회 페이지 -> 해당 학급에서 가질 수 있는 모든 직업을 조회
     @GetMapping("/class/{class_id}")
-    public ResponseEntity<JobListDto> jobListByClass(@PathVariable(value = "class_id")Long classId){
+    public ResponseEntity<List<Job>> jobListByClass(@PathVariable(value = "class_id")Long classId){
         return ResponseEntity.ok(jobService.getJobListByClass(classId));
     }
+
+
+
+    //반아이들 전체의 직업조회
+    @GetMapping("/class/{class_id}/student/all")
+    public ResponseEntity<List<StudentJobDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
+        return ResponseEntity.ok(jobService.getAllStduentJobList(classId));
+    }
+
+
+
 
 
     //job id를 통한 직업조회
