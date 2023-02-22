@@ -7,7 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -18,7 +23,7 @@ import java.sql.Timestamp;
 @Table(name="job")
 @Getter
 @NoArgsConstructor
-public class Job {
+public class Job extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
@@ -34,7 +39,7 @@ public class Job {
 
     @NotNull
     @Column(name="monthly_salary")
-    private int monthlySalary;
+    private int monthlySalary = 0;
 
 
 
@@ -42,30 +47,32 @@ public class Job {
 
     @NotNull
     @Column(name="credit_limitation")
-    private int creditLimit;
+    private int creditLimit = 0;
 
 
     @NotNull
     @Column(name="is_withdraw_student")
-    private boolean isWithdrawStudent;
+    private boolean isWithdrawStudent = false;
 
 
     @NotNull
     @Column(name="is_withdraw_class")
-    private boolean isWithdrawClass;
+    private boolean isWithdrawClass = false;
 
 
     @NotNull
     @Column(name="is_modify_credit")
-    private boolean isModifyCredit;
+    private boolean isModifyCredit = false;
 
-    @NotNull
-    @Column(name="create_timestamp")
-    private Timestamp createTimestamp;
 
-    @NotNull
-    @Column(name="modify_timestamp")
-    private Timestamp modifyTimestamp;
+//    @Column(name="create_timestamp")
+//    @CreatedDate
+//    private Timestamp createTimestamp;
+//
+//
+//    @Column(name="modify_timestamp")
+//    @LastModifiedDate
+//    private Timestamp modifyTimestamp;
 
 
 

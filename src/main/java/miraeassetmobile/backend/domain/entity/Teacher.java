@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @Table(name="teacher")
 @Getter
 @NoArgsConstructor
-public class Teacher {
+public class Teacher extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
     private Long id;
@@ -26,13 +26,6 @@ public class Teacher {
     private String phoneNum;
 
 
-    @NotNull
-    @Column(name="create_timestamp")
-    private Timestamp createTimestamp;
-
-    @NotNull
-    @Column(name="modify_timestamp")
-    private Timestamp modifyTimestamp;
 
 
     @Builder

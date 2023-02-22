@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 @Table(name="class")
 @Getter
 @NoArgsConstructor
-public class Classes {
+public class Classes extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
@@ -44,13 +44,6 @@ public class Classes {
     @NotNull
     private int money;
 
-    @NotNull
-    @Column(name="create_timestamp")
-    private Timestamp createTimestamp;
-
-    @NotNull
-    @Column(name="modify_timestamp")
-    private Timestamp modifyTimestamp;
 
 
 

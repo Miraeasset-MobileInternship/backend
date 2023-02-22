@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @Table(name="student")
 @Getter
 @NoArgsConstructor
-public class Student {
+public class Student extends BaseTimeEntity{
 
 
     @Id
@@ -50,13 +50,6 @@ public class Student {
     private int creditScore;
 
 
-    @NotNull
-    @Column(name="create_timestamp")
-    private Timestamp createTimestamp;
-
-    @NotNull
-    @Column(name="modify_timestamp")
-    private Timestamp modifyTimestamp;
 
 
 
