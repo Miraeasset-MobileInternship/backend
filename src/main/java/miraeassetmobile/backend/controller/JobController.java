@@ -1,10 +1,18 @@
 package miraeassetmobile.backend.controller;
 
+import miraeassetmobile.backend.domain.dto.jobs.JobCreateDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobListDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
+import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.service.JobService;
+import miraeassetmobile.backend.service.StudentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 
 //pagenation을 위한 import
