@@ -1,6 +1,8 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionResponseDto;
+import miraeassetmobile.backend.domain.dto.transactions.TransactionCategoryDto;
+import miraeassetmobile.backend.domain.entity.TransactionCategory;
 import miraeassetmobile.backend.domain.entity.TransactionData;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.TransactionCategoryRepository;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -60,6 +63,25 @@ public class TransactionService {
 
         return result;
 
+    }
+
+
+    public List<TransactionCategoryDto> getCategoryList(){
+
+        List<TransactionCategory> categories = transactionCategoryRepository.findByChangeableTrue();
+
+        List<TransactionCategoryDto> result = new ArrayList<>();
+
+        for (TransactionCategory t: categories) {
+
+            result.add(TransactionCategoryDto.builder()
+                    .categoryId(t.getId())
+                    .categoryTitle(t.getTitle())
+                    .build());
+
+        }
+
+        return result;
     }
 
 
