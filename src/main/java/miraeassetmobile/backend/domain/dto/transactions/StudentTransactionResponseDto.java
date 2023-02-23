@@ -1,30 +1,22 @@
 package miraeassetmobile.backend.domain.dto.transactions;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDate;
+import java.util.List;
 
-@Getter
 @Builder
+@Getter
 public class StudentTransactionResponseDto {
 
-    Long transactionId; //거래 아이디
 
-    //거래일
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd", timezone = "Asia/Seoul")
-    private LocalDate transactionDate;
+    int currentPage;
 
-    String category; //카테고리
+    int maxPage;
 
-    String detail; //비고
+    int totalData;
 
-    boolean isDeposit; //입금:true / 출금:false
-
-    int transactionMoney; //거래금액
-
-
-
+    List<StudentTransactionDataDto> studentTransactionData;
 
 }
