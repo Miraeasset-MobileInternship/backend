@@ -7,6 +7,8 @@ import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
+
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +17,7 @@ public class StudentService {
     StudentRepository studentRepository;
     ClassRepository classRepository;
     JobRepository jobRepository;
+
 
     public StudentService(StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
         this.studentRepository = studentRepository;
@@ -39,6 +42,7 @@ public class StudentService {
 
         return accountInfo;
     }
+
 
 
 
