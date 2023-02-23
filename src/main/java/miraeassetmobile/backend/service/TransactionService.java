@@ -114,4 +114,14 @@ public class TransactionService {
             throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_TRANSFER);
         }
     }
+
+
+    //존재하는 학생인가
+    public void isExistStudent(Long studentId){
+
+        if(!studentRepository.existsById(studentId)){
+            throw new NotExistException(ErrorCode.NOT_EXIST_STUDENT);
+        }
+    }
+
 }
