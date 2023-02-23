@@ -31,21 +31,6 @@ public class JobController {
 
 
 
-    //선생님 직업조회 페이지 -> 해당 학급에서 가질 수 있는 모든 직업을 조회
-    @GetMapping("/class/{class_id}")
-    public ResponseEntity<List<Job>> jobListByClass(@PathVariable(value = "class_id")Long classId){
-        return ResponseEntity.ok(jobService.getJobListByClass(classId));
-    }
-
-
-
-    //반아이들 전체의 직업조회
-    @GetMapping("/class/{class_id}/student/all")
-    public ResponseEntity<List<StudentJobListResponseDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
-        return ResponseEntity.ok(jobService.getAllStduentJobList(classId));
-    }
-
-
 
 
 

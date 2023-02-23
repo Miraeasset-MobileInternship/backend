@@ -35,10 +35,6 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getStudentJobInfo(studentId));
     }
 
-    @GetMapping("/class/{class_id}/all")
-    public ResponseEntity<List<StudentTransferSelectorResponseDto>> getStudentList(@PathVariable(value = "class_id") Long classId){
-        return ResponseEntity.ok(studentService.getStudentSelectorList(classId));
-    }
 
 
 
