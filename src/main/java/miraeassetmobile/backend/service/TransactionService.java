@@ -101,6 +101,13 @@ public class TransactionService {
 
 
 
+    //잔고 부족 송금 불가
+    public void unavailableTransfer(Long studentId, int transferMoney){
+        if(studentRepository.findById(studentId).get().getMoney() < transferMoney){ //출금하려는 금액이 계좌 잔고보다 큰경우
+            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_MONEY); // 잔고부족으로 출금 불가
+        }
+    }
+
     //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
     public void unavailableJobTransfer(Long jobId){
         if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
