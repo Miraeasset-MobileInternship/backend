@@ -72,4 +72,28 @@ public class StudentService {
                 .build();
 
 
+    }
+
+
+    public List<StudentTransferSelectorResponseDto> getStudentSelectorList(Long classId){
+
+        List<Student> studentList = studentRepository.findByClassId(classId);
+
+
+        List<StudentTransferSelectorResponseDto> result = new ArrayList<>();
+
+        for (Student s: studentList) {
+
+            result.add(StudentTransferSelectorResponseDto.builder()
+                    .studentId(s.getId())
+                    .studentNumber(s.getNumber())
+                    .studentName(s.getName())
+                    .studentNumberName(s.getNumber() + "번 "+s.getName())
+                    .build());
+
+        }
+
+        return result;
+    }
+
 }
