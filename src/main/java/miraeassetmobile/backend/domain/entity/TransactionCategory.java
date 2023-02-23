@@ -20,7 +20,8 @@ public class TransactionCategory {
     private String title;
 
     @NotNull
-    private boolean isChangeable;
+    @Column(name = "is_changeable")
+    private boolean changeable;
 
 
 
