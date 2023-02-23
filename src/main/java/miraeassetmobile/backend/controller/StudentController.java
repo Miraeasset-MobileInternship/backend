@@ -1,6 +1,6 @@
 package miraeassetmobile.backend.controller;
 
-import miraeassetmobile.backend.domain.dto.students.StudentAccountInfoDto;
+import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.service.StudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +22,15 @@ public class StudentController {
 
 
     @GetMapping("/{student_id}/account")
-    public ResponseEntity<StudentAccountInfoDto> getStudentAccountInfo(@PathVariable(value = "student_id") Long id){
+    public ResponseEntity<StudentAccountResponseDto> getStudentAccountInfo(@PathVariable(value = "student_id") Long id){
+
+        return ResponseEntity.ok(studentService.getStudentAccountInfo(id));
+
+    }
+
+
+    @GetMapping("/{student_id}/transaction")
+    public (@PathVariable(value = "student_id") Long id){
 
         return ResponseEntity.ok(studentService.getStudentAccountInfo(id));
 

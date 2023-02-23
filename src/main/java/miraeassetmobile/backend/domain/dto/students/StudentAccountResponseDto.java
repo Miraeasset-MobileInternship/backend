@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class StudentAccountInfoDto {
+public class StudentAccountResponseDto {
 
     Long studentId; //누구인지
     int money;//보유 돈

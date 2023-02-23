@@ -1,7 +1,7 @@
 package miraeassetmobile.backend.service;
 
 
-import miraeassetmobile.backend.domain.dto.students.StudentAccountInfoDto;
+import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.repository.ClassRepository;
@@ -23,14 +23,14 @@ public class StudentService {
     }
 
 
-    public StudentAccountInfoDto getStudentAccountInfo(Long id){
+    public StudentAccountResponseDto getStudentAccountInfo(Long id){
 
         Student student = studentRepository.findById(id).get();
 
         Classes studentClass = classRepository.findById(student.getClassId()).get();
 
 
-        StudentAccountInfoDto accountInfo = StudentAccountInfoDto.builder()
+        StudentAccountResponseDto accountInfo = StudentAccountResponseDto.builder()
                 .studentId(student.getId())
                 .money(student.getMoney())
                 .creditScore(student.getCreditScore())
