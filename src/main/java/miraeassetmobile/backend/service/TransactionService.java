@@ -101,4 +101,10 @@ public class TransactionService {
 
 
 
+    //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
+    public void unavailableJobTransfer(Long jobId){
+        if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
+            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_TRANSFER);
+        }
+    }
 }

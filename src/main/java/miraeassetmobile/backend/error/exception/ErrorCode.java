@@ -14,6 +14,7 @@ public enum ErrorCode {
     //403 : FORBBIDEN : 클라이언트는 접근 권리를 가지고 있지 않습니다. (클라이언트를 알고 있음)
     //401 : UNAUTHORIZED : 클라이언트는 접근 권리를 가지고 있지 않습니다. (클라이언트를 모르기 때문에 접근권한이 없음)
     UNAVAILABLE_ACTION_DELETE_JOB(HttpStatus.FORBIDDEN, "삭제 불가능한 직업입니다."),
+    UNAVAILABLE_ACTION_JOB_TRANSFER(HttpStatus.FORBIDDEN, "학생 잔고를 이체할 수 있는 권한이 없는 직업입니다."),
 
 
     //존재하지 않는 리소스에 대한요청
