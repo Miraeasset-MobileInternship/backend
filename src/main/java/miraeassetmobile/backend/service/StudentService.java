@@ -1,6 +1,10 @@
 package miraeassetmobile.backend.service;
 
 
+import miraeassetmobile.backend.domain.dto.students.StudentAccountInfoDto;
+import miraeassetmobile.backend.domain.entity.Classes;
+import miraeassetmobile.backend.domain.entity.Student;
+import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -9,13 +13,32 @@ import org.springframework.stereotype.Service;
 public class StudentService {
 
     StudentRepository studentRepository;
+    ClassRepository classRepository;
     JobRepository jobRepository;
 
-    public StudentService(StudentRepository studentRepository, JobRepository jobRepository){
+    public StudentService(StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
+        this.classRepository = classRepository;
     }
 
+
+    public StudentAccountInfoDto getStudentAccountInfo(Long id){
+
+        Student student = studentRepository.findById(id).get();
+
+        Classes studentClass = classRepository.findById(student.getClassId()).get();
+
+
+        StudentAccountInfoDto accountInfo = StudentAccountInfoDto.builder()
+                .studentId(student.getId())
+                .money(student.getMoney())
+                .creditScore(student.getCreditScore())
+                .currency(studentClass.getCurrency())
+                .build();
+
+        return accountInfo;
+    }
 
 
 
