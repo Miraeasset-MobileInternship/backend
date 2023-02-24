@@ -3,7 +3,7 @@ package miraeassetmobile.backend.service;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.error.exception.AlreadyExistException;
@@ -75,16 +75,16 @@ public class JobService {
 
 
     //특정 학급의 아이들의 전체 직업과 정보를 넘김
-    public List<StudentJobListResponseDto> getAllStduentJobList(Long classId){
+    public List<StudentJobDto> getAllStduentJobList(Long classId){
         List<Student> students = studentRepository.findByClassId(classId);
 
-        List<StudentJobListResponseDto> studentJobs = new ArrayList<StudentJobListResponseDto>();
+        List<StudentJobDto> studentJobs = new ArrayList<StudentJobDto>();
 
         for (Student student : students) {
 
             Job job = jobRepository.findById(student.getJobId()).get();
 
-            studentJobs.add(StudentJobListResponseDto.builder()
+            studentJobs.add(StudentJobDto.builder()
                     .id(student.getId())
                     .number(student.getNumber())
                     .studentName(student.getName())
