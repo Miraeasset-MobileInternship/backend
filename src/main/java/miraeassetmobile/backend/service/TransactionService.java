@@ -3,20 +3,27 @@ package miraeassetmobile.backend.service;
 import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionDataDto;
 import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.TransactionCategoryDto;
+import miraeassetmobile.backend.domain.dto.transactions.TransferMoneyRequestDto;
+import miraeassetmobile.backend.domain.entity.Classes;
+import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.TransactionCategory;
 import miraeassetmobile.backend.domain.entity.TransactionData;
-import miraeassetmobile.backend.repository.StudentRepository;
-import miraeassetmobile.backend.repository.TransactionCategoryRepository;
-import miraeassetmobile.backend.repository.TransactionDataRepository;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.UnavailableException;
+import miraeassetmobile.backend.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import static miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes.*;
+
 
 @Service
 public class TransactionService {
@@ -24,12 +31,16 @@ public class TransactionService {
     TransactionDataRepository transactionDataRepository;
     TransactionCategoryRepository transactionCategoryRepository;
     StudentRepository studentRepository;
+    ClassRepository classRepository;
+    JobRepository jobRepository;
 
 
-    TransactionService(TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
+        this.classRepository = classRepository;
+        this.jobRepository = jobRepository;
     }
 
 
@@ -98,6 +109,109 @@ public class TransactionService {
 
         return result;
     }
+
+
+
+
+    public URI transferMoney(TransferMoneyRequestDto transferMoneyRequestDto){
+
+                /*
+        1. 학생의 계좌의 잔고를 확인함
+            -> 부족하면 에러 발생시켜야함
+        2. 학생 계좌에서 돈을 출금함(minus)
+        3. 국고 계좌에 돈을 추가함(plus)
+        4. transfer_data table에 데이터를 추가함
+         */
+
+
+        //존재하는 학생들인가
+        isExistStudent(transferMoneyRequestDto.getStudentId());
+        isExistStudent(transferMoneyRequestDto.getManagerId());
+
+
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).get();
+
+
+        //0. "매니저"가 송금 권한이 있는 (직업의) 학생인가
+        unavailableJobTransfer(manager.getJobId());
+
+
+        //1. 학생의 계좌의 잔고를 확인한다.
+        //송금하려는 금액이 계좌에 충분히 있는지 검사
+        unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
+
+        //2. 학생 계좌 잔고를 수정한다
+        updateTransferStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
+
+
+        //3.국고 계좌에 돈을 추가함(plus)
+        updateTransferClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
+
+        //4.transfer_data table에 데이터 추가
+
+
+        TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
+                .money(transferMoneyRequestDto.getMoney())
+                .managerId(manager.getId())
+                .managerJobId(manager.getJobId())
+                .studentId(student.getId())
+                .studentJobId(student.getJobId())
+                .classId(student.getClassId())
+                .categoryId(transferMoneyRequestDto.getCategoryId())
+                .detail(transferMoneyRequestDto.getDetail())
+                .from(STUDENT.getTypeName()) //이체하기 (학생 잔고에서 뽑아오는 것) FROM 학생
+                .build());
+
+        return(createUri(transactionData.getId(), "transaction"));
+
+
+    }
+
+
+    public URI createUri(Long id, String newOne){
+        URI uri = UriComponentsBuilder.newInstance()
+//                .scheme("https")
+//                .host("m-crew.iptime.org")
+//                .port(8001)
+                .scheme("http")
+                .host("localhost")
+                .port(8080)
+                .path("/api/"+ newOne + "/" + id)
+                .build()
+                .toUri(); //UriComponents into URI
+
+        return uri;
+
+    }
+
+    public void updateTransferStudentMoney(Long studentId, int transferMoney){
+
+
+        Student student = studentRepository.findById(studentId).get();
+
+        //객체의 돈을 변경하여 새로운 객체를 생성
+        Student updateStudent = student.updateMoney(student.getMoney() - transferMoney); //보유금액 - 출금금액
+
+        studentRepository.save(updateStudent);
+    }
+
+    public void updateTransferClassMoney(Long classId, int transferMoney){
+
+//        Student student = studentRepository.findById(studentId).get();
+
+        //속해있는 학급 구하기
+        Classes studentClass = classRepository.findById(classId).get();
+
+        //객체의 돈을 변경하여 새로운 객체를 생성
+        Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 - 출금금액
+
+        classRepository.save(updateClass);
+
+    }
+
+
+
 
 
 
