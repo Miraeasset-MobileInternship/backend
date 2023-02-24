@@ -20,8 +20,12 @@ public class TransactionCategory {
     private String title;
 
     @NotNull
-    @Column(name = "is_changeable")
-    private boolean changeable;
+    @Column(name = "is_transfer")
+    private boolean transfer;
+
+    @NotNull
+    @Column(name = "is_pay")
+    private boolean pay;
 
 
 

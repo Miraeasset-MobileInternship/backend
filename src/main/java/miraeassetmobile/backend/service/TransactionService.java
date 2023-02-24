@@ -231,9 +231,19 @@ public class TransactionService {
 
 
 
-    public List<TransactionCategoryDto> getCategoryList(){
+    public List<TransactionCategoryDto> getCategoryList(String type){
 
-        List<TransactionCategory> categories = transactionCategoryRepository.findByChangeableTrue();
+
+
+        List<TransactionCategory> categories;
+
+        if(type.equals("transfer")){
+            categories = transactionCategoryRepository.findByTransferTrue();
+        }else{
+            categories = transactionCategoryRepository.findByPayTrue();
+        }
+
+
 
         List<TransactionCategoryDto> result = new ArrayList<>();
 

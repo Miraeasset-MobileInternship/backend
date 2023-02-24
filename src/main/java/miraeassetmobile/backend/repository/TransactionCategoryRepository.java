@@ -15,6 +15,8 @@ public interface TransactionCategoryRepository extends JpaRepository<Transaction
     Optional<TransactionCategory> findById(Long id);
 
 
-    List<TransactionCategory> findByChangeableTrue();
+    List<TransactionCategory> findByTransferTrue();
+
+    List<TransactionCategory> findByPayTrue();
 
 }

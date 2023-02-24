@@ -56,8 +56,8 @@ public class TransactionController {
 
     @GetMapping("/category")
     @Operation(description = "출금/입금 카테고리 내역을 조회(SELECTOR), 학생 - 업무수행 - 특수업무 수행 중 출입금 카테고리SELECTOR")
-    public ResponseEntity<List<TransactionCategoryDto>> getCategoryList(){
-        return ResponseEntity.ok(transactionService.getCategoryList());
+    public ResponseEntity<List<TransactionCategoryDto>> getCategoryList(@RequestParam String type){
+        return ResponseEntity.ok(transactionService.getCategoryList(type));
     }
 
 
