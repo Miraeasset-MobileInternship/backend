@@ -7,6 +7,7 @@ import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.TransactionCategory;
 import miraeassetmobile.backend.domain.entity.TransactionData;
 import miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes;
+import miraeassetmobile.backend.domain.entity.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.error.exception.UnavailableException;
@@ -301,7 +302,7 @@ public class TransactionService {
                 .from(STUDENT.getTypeName()) //이체하기 (학생 잔고에서 뽑아오는 것) FROM 학생
                 .build());
 
-        return(createUri(transactionData.getId(), "transaction"));
+        return(createUri(transactionData.getId(), UriTypes.TRANSACTION));
 
 
     }
@@ -359,14 +360,14 @@ public class TransactionService {
                 .from(CLASS.getTypeName()) //지급하기 (국고 잔고에서 뽑아오는 것) FROM class
                 .build());
 
-        return(createUri(transactionData.getId(), "transaction"));
+        return(createUri(transactionData.getId(), UriTypes.TRANSACTION));
 
 
     }
 
 
 
-    public URI createUri(Long id, String newOne){
+    public URI createUri(Long id, UriTypes uriTypes){
         URI uri = UriComponentsBuilder.newInstance()
 //                .scheme("https")
 //                .host("m-crew.iptime.org")
@@ -374,7 +375,7 @@ public class TransactionService {
                 .scheme("http")
                 .host("localhost")
                 .port(8080)
-                .path("/api/"+ newOne + "/" + id)
+                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
                 .build()
                 .toUri(); //UriComponents into URI
 

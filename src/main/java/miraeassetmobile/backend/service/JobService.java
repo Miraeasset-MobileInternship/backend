@@ -6,6 +6,7 @@ import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
+import miraeassetmobile.backend.domain.entity.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.AlreadyExistException;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
@@ -154,13 +155,13 @@ public class JobService {
         Job j = jobRepository.save(newJob);
 
 
-        return createUri(j.getId(), "job"); //등록된 직업에 대해 URI를 같이 반환함
+        return createUri(j.getId(), UriTypes.JOB); //등록된 직업에 대해 URI를 같이 반환함
 
     }
 
 
     //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
-    public URI createUri(Long id, String newOne){
+    public URI createUri(Long id, UriTypes uriTypes){
         URI uri = UriComponentsBuilder.newInstance()
 //                .scheme("https")
 //                .host("m-crew.iptime.org")
@@ -168,7 +169,7 @@ public class JobService {
                 .scheme("http")
                 .host("localhost")
                 .port(8080)
-                .path("/api/"+ newOne + "/" + id)
+                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
                 .build()
                 .toUri(); //UriComponents into URI
 
@@ -201,7 +202,7 @@ public class JobService {
 
         studentRepository.save(updateStudent);
 
-        return createUri(updateStudent.getId(), "student");
+        return createUri(updateStudent.getId(), UriTypes.STUDENT);
 
     }
 
