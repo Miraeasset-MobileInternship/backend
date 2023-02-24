@@ -44,7 +44,11 @@ public class Classes extends BaseTimeEntity {
     @NotNull
     private int money;
 
+    public Classes updateMoney(int money){
+        this.money = money;
 
+        return this;
+    }
 
 
     // default 제외 나머지

@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
@@ -31,27 +32,13 @@ public class JobController {
 
 
 
-    //선생님 직업조회 페이지 -> 해당 학급에서 가질 수 있는 모든 직업을 조회
-    @GetMapping("/class/{class_id}")
-    public ResponseEntity<List<Job>> jobListByClass(@PathVariable(value = "class_id")Long classId){
-        return ResponseEntity.ok(jobService.getJobListByClass(classId));
-    }
-
-
-
-    //반아이들 전체의 직업조회
-    @GetMapping("/class/{class_id}/student/all")
-    public ResponseEntity<List<StudentJobListResponseDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
-        return ResponseEntity.ok(jobService.getAllStduentJobList(classId));
-    }
-
-
 
 
 
     //job id를 통한 직업조회
     //특정 직업의 정보를 넘겨줌 (직업 수정 화면 등등)
     @GetMapping("/{job_id}")
+    @Operation(description = "해당 직업의 상세 정보를 조회, 선생님 - 직업 수정 화면")
     public ResponseEntity<JobDto> getJobInfo(@PathVariable(value = "job_id") Long jobId){
         return ResponseEntity.ok(jobService.getJobInfo(jobId));
     }
@@ -60,6 +47,7 @@ public class JobController {
 
     //특정 직업 삭제
     @DeleteMapping("/{job_id}/delete")
+    @Operation(description = "해당 id의 직업을 삭제, 선생님 - 직업 삭제 기능")
     public ResponseEntity<Void> deleteJob(@PathVariable(value = "job_id") Long jobId){
         jobService.deleteJob(jobId);
         return ResponseEntity.ok().build();
@@ -67,6 +55,7 @@ public class JobController {
 
 
     @PostMapping("/create")
+    @Operation(description = "새로운 직업을 생성, 선생님 - 직업 생성 화면")
     public ResponseEntity createJob(@RequestBody @Valid JobCreateRequestDto jobInfo){
 
         /*
@@ -80,6 +69,7 @@ public class JobController {
 
 
     @PutMapping("/update/all")
+    @Operation(description = "아이들의 현 직업을 변경(단체), 선생님 - 아이들 직업 부여/수정(전체)")
     public ResponseEntity updateJobStudentAll(@RequestBody @Valid List<StudentJobUpdateRequestDto> jobList){
         jobService.updateAllStudentJob(jobList);
         return ResponseEntity.ok().build();
@@ -87,6 +77,7 @@ public class JobController {
 
 
     @PutMapping("/update/{student_id}")
+    @Operation(description = "아이들의 현 직업을 변경(개인), 선생님 - 아이들 직업 수정/부여(개인)")
     public ResponseEntity updateJobStudent(@RequestBody @Valid StudentJobUpdateRequestDto studentJobUpdateRequestDto,
                                            @PathVariable(value = "student_id") Long studentId){
         return ResponseEntity.created(jobService.updateStudentJob(studentJobUpdateRequestDto)).build(); //id를 같이 반환하기

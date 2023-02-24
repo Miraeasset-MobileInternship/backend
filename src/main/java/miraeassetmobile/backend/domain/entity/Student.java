@@ -58,6 +58,11 @@ public class Student extends BaseTimeEntity{
         return this;
     }
 
+    public Student updateMoney(int money){
+        this.money = money;
+
+        return this;
+    }
 
     // default 제외 나머지
     @Builder
