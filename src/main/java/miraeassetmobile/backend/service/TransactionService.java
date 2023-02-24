@@ -110,8 +110,6 @@ public class TransactionService {
 
             TransactionFromTypes searchType = (type.equals("deposit") ? (CLASS):(STUDENT));
 
-            System.out.println(searchType.getTypeName());
-
             Pageable pageable = PageRequest.of(page,pageSize, Sort.by("createTimestamp").descending()); //최신순
             transactions = transactionDataRepository.findByStudentIdAndFrom(studentId, searchType.getTypeName(), pageable);
             totalData = transactionDataRepository.countByStudentIdAndAndFrom(studentId,searchType.getTypeName());
