@@ -14,4 +14,6 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
 
     int countByStudentId(Long studentId);
 
+    int countByStudentIdAndAndFrom(Long studentId, String from);
+
 }
