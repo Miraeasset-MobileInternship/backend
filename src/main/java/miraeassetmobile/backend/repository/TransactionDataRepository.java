@@ -12,8 +12,19 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
     Page<TransactionData> findByStudentIdAndFrom(Long studentId, String from, Pageable page); //출금 입금 따로 조회할경우
 
 
+    Page<TransactionData> findByClassId(Long classId, Pageable page);
+
+    Page<TransactionData> findByClassIdAndFrom(Long classId, String from, Pageable page); //출금 입금 따로 조회할경우
+
+
+
     int countByStudentId(Long studentId);
 
     int countByStudentIdAndAndFrom(Long studentId, String from);
+
+
+    int countByClassId(Long classId);
+
+    int countByClassIdAndAndFrom(Long classId, String from);
 
 }
