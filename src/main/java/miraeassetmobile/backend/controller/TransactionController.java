@@ -25,7 +25,7 @@ public class TransactionController {
 
 
 
-//    @GetMapping("/student/{student_id}")
+//    @GetMapping("/student/{student_id}") -> 입출금 따로 조회 가능으로 대체되었지만 일단 임시로 살려둠(m-crew 버전에는 없음
 //    @Operation(description = "해당 학생의 계좌 거래 내역을 조회(10개, 최신순), 학생 - 홈 화면 거래 내역")
 //    public ResponseEntity<StudentTransactionResponseDto> getStudentTransactionData(@PathVariable(value = "student_id") Long studentId,
 //                                                                                   @RequestParam(defaultValue = "0") int page){

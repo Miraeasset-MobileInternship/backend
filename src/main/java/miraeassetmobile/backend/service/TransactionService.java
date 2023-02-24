@@ -46,51 +46,51 @@ public class TransactionService {
 
 
 
-    //학생별 거래내역 조회
-    public StudentTransactionResponseDto getStudentTransactionData(Long studentId, int page){
-
-        int pageSize = 10;
-
-
-        Pageable pageable = PageRequest.of(page,pageSize, Sort.by("createTimestamp").descending()); //최신순
-        Page<TransactionData> transactions = transactionDataRepository.findByStudentId(studentId, pageable);
-
-
-        int totalData = transactionDataRepository.countByStudentId(studentId);
-
-
-        int maxPage = (int) Math.ceil(totalData/(double)pageSize) -1; //요청가능한 마지막 페이지
-
-
-        List<StudentTransactionDataDto> studentTransactionDatas = new ArrayList<>();
-
-        for (TransactionData t: transactions) {
-
-
-            boolean isDeposit = t.getFrom().equals("class"); //돈의 출처가 학생이면 출금
-
-
-            StudentTransactionDataDto transaction = StudentTransactionDataDto.builder()
-                    .transactionId(t.getId())
-                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
-                    .detail(t.getDetail())
-                    .isDeposit(isDeposit)
-                    .transactionMoney(t.getMoney())
-                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
-                    .build();
-
-            studentTransactionDatas.add(transaction);
-
-        }
-
-        return StudentTransactionResponseDto.builder()
-                .currentPage(page)
-                .totalData(totalData)
-                .maxPage(maxPage)
-                .studentTransactionData(studentTransactionDatas)
-                .build();
-
-    }
+    //학생별 거래내역 조회 -> 입출금 따로 조회 가능으로 대체되었지만 일단 임시로 살려둠(m-crew 버전에는 없음
+//    public StudentTransactionResponseDto getStudentTransactionData(Long studentId, int page){
+//
+//        int pageSize = 10;
+//
+//
+//        Pageable pageable = PageRequest.of(page,pageSize, Sort.by("createTimestamp").descending()); //최신순
+//        Page<TransactionData> transactions = transactionDataRepository.findByStudentId(studentId, pageable);
+//
+//
+//        int totalData = transactionDataRepository.countByStudentId(studentId);
+//
+//
+//        int maxPage = (int) Math.ceil(totalData/(double)pageSize) -1; //요청가능한 마지막 페이지
+//
+//
+//        List<StudentTransactionDataDto> studentTransactionDatas = new ArrayList<>();
+//
+//        for (TransactionData t: transactions) {
+//
+//
+//            boolean isDeposit = t.getFrom().equals("class"); //돈의 출처가 학생이면 출금
+//
+//
+//            StudentTransactionDataDto transaction = StudentTransactionDataDto.builder()
+//                    .transactionId(t.getId())
+//                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
+//                    .detail(t.getDetail())
+//                    .isDeposit(isDeposit)
+//                    .transactionMoney(t.getMoney())
+//                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
+//                    .build();
+//
+//            studentTransactionDatas.add(transaction);
+//
+//        }
+//
+//        return StudentTransactionResponseDto.builder()
+//                .currentPage(page)
+//                .totalData(totalData)
+//                .maxPage(maxPage)
+//                .studentTransactionData(studentTransactionDatas)
+//                .build();
+//
+//    }
 
 
     //학생별 거래내역 조회 (입출금 분리)
