@@ -1,10 +1,7 @@
 package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionDataDto;
-import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionResponseDto;
-import miraeassetmobile.backend.domain.dto.transactions.TransactionCategoryDto;
-import miraeassetmobile.backend.domain.dto.transactions.TransferMoneyRequestDto;
+import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +40,16 @@ public class TransactionController {
                                                                                    @RequestParam(defaultValue = "0") int page){
 
         return ResponseEntity.ok(transactionService.getStudentTransactionDataWithType(studentId,page,type));
+
+    }
+
+    @GetMapping("/class/{class_id}")
+    @Operation(description = "해당 학급(국고)의 계좌 거래 내역을 조회(10개, 최신순, 입금(type=deposit),출금(type=withdraw) 구분), 학생 - 국고 화면 거래 내역")
+    public ResponseEntity<ClassTransactionResponseDto> getClassTransactionData(@PathVariable(value = "class_id") Long classId,
+                                                                               @RequestParam(defaultValue = "all") String type,
+                                                                               @RequestParam(defaultValue = "0") int page){
+
+        return ResponseEntity.ok(transactionService.getClassTransactionDataWithType(classId,page,type));
 
     }
 
