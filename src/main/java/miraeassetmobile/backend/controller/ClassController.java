@@ -1,16 +1,13 @@
 package miraeassetmobile.backend.controller;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorResponseDto;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,7 +46,7 @@ public class ClassController {
     //반아이들 전체의 직업조회
     @GetMapping("/{class_id}/student/job/all")
     @Operation(description = "해당 학급의 아이들과 아이들이 가진 직업 현황을 조회, 선생님 - 직업변경 페이지 / 학생 - 친구들의 직업")
-    public ResponseEntity<List<StudentJobListResponseDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
+    public ResponseEntity<List<StudentJobDto>> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
         return ResponseEntity.ok(jobService.getAllStduentJobList(classId));
     }
 

@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
-import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
 import org.springframework.http.ResponseEntity;
