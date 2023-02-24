@@ -3,11 +3,14 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorResponseDto;
 import miraeassetmobile.backend.domain.entity.Job;
+import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,9 +26,12 @@ public class ClassController {
     JobService jobService;
     StudentService studentService;
 
-    public ClassController(JobService jobService, StudentService studentService){
+    ClassService classService;
+
+    public ClassController(ClassService classService, JobService jobService, StudentService studentService){
         this.jobService =jobService;
         this.studentService =studentService;
+        this.classService = classService;
     }
 
 
@@ -52,6 +58,13 @@ public class ClassController {
     @Operation(description = "해당 학급의 모든 아이들의 번호,이름을 제공(O번 OOO형태 포함), 학생 - 특수 업무 수행 - 출금/입금 대상 selector")
     public ResponseEntity<List<StudentTransferSelectorResponseDto>> getStudentList(@PathVariable(value = "class_id") Long classId){
         return ResponseEntity.ok(studentService.getStudentSelectorList(classId));
+    }
+
+
+    @GetMapping("/{class_id}/account")
+    @Operation(description = "현 학급의 국고 상태 정보 제공 , 국고 페이지 - 국가명, 잔고, 국가화폐 단위")
+    public ResponseEntity<ClassAccountResponseDto> getClassAccountInfo(@PathVariable(value = "class_id") Long classId){
+        return ResponseEntity.ok(classService.getClassAccountInfo(classId));
     }
 
 
