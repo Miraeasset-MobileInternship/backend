@@ -1,9 +1,7 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionDataDto;
-import miraeassetmobile.backend.domain.dto.transactions.StudentTransactionResponseDto;
-import miraeassetmobile.backend.domain.dto.transactions.TransactionCategoryDto;
-import miraeassetmobile.backend.domain.dto.transactions.TransferMoneyRequestDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
+import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.TransactionCategory;
@@ -147,6 +145,89 @@ public class TransactionService {
                 .build();
 
     }
+
+
+
+
+
+
+    //학급별 "국고" 거래내역 조회 (입출금 분리)
+    public ClassTransactionResponseDto getClassTransactionDataWithType(Long classId, int page, String type){
+
+        int pageSize = 10;
+        int totalData = 0;
+        Page<TransactionData> transactions;
+
+        if(type.equals("all")){
+
+            Pageable pageable = PageRequest.of(page,pageSize, Sort.by("createTimestamp").descending()); //최신순
+            transactions = transactionDataRepository.findByClassId(classId, pageable);
+            totalData = transactionDataRepository.countByClassId(classId);
+
+        }else{
+
+            //국고 기준으로는 학생계좌에서 출금된게 입금임! **주의**
+            TransactionFromTypes searchType = (type.equals("deposit") ? (STUDENT):(CLASS));
+
+            Pageable pageable = PageRequest.of(page,pageSize, Sort.by("createTimestamp").descending()); //최신순
+            transactions = transactionDataRepository.findByClassIdAndFrom(classId, searchType.getTypeName(), pageable);
+            totalData = transactionDataRepository.countByClassIdAndAndFrom(classId,searchType.getTypeName());
+        }
+
+        int maxPage = (int) Math.ceil(totalData/(double)pageSize) -1; //요청가능한 마지막 페이지
+
+
+        List<ClassTransactionDataDto> classTransactionDatas = new ArrayList<>();
+
+        for (TransactionData t: transactions) {
+
+
+            boolean isDeposit = t.getFrom().equals("student"); //돈의 출처가 "학급(국고)"이면 출금
+
+            //**주의**
+            // JobId를 t에서 가져와야 해당 거래 당시의 직업으로 출력 가능( 학생에서 가져오면 변경된 직업으로 나옴)
+            StudentJobDto managerDto = getStudentJobDto(t.getManagerId(), t.getManagerJobId());
+            StudentJobDto studentDto = getStudentJobDto(t.getStudentId(), t.getStudentJobId());
+
+            ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
+                    .transactionId(t.getId())
+                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
+                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
+                    .detail(t.getDetail())
+                    .isDeposit(isDeposit)
+                    .transactionMoney(t.getMoney())
+                    .manager(managerDto)
+                    .student(studentDto)
+                    .build();
+
+            classTransactionDatas.add(transaction);
+
+        }
+
+        return ClassTransactionResponseDto.builder()
+                .currentPage(page)
+                .maxPage(maxPage)
+                .totalData(totalData)
+                .classTransactionData(classTransactionDatas)
+                .build();
+
+    }
+
+
+    //student Id를 주면 stduentjobDto를 반환해주는 함수
+    public StudentJobDto getStudentJobDto(Long studentId, Long studentJobId){
+
+        Student s = studentRepository.findById(studentId).get();
+
+        return (StudentJobDto.builder()
+                .id(studentId)
+                .number(s.getNumber())
+                .studentName(s.getName())
+                .jobId(studentJobId) //주의 : student를 찾아서 걔의 jobId를 가져오면 직업이 변경되면 데이터 로그도 변경됨!! 로그는 그 당시 직업을 저장
+                .jobTitle(jobRepository.findById(studentJobId).get().getTitle())
+                .build());
+    }
+
 
 
     public List<TransactionCategoryDto> getCategoryList(){
