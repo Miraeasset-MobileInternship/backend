@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.domain.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,8 +55,16 @@ public class TransactionData extends BaseTimeEntity{
     private String from;
 
 
-
-
-
-
+    @Builder
+    public TransactionData(int money, Long managerId, Long managerJobId, Long studentId, Long studentJobId, Long classId, Long categoryId, String detail, String from) {
+        this.money=money;
+        this.managerId=managerId;
+        this.managerJobId=managerJobId;
+        this.studentId=studentId;
+        this.studentJobId = studentJobId;
+        this.classId=classId;
+        this.categoryId=categoryId;
+        this.detail=detail;
+        this.from=from;
+    }
 }
