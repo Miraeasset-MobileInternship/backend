@@ -307,6 +307,65 @@ public class TransactionService {
     }
 
 
+
+    public URI payMoney(TransferMoneyRequestDto transferMoneyRequestDto){
+
+        /*
+        1. 국고의 잔고를 확인함
+            -> 부족하면 에러 발생시켜야함
+        2. 국고 계좌에서 돈을 출금함(minus)
+        3. 학생 계좌에 돈을 추가함(plus)
+        4. transfer_data table에 데이터를 추가함
+         */
+
+
+        //존재하는 학생들인가
+        isExistStudent(transferMoneyRequestDto.getStudentId());
+        isExistStudent(transferMoneyRequestDto.getManagerId());
+
+
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).get();
+
+
+        //0. "매니저"가 권한이 있는 (직업의) 학생인가
+        unavailableJobPay(manager.getJobId());
+
+
+        //1. 국고의 잔고를 확인한다.
+        //송금하려는 금액이 계좌에 충분히 있는지 검사
+        unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
+
+        //2. 국고 잔고를 수정한다
+        updatePayClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
+
+
+
+        //3.학생 계좌에 돈을 추가함(plus)
+        updatePayStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
+
+        //4.transfer_data table에 데이터 추가
+
+
+        TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
+                .money(transferMoneyRequestDto.getMoney())
+                .managerId(manager.getId())
+                .managerJobId(manager.getJobId()) //현재 가지고 있는 직업이 저장
+                .studentId(student.getId())
+                .studentJobId(student.getJobId())
+                .classId(student.getClassId())
+                .categoryId(transferMoneyRequestDto.getCategoryId())
+                .detail(transferMoneyRequestDto.getDetail())
+                .from(CLASS.getTypeName()) //지급하기 (국고 잔고에서 뽑아오는 것) FROM class
+                .build());
+
+        return(createUri(transactionData.getId(), "transaction"));
+
+
+    }
+
+
+
     public URI createUri(Long id, String newOne){
         URI uri = UriComponentsBuilder.newInstance()
 //                .scheme("https")
@@ -342,10 +401,35 @@ public class TransactionService {
         Classes studentClass = classRepository.findById(classId).get();
 
         //객체의 돈을 변경하여 새로운 객체를 생성
-        Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 - 출금금액
+        Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 + 출금금액
 
         classRepository.save(updateClass);
 
+    }
+
+
+    public void updatePayClassMoney(Long classId, int transferMoney){
+
+
+        //속해있는 학급 구하기
+        Classes studentClass = classRepository.findById(classId).get();
+
+        //객체의 돈을 변경하여 새로운 객체를 생성
+        Classes updateClass = studentClass.updateMoney(studentClass.getMoney() - transferMoney); //보유금액 - 출금금액 (돈사용)
+
+        classRepository.save(updateClass);
+
+    }
+
+    public void updatePayStudentMoney(Long studentId, int transferMoney){
+
+
+        Student student = studentRepository.findById(studentId).get();
+
+        //객체의 돈을 변경하여 새로운 객체를 생성
+        Student updateStudent = student.updateMoney(student.getMoney() + transferMoney); //보유금액 + 출금금액
+
+        studentRepository.save(updateStudent);
     }
 
 
@@ -360,10 +444,26 @@ public class TransactionService {
         }
     }
 
+    //잔고 부족 송금 불가
+    public void unavailablePay(Long classId, int transferMoney){
+        if(classRepository.findById(classId).get().getMoney() < transferMoney){ //출금하려는 금액이 계좌 잔고보다 큰경우
+            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_PAY_MONEY); // 잔고부족으로 출금 불가
+        }
+    }
+
+
     //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
     public void unavailableJobTransfer(Long jobId){
         if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
             throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_TRANSFER);
+        }
+    }
+
+
+    //해당 직업이 국고 출금(송금) 권한을 가진 직업인가
+    public void unavailableJobPay(Long jobId){
+        if(!jobRepository.findById(jobId).get().isWithdrawClass()){
+            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_PAY);
         }
     }
 

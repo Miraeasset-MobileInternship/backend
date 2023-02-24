@@ -93,4 +93,37 @@ public class TransactionController {
 
     }
 
+
+
+
+    //국고에서 돈을 뺀다.
+    @PostMapping("/pay") //지급
+    @Operation(description = "지급기능 : 국고에서 학생계좌로 이체되는 기능, 학생 - 업무수행 - 특수업무 수행 중 국고 출금")
+    public ResponseEntity payMoneyFromClass(@RequestBody @Valid TransferMoneyRequestDto transferMoneyRequestDto){
+
+        /*
+        파라미터
+        누구의 계좌로 돈을 지급 (student_id)
+        지급 카테고리 (category_id)
+        지급 사유(detail)
+        지급 금액(money)
+        담당자(manager_id) -> 이 행위를 수행한 사람의 pk
+         */
+
+
+
+        /*
+        1. 국고의 잔고를 확인함
+            -> 부족하면 에러 발생시켜야함
+        2. 국고 계좌에서 돈을 출금함(minus)
+        3. 학생 계좌에 돈을 추가함(plus)
+        4. transfer_data table에 데이터를 추가함
+         */
+
+
+        //새로 생성된 transaction data의 id URI를 반환함
+        return ResponseEntity.created(transactionService.payMoney(transferMoneyRequestDto)).build(); //id를 같이 반환하기
+
+    }
+
 }
