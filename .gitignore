@@ -98,4 +98,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+
+### key 저장된 yml파일 ###
+application.yml
+
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos
