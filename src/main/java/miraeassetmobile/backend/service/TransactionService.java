@@ -28,6 +28,9 @@ import static miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes.
 @Service
 public class TransactionService {
 
+
+    ErrorService errorService;
+
     TransactionDataRepository transactionDataRepository;
     TransactionCategoryRepository transactionCategoryRepository;
     StudentRepository studentRepository;
@@ -35,12 +38,13 @@ public class TransactionService {
     JobRepository jobRepository;
 
 
-    TransactionService(JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
         this.classRepository = classRepository;
         this.jobRepository = jobRepository;
+        this.errorService =errorService;
     }
 
 
@@ -274,8 +278,8 @@ public class TransactionService {
 
 
         //존재하는 학생들인가
-        isExistStudent(transferMoneyRequestDto.getStudentId());
-        isExistStudent(transferMoneyRequestDto.getManagerId());
+        errorService.isExistStudent(transferMoneyRequestDto.getStudentId());
+        errorService.isExistStudent(transferMoneyRequestDto.getManagerId());
 
 
         Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
@@ -283,12 +287,12 @@ public class TransactionService {
 
 
         //0. "매니저"가 송금 권한이 있는 (직업의) 학생인가
-        unavailableJobTransfer(manager.getJobId());
+        errorService.unavailableJobTransfer(manager.getJobId());
 
 
         //1. 학생의 계좌의 잔고를 확인한다.
         //송금하려는 금액이 계좌에 충분히 있는지 검사
-        unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
+        errorService.unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
 
         //2. 학생 계좌 잔고를 수정한다
         updateTransferStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
@@ -331,8 +335,8 @@ public class TransactionService {
 
 
         //존재하는 학생들인가
-        isExistStudent(transferMoneyRequestDto.getStudentId());
-        isExistStudent(transferMoneyRequestDto.getManagerId());
+        errorService.isExistStudent(transferMoneyRequestDto.getStudentId());
+        errorService.isExistStudent(transferMoneyRequestDto.getManagerId());
 
 
         Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
@@ -340,12 +344,12 @@ public class TransactionService {
 
 
         //0. "매니저"가 권한이 있는 (직업의) 학생인가
-        unavailableJobPay(manager.getJobId());
+        errorService.unavailableJobPay(manager.getJobId());
 
 
         //1. 국고의 잔고를 확인한다.
         //송금하려는 금액이 계좌에 충분히 있는지 검사
-        unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
+        errorService.unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
 
         //2. 국고 잔고를 수정한다
         updatePayClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
@@ -443,48 +447,5 @@ public class TransactionService {
         studentRepository.save(updateStudent);
     }
 
-
-
-
-
-
-    //잔고 부족 송금 불가
-    public void unavailableTransfer(Long studentId, int transferMoney){
-        if(studentRepository.findById(studentId).get().getMoney() < transferMoney){ //출금하려는 금액이 계좌 잔고보다 큰경우
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_MONEY); // 잔고부족으로 출금 불가
-        }
-    }
-
-    //잔고 부족 송금 불가
-    public void unavailablePay(Long classId, int transferMoney){
-        if(classRepository.findById(classId).get().getMoney() < transferMoney){ //출금하려는 금액이 계좌 잔고보다 큰경우
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_PAY_MONEY); // 잔고부족으로 출금 불가
-        }
-    }
-
-
-    //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
-    public void unavailableJobTransfer(Long jobId){
-        if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_TRANSFER);
-        }
-    }
-
-
-    //해당 직업이 국고 출금(송금) 권한을 가진 직업인가
-    public void unavailableJobPay(Long jobId){
-        if(!jobRepository.findById(jobId).get().isWithdrawClass()){
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_PAY);
-        }
-    }
-
-
-    //존재하는 학생인가
-    public void isExistStudent(Long studentId){
-
-        if(!studentRepository.existsById(studentId)){
-            throw new NotExistException(ErrorCode.NOT_EXIST_STUDENT);
-        }
-    }
 
 }

@@ -26,12 +26,14 @@ import java.util.List;
 public class JobService {
 
 
+    private final ErrorService errorService;
     private final JobRepository jobRepository;
     private final ClassRepository classRepository;
     private final StudentRepository studentRepository;
 
 
-    public JobService(JobRepository jobRepository, ClassRepository classRepository, StudentRepository studentRepository){
+    public JobService(ErrorService errorService,JobRepository jobRepository, ClassRepository classRepository, StudentRepository studentRepository){
+        this.errorService =errorService;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
         this.studentRepository = studentRepository;
@@ -45,7 +47,7 @@ public class JobService {
     public List<Job> getJobListByClass(Long classId){
 
         //존재하는 학급인지
-        isExistClass(classId);
+        errorService.isExistClass(classId);
 
         if(classId == 1){ //공통직업을 조회한 경우
 
@@ -106,7 +108,7 @@ public class JobService {
 
 
         //존재하는 직업인지
-        isExistJob(id);
+        errorService.isExistJob(id);
 
 
         Job job = jobRepository.findById(id).get();
@@ -128,9 +130,9 @@ public class JobService {
 
         //예외처리들
         //존재하는 직업인가
-        isExistJob(id);
+        errorService.isExistJob(id);
         //삭제 가능한 직업인가
-        unavailableJobDelete(id);
+        errorService.unavailableJobDelete(id);
 
         //삭제
         jobRepository.deleteById(id);
@@ -142,10 +144,10 @@ public class JobService {
     public URI createJob(JobCreateRequestDto jobCreateRequestDto){
 
         //존재하는 학급인지
-        isExistClass(jobCreateRequestDto.getClassId());
+        errorService.isExistClass(jobCreateRequestDto.getClassId());
 
         //등록가능한 직업명인지 확인
-        validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
+        errorService.validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
 
 
         //직업등록
@@ -189,10 +191,10 @@ public class JobService {
 
 
         //존재하는 학생인가
-        isExistStudent(studentJob.getStudentId());
+        errorService.isExistStudent(studentJob.getStudentId());
 
         //존재하는 직업인가
-        isExistJob(studentJob.getJobId());
+        errorService.isExistJob(studentJob.getJobId());
 
 
         Student student = studentRepository.findById(studentJob.getStudentId()).get();
@@ -208,41 +210,6 @@ public class JobService {
 
 
 
-    //필수직업 삭제 불가능
-    public void unavailableJobDelete(Long jobId){
-        if(jobRepository.findById(jobId).get().getClassId() == 1){ //master job인 경우
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_DELETE_JOB); // 삭제 불가능한 것을 삭제하려고 한다.
-        }
-    }
-
-    public void isExistJob(Long jobId){
-
-        if(!jobRepository.existsById(jobId)){
-            throw new NotExistException(ErrorCode.NOT_EXIST_JOB);
-        }
-    }
-
-    public void isExistStudent(Long studentId){
-
-        if(!studentRepository.existsById(studentId)){
-            throw new NotExistException(ErrorCode.NOT_EXIST_STUDENT);
-        }
-    }
-
-    public void isExistClass(Long classId){
-        if(!classRepository.existsById(classId)){
-            throw new NotExistException(ErrorCode.NOT_EXIST_CLASS);
-        }
-    }
-
-
-    public void validateJobNameInClass(Long classId, String title){
-
-        if(jobRepository.existsByClassIdAndTitle(classId, title)){ //해당 학급에 같은 이름의 직업이 이미 존재함
-            throw new AlreadyExistException(ErrorCode.ALREADY_EXIST_JOB);
-        }
-
-    }
 
 
 }

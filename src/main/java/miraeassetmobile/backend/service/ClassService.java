@@ -10,12 +10,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class ClassService {
 
+    //에러서비스
+    ErrorService errorService;
 
+
+    //레포
     ClassRepository classRepository;
 
 
-    ClassService(ClassRepository classRepository){
+    ClassService(ClassRepository classRepository, ErrorService errorService){
+
         this.classRepository = classRepository;
+        this.errorService = errorService;
     }
 
 
@@ -23,7 +29,7 @@ public class ClassService {
     public ClassAccountResponseDto getClassAccountInfo(Long classId){
 
         //존재하는 학급인가
-        isExistClass(classId);
+        errorService.isExistClass(classId);
 
 
         //학급조회
@@ -40,10 +46,6 @@ public class ClassService {
     }
 
 
-    public void isExistClass(Long classId){
-        if(!classRepository.existsById(classId)){
-            throw new NotExistException(ErrorCode.NOT_EXIST_CLASS);
-        }
-    }
+
 
 }
