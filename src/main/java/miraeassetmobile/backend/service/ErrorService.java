@@ -97,6 +97,18 @@ public class ErrorService {
     }
 
 
+    //직업 한 학급 당 50개 이상 등록 불가
+    public void unavailableJobRegister(Long classId){
+
+        int total = classRepository.countById(classId) + classRepository.countById(1L);
+
+        if(!classId.equals(1L) && total >= 50 ){
+            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_TOO_MANY_JOBS);
+        }
+
+    }
+
+
 
 
 
