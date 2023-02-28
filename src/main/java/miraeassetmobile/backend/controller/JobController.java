@@ -21,11 +21,10 @@ import java.util.List;
 public class JobController {
 
     private JobService jobService;
-    private StudentService studentService;
 
-    public JobController(JobService jobService, StudentService studentService){
+
+    public JobController(JobService jobService){
         this.jobService=jobService;
-        this.studentService=studentService;
     }
 
 

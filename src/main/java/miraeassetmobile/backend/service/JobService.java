@@ -28,14 +28,12 @@ public class JobService {
 
     private final ErrorService errorService;
     private final JobRepository jobRepository;
-    private final ClassRepository classRepository;
     private final StudentRepository studentRepository;
 
 
-    public JobService(ErrorService errorService,JobRepository jobRepository, ClassRepository classRepository, StudentRepository studentRepository){
+    public JobService(ErrorService errorService,JobRepository jobRepository, StudentRepository studentRepository){
         this.errorService =errorService;
         this.jobRepository = jobRepository;
-        this.classRepository = classRepository;
         this.studentRepository = studentRepository;
     }
 
