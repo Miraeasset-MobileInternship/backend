@@ -24,8 +24,10 @@ public class StudentService {
     ClassRepository classRepository;
     JobRepository jobRepository;
 
+    ErrorService errorService;
 
-    public StudentService(StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
+    public StudentService(ErrorService errorService,StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
+        this.errorService = errorService;
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
@@ -33,6 +35,10 @@ public class StudentService {
 
 
     public StudentAccountResponseDto getStudentAccountInfo(Long id){
+
+        //존재하는 학생인가
+        errorService.isExistStudent(id);
+
 
         Student student = studentRepository.findById(id).get();
 
@@ -76,6 +82,10 @@ public class StudentService {
 
 
     public List<StudentTransferSelectorResponseDto> getStudentSelectorList(Long classId){
+
+        //존재하는 학급인가
+        errorService.isExistClass(classId);
+
 
         List<Student> studentList = studentRepository.findByClassId(classId);
 

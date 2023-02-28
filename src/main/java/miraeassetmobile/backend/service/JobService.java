@@ -79,6 +79,11 @@ public class JobService {
 
     //특정 학급의 아이들의 전체 직업과 정보를 넘김
     public List<StudentJobDto> getAllStduentJobList(Long classId){
+
+        //존재하는 학급인지
+        errorService.isExistClass(classId);
+
+
         List<Student> students = studentRepository.findByClassId(classId);
 
         List<StudentJobDto> studentJobs = new ArrayList<StudentJobDto>();
@@ -145,6 +150,10 @@ public class JobService {
 
         //존재하는 학급인지
         errorService.isExistClass(jobCreateRequestDto.getClassId());
+
+        //등록된 직업이 50개 이상이면 등록불가
+        errorService.unavailableJobRegister(jobCreateRequestDto.getClassId());
+
 
         //등록가능한 직업명인지 확인
         errorService.validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());

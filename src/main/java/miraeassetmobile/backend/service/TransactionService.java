@@ -99,6 +99,13 @@ public class TransactionService {
     //학생별 거래내역 조회 (입출금 분리)
     public StudentTransactionResponseDto getStudentTransactionDataWithType(Long studentId, int page, String type){
 
+
+        //존재하는 학생인지
+        errorService.isExistStudent(studentId);
+
+
+
+
         int pageSize = 10;
         int totalData = 0;
         Page<TransactionData> transactions;
@@ -158,6 +165,12 @@ public class TransactionService {
 
     //학급별 "국고" 거래내역 조회 (입출금 분리)
     public ClassTransactionResponseDto getClassTransactionDataWithType(Long classId, int page, String type){
+
+
+        //존재하는학급인지
+        errorService.isExistClass(classId);
+
+
 
         int pageSize = 10;
         int totalData = 0;
@@ -222,6 +235,7 @@ public class TransactionService {
     //student Id를 주면 stduentjobDto를 반환해주는 함수
     public StudentJobDto getStudentJobDto(Long studentId, Long studentJobId){
 
+
         Student s = studentRepository.findById(studentId).get();
 
         return (StudentJobDto.builder()
@@ -243,7 +257,7 @@ public class TransactionService {
 
         if(type.equals("transfer")){
             categories = transactionCategoryRepository.findByTransferTrue();
-        }else{
+        }else{//pay
             categories = transactionCategoryRepository.findByPayTrue();
         }
 
