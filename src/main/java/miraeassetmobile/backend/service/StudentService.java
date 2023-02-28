@@ -7,6 +7,8 @@ import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorRespo
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
@@ -36,13 +38,10 @@ public class StudentService {
 
     public StudentAccountResponseDto getStudentAccountInfo(Long id){
 
-        //존재하는 학생인가
-        errorService.isExistStudent(id);
+        //존재하는 학생 아닌지 검사
+        Student student = studentRepository.findById(id).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
-
-        Student student = studentRepository.findById(id).get();
-
-        Classes studentClass = classRepository.findById(student.getClassId()).get();
+        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
 
         StudentAccountResponseDto accountInfo = StudentAccountResponseDto.builder()
@@ -58,11 +57,11 @@ public class StudentService {
 
     public StudentJobResponseDto getStudentJobInfo(Long studentId) {
 
-        Student student = studentRepository.findById(studentId).get();
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
-        Job studentJob = jobRepository.findById(student.getJobId()).get();
+        Job studentJob = jobRepository.findById(student.getJobId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
-        Classes studentClass = classRepository.findById(student.getClassId()).get();
+        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         String classInfo = studentClass.getGrade() + "학년 " + studentClass.getClassNum() + "반";
 

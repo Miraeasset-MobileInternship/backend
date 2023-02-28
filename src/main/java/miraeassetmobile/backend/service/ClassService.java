@@ -28,12 +28,9 @@ public class ClassService {
     //학급 국고 정보 조회
     public ClassAccountResponseDto getClassAccountInfo(Long classId){
 
-        //존재하는 학급인가
-        errorService.isExistClass(classId);
-
 
         //학급조회
-        Classes classInfo = classRepository.findById(classId).get();
+        Classes classInfo = classRepository.findById(classId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
 
         return (ClassAccountResponseDto.builder()

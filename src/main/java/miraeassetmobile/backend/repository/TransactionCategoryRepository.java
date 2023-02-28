@@ -15,6 +15,10 @@ public interface TransactionCategoryRepository extends JpaRepository<Transaction
     Optional<TransactionCategory> findById(Long id);
 
 
+    /*
+    Optional 은 컬렉션,스트림,배열,옵셔널 타입에서 사용해서는 안된다
+    https://dahye-jeong.gitbook.io/java/java/effective_java/2021-07-12-return-optionals-judiciouly
+     */
     List<TransactionCategory> findByTransferTrue();
 
     List<TransactionCategory> findByPayTrue();

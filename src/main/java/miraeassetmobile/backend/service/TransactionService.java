@@ -104,8 +104,6 @@ public class TransactionService {
         errorService.isExistStudent(studentId);
 
 
-
-
         int pageSize = 10;
         int totalData = 0;
         Page<TransactionData> transactions;
@@ -236,7 +234,7 @@ public class TransactionService {
     public StudentJobDto getStudentJobDto(Long studentId, Long studentJobId){
 
 
-        Student s = studentRepository.findById(studentId).get();
+        Student s = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         return (StudentJobDto.builder()
                 .id(studentId)
@@ -291,13 +289,8 @@ public class TransactionService {
          */
 
 
-        //존재하는 학생들인가
-        errorService.isExistStudent(transferMoneyRequestDto.getStudentId());
-        errorService.isExistStudent(transferMoneyRequestDto.getManagerId());
-
-
-        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
-        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).get();
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
 
         //0. "매니저"가 송금 권한이 있는 (직업의) 학생인가
@@ -347,14 +340,8 @@ public class TransactionService {
         4. transfer_data table에 데이터를 추가함
          */
 
-
-        //존재하는 학생들인가
-        errorService.isExistStudent(transferMoneyRequestDto.getStudentId());
-        errorService.isExistStudent(transferMoneyRequestDto.getManagerId());
-
-
-        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
-        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).get();
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
 
         //0. "매니저"가 권한이 있는 (직업의) 학생인가
@@ -414,7 +401,7 @@ public class TransactionService {
     public void updateTransferStudentMoney(Long studentId, int transferMoney){
 
 
-        Student student = studentRepository.findById(studentId).get();
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() - transferMoney); //보유금액 - 출금금액
@@ -424,10 +411,8 @@ public class TransactionService {
 
     public void updateTransferClassMoney(Long classId, int transferMoney){
 
-//        Student student = studentRepository.findById(studentId).get();
-
         //속해있는 학급 구하기
-        Classes studentClass = classRepository.findById(classId).get();
+        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 + 출금금액
@@ -441,7 +426,7 @@ public class TransactionService {
 
 
         //속해있는 학급 구하기
-        Classes studentClass = classRepository.findById(classId).get();
+        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() - transferMoney); //보유금액 - 출금금액 (돈사용)
@@ -453,7 +438,7 @@ public class TransactionService {
     public void updatePayStudentMoney(Long studentId, int transferMoney){
 
 
-        Student student = studentRepository.findById(studentId).get();
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() + transferMoney); //보유금액 + 출금금액

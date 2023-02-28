@@ -57,6 +57,7 @@ public class JobService {
 
         }else{ //특정 학급의 직업을 조회한 경우
 
+            //null일 경우 빈 배열로 반환 ( .get()으로 해도 빈 배열로 반환된다)
 
             List<Job> publicJob = jobRepository.findByClassId(1L); //공통직업리스트
 
@@ -66,7 +67,7 @@ public class JobService {
             List<Job> jobs = new ArrayList<Job>();
 
             //두 리스트를 합치기
-            jobs.addAll(publicJob);
+//            jobs.addAll(publicJob);
             jobs.addAll(localJobs);
 
             return jobs;
@@ -88,7 +89,8 @@ public class JobService {
 
         for (Student student : students) {
 
-            Job job = jobRepository.findById(student.getJobId()).get();
+            //존재하지 않는 직업 에러
+            Job job = jobRepository.findById(student.getJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
             studentJobs.add(StudentJobDto.builder()
                     .id(student.getId())
@@ -110,11 +112,9 @@ public class JobService {
     public JobDto getJobInfo(Long id){
 
 
-        //존재하는 직업인지
-        errorService.isExistJob(id);
 
 
-        Job job = jobRepository.findById(id).get();
+        Job job = jobRepository.findById(id).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
         //필요한 것만 dto에 담아서 전달
         return JobDto.builder().id(job.getId())
@@ -197,14 +197,11 @@ public class JobService {
     public URI updateStudentJob(StudentJobUpdateRequestDto studentJob){
 
 
-        //존재하는 학생인가
-        errorService.isExistStudent(studentJob.getStudentId());
-
         //존재하는 직업인가
         errorService.isExistJob(studentJob.getJobId());
 
 
-        Student student = studentRepository.findById(studentJob.getStudentId()).get();
+        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         //객체의 직업을 변경
         Student updateStudent = student.updateJob(studentJob.getJobId());
