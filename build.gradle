@@ -38,6 +38,12 @@ dependencies {
 	//swagger
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
 
+
+	//json Parsing
+//	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+//	compileOnly 'com.google.code.gson:gson:2.8.2'
+	implementation group: 'org.json', name: 'json', version: '20201115'
+
 }
 
 tasks.named('test') {
