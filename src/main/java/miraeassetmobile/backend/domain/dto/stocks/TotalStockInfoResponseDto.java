@@ -11,12 +11,14 @@ public class TotalStockInfoResponseDto {
 
     int money;
 
-    int totalMarketValue; //평가금액
+    String classCurrency; //학급 화폐단위
 
-    int totalBlendedPrice; //매수금액
+    String totalMarketValue; //평가금액
+
+    String totalBlendedPrice; //매수금액
 
 
-    int totalMarketProfitLoss; //평가손익
+    String totalMarketProfitLoss; //평가손익
 
     String totalYield; //수익률 (2자리수 끊어서 보내기)
 

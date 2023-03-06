@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name="student_stock")
@@ -26,7 +27,7 @@ public class StudentStock extends BaseTimeEntity{
 
     @NotNull
     @Column(name = "blended_price")
-    private int blendedPrice;
+    private BigDecimal blendedPrice;
 
     @NotNull
     private int amount;
