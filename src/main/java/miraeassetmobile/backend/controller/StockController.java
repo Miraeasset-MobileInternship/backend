@@ -2,7 +2,6 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.api.StockApiResponseDto;
-import miraeassetmobile.backend.domain.dto.stocks.StudentStockInfoResponseDto;
 import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.service.StockApiCallService;

@@ -1,7 +1,6 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.api.StockApiResponseDto;
-import miraeassetmobile.backend.domain.dto.stocks.StudentStockInfoResponseDto;
 import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
