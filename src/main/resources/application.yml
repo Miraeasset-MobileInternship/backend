@@ -1,10 +1,40 @@
 api:
-  key: {openAPI 시세정보조회 key}
-  url: {openAPI 시세정보조회 url}
+  key: {APIS DATA KEY}
+  url: https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://{url}:{port}/{db_name}?serverTimezone=Asia/Seoul
-    username: {username}
-    password: {password}
+    url: jdbc:mysql://{URL}?serverTimezone=Asia/Seoul
+    username: {USERNAME}
+    password: {PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: {REST API KEY}
+            client-secret: {CLIENT SECRET KEY}
+            authorization-grant-type: authorization_code
+            redirect-uri: {REDIRECT_URL}
+            scope:
+              - account_email
+              - profile_image
+            client-name: Kakao
+            client-authentication-method: post
+
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id # 회원정보를 json으로 받는데 id라는 키값으로 카카오가 return해줌.(네이버는 response)
+
+
+  redis:
+    host: localhost
+    port: 6379
+  cache:
+    type: redis
