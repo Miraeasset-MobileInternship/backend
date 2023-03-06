@@ -118,8 +118,8 @@ public class StockService {
 
 
 
-        //전부 두자리수에서 끊어서
-        String yieldValues = String.format("%.2f",yield); //두자리수 반올림
+        //전부 두자리수 까지만 (반올림)
+        String yieldValues = Double.isNaN(yield)? "0.00" : String.format("%.2f",yield); //Nan인 경우 0.00으로
         String marketValues = String.format("%.2f",marketValue);
         String blendedPrices = String.format("%.2f",blendedPrice);
         String marketProfitLosses = String.format("%.2f",marketProfitLoss);
