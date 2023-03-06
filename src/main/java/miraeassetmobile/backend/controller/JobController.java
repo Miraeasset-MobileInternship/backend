@@ -21,11 +21,10 @@ import java.util.List;
 public class JobController {
 
     private JobService jobService;
-    private StudentService studentService;
 
-    public JobController(JobService jobService, StudentService studentService){
+
+    public JobController(JobService jobService){
         this.jobService=jobService;
-        this.studentService=studentService;
     }
 
 
@@ -74,10 +73,9 @@ public class JobController {
     }
 
 
-    @PutMapping("/update/{student_id}")
+    @PutMapping("/update")
     @Operation(description = "아이들의 현 직업을 변경(개인), 선생님 - 아이들 직업 수정/부여(개인)")
-    public ResponseEntity updateJobStudent(@RequestBody @Valid StudentJobUpdateRequestDto studentJobUpdateRequestDto,
-                                           @PathVariable(value = "student_id") Long studentId){
+    public ResponseEntity updateJobStudent(@RequestBody @Valid StudentJobUpdateRequestDto studentJobUpdateRequestDto){
         return ResponseEntity.created(jobService.updateStudentJob(studentJobUpdateRequestDto)).build(); //id를 같이 반환하기
     }
 

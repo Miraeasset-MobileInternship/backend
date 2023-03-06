@@ -7,6 +7,7 @@ import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.TransactionCategory;
 import miraeassetmobile.backend.domain.entity.TransactionData;
 import miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes;
+import miraeassetmobile.backend.domain.entity.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.error.exception.UnavailableException;
@@ -27,6 +28,9 @@ import static miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes.
 @Service
 public class TransactionService {
 
+
+    ErrorService errorService;
+
     TransactionDataRepository transactionDataRepository;
     TransactionCategoryRepository transactionCategoryRepository;
     StudentRepository studentRepository;
@@ -34,12 +38,13 @@ public class TransactionService {
     JobRepository jobRepository;
 
 
-    TransactionService(JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
         this.classRepository = classRepository;
         this.jobRepository = jobRepository;
+        this.errorService =errorService;
     }
 
 
@@ -93,6 +98,11 @@ public class TransactionService {
 
     //학생별 거래내역 조회 (입출금 분리)
     public StudentTransactionResponseDto getStudentTransactionDataWithType(Long studentId, int page, String type){
+
+
+        //존재하는 학생인지
+        errorService.isExistStudent(studentId);
+
 
         int pageSize = 10;
         int totalData = 0;
@@ -153,6 +163,12 @@ public class TransactionService {
 
     //학급별 "국고" 거래내역 조회 (입출금 분리)
     public ClassTransactionResponseDto getClassTransactionDataWithType(Long classId, int page, String type){
+
+
+        //존재하는학급인지
+        errorService.isExistClass(classId);
+
+
 
         int pageSize = 10;
         int totalData = 0;
@@ -217,7 +233,8 @@ public class TransactionService {
     //student Id를 주면 stduentjobDto를 반환해주는 함수
     public StudentJobDto getStudentJobDto(Long studentId, Long studentJobId){
 
-        Student s = studentRepository.findById(studentId).get();
+
+        Student s = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         return (StudentJobDto.builder()
                 .id(studentId)
@@ -230,9 +247,19 @@ public class TransactionService {
 
 
 
-    public List<TransactionCategoryDto> getCategoryList(){
+    public List<TransactionCategoryDto> getCategoryList(String type){
 
-        List<TransactionCategory> categories = transactionCategoryRepository.findByChangeableTrue();
+
+
+        List<TransactionCategory> categories;
+
+        if(type.equals("transfer")){
+            categories = transactionCategoryRepository.findByTransferTrue();
+        }else{//pay
+            categories = transactionCategoryRepository.findByPayTrue();
+        }
+
+
 
         List<TransactionCategoryDto> result = new ArrayList<>();
 
@@ -262,22 +289,17 @@ public class TransactionService {
          */
 
 
-        //존재하는 학생들인가
-        isExistStudent(transferMoneyRequestDto.getStudentId());
-        isExistStudent(transferMoneyRequestDto.getManagerId());
-
-
-        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
-        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).get();
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
 
         //0. "매니저"가 송금 권한이 있는 (직업의) 학생인가
-        unavailableJobTransfer(manager.getJobId());
+        errorService.unavailableJobTransfer(manager.getJobId());
 
 
         //1. 학생의 계좌의 잔고를 확인한다.
         //송금하려는 금액이 계좌에 충분히 있는지 검사
-        unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
+        errorService.unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
 
         //2. 학생 계좌 잔고를 수정한다
         updateTransferStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
@@ -301,7 +323,7 @@ public class TransactionService {
                 .from(STUDENT.getTypeName()) //이체하기 (학생 잔고에서 뽑아오는 것) FROM 학생
                 .build());
 
-        return(createUri(transactionData.getId(), "transaction"));
+        return(createUri(transactionData.getId(), UriTypes.TRANSACTION));
 
 
     }
@@ -318,23 +340,17 @@ public class TransactionService {
         4. transfer_data table에 데이터를 추가함
          */
 
-
-        //존재하는 학생들인가
-        isExistStudent(transferMoneyRequestDto.getStudentId());
-        isExistStudent(transferMoneyRequestDto.getManagerId());
-
-
-        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).get();
-        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).get();
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
 
         //0. "매니저"가 권한이 있는 (직업의) 학생인가
-        unavailableJobPay(manager.getJobId());
+        errorService.unavailableJobPay(manager.getJobId());
 
 
         //1. 국고의 잔고를 확인한다.
         //송금하려는 금액이 계좌에 충분히 있는지 검사
-        unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
+        errorService.unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
 
         //2. 국고 잔고를 수정한다
         updatePayClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
@@ -359,14 +375,14 @@ public class TransactionService {
                 .from(CLASS.getTypeName()) //지급하기 (국고 잔고에서 뽑아오는 것) FROM class
                 .build());
 
-        return(createUri(transactionData.getId(), "transaction"));
+        return(createUri(transactionData.getId(), UriTypes.TRANSACTION));
 
 
     }
 
 
 
-    public URI createUri(Long id, String newOne){
+    public URI createUri(Long id, UriTypes uriTypes){
         URI uri = UriComponentsBuilder.newInstance()
 //                .scheme("https")
 //                .host("m-crew.iptime.org")
@@ -374,7 +390,7 @@ public class TransactionService {
                 .scheme("http")
                 .host("localhost")
                 .port(8080)
-                .path("/api/"+ newOne + "/" + id)
+                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
                 .build()
                 .toUri(); //UriComponents into URI
 
@@ -385,7 +401,7 @@ public class TransactionService {
     public void updateTransferStudentMoney(Long studentId, int transferMoney){
 
 
-        Student student = studentRepository.findById(studentId).get();
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() - transferMoney); //보유금액 - 출금금액
@@ -395,10 +411,8 @@ public class TransactionService {
 
     public void updateTransferClassMoney(Long classId, int transferMoney){
 
-//        Student student = studentRepository.findById(studentId).get();
-
         //속해있는 학급 구하기
-        Classes studentClass = classRepository.findById(classId).get();
+        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 + 출금금액
@@ -412,7 +426,7 @@ public class TransactionService {
 
 
         //속해있는 학급 구하기
-        Classes studentClass = classRepository.findById(classId).get();
+        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() - transferMoney); //보유금액 - 출금금액 (돈사용)
@@ -424,7 +438,7 @@ public class TransactionService {
     public void updatePayStudentMoney(Long studentId, int transferMoney){
 
 
-        Student student = studentRepository.findById(studentId).get();
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() + transferMoney); //보유금액 + 출금금액
@@ -432,48 +446,5 @@ public class TransactionService {
         studentRepository.save(updateStudent);
     }
 
-
-
-
-
-
-    //잔고 부족 송금 불가
-    public void unavailableTransfer(Long studentId, int transferMoney){
-        if(studentRepository.findById(studentId).get().getMoney() < transferMoney){ //출금하려는 금액이 계좌 잔고보다 큰경우
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_MONEY); // 잔고부족으로 출금 불가
-        }
-    }
-
-    //잔고 부족 송금 불가
-    public void unavailablePay(Long classId, int transferMoney){
-        if(classRepository.findById(classId).get().getMoney() < transferMoney){ //출금하려는 금액이 계좌 잔고보다 큰경우
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_PAY_MONEY); // 잔고부족으로 출금 불가
-        }
-    }
-
-
-    //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
-    public void unavailableJobTransfer(Long jobId){
-        if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_TRANSFER);
-        }
-    }
-
-
-    //해당 직업이 국고 출금(송금) 권한을 가진 직업인가
-    public void unavailableJobPay(Long jobId){
-        if(!jobRepository.findById(jobId).get().isWithdrawClass()){
-            throw new UnavailableException(ErrorCode.UNAVAILABLE_ACTION_JOB_PAY);
-        }
-    }
-
-
-    //존재하는 학생인가
-    public void isExistStudent(Long studentId){
-
-        if(!studentRepository.existsById(studentId)){
-            throw new NotExistException(ErrorCode.NOT_EXIST_STUDENT);
-        }
-    }
 
 }

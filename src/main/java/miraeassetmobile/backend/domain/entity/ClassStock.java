@@ -7,27 +7,24 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name="transaction_category")
+@Table(name="class_stock")
 @Getter
 @NoArgsConstructor
-public class TransactionCategory {
-
+public class ClassStock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
     private Long id;
+
+    @NotNull
+    @Column(name = "class_id")
+    private Long classId;
+
+    @NotNull
+    @Column(name = "isin_code")
+    private String code;
+
     @NotNull
     private String title;
-
-    @NotNull
-    @Column(name = "is_transfer")
-    private boolean transfer;
-
-    @NotNull
-    @Column(name = "is_pay")
-    private boolean pay;
-
-
-
 
 }

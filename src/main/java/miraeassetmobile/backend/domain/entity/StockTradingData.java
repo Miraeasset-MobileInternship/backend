@@ -7,25 +7,33 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name="transaction_category")
+@Table(name="stock_trading_data")
 @Getter
 @NoArgsConstructor
-public class TransactionCategory {
-
+public class StockTradingData extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
     private Long id;
-    @NotNull
-    private String title;
 
     @NotNull
-    @Column(name = "is_transfer")
-    private boolean transfer;
+    @Column(name = "student_id")
+    private Long studentId;
 
     @NotNull
-    @Column(name = "is_pay")
-    private boolean pay;
+    @Column(name = "stock_isin_code")
+    private Long stockCode;
+
+
+    @NotNull
+    private int amount;
+
+    @NotNull
+    private int price;
+
+    @NotNull
+    @Column(name = "is_buying")
+    private boolean isBuying;
 
 
 

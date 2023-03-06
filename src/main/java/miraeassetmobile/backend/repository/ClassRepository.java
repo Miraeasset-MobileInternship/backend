@@ -11,4 +11,6 @@ public interface ClassRepository extends JpaRepository<Classes,Long> {
 
     Optional<Classes> findById(Long id);
 
+    int countById(Long id);
+
 }

@@ -18,7 +18,7 @@ public enum ErrorCode {
     UNAVAILABLE_ACTION_PAY_MONEY(HttpStatus.FORBIDDEN, "국고가 부족하여 돈을 이체할 수 없습니다."),
     UNAVAILABLE_ACTION_JOB_TRANSFER(HttpStatus.FORBIDDEN, "학생 잔고를 이체할 수 있는 권한이 없는 직업입니다."),
     UNAVAILABLE_ACTION_JOB_PAY(HttpStatus.FORBIDDEN, "국고를 출금할 수 있는 권한이 없는 직업입니다."),
-
+    UNAVAILABLE_ACTION_TOO_MANY_JOBS(HttpStatus.FORBIDDEN, "학급 당 직업은 50개를 초과할 수 없습니다."),
 
 
     //존재하지 않는 리소스에 대한요청
@@ -31,6 +31,16 @@ public enum ErrorCode {
     //이미 존재하는 것을 등록하려고 할 때
     // 같은 학급에 같은 직업 등록 , 회원가입 중복
     ALREADY_EXIST_JOB(HttpStatus.FORBIDDEN, "이미 존재하는 직업입니다."),
+
+
+
+
+
+    //common error
+    //외부 API사용 하는 서버상의 에러의 경우
+    EXTERNAL_SERVER_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "주식 시세 정보 서버에 에러가 있습니다. 잠시후 다시 시도해주세요. \n 문제가 계속 될 경우 관리자에게 문의해주세요."),
+    EXTERNAL_SERVER_NO_RESULT_ERROR(HttpStatus.NOT_FOUND, "종목이 존재하지 않아 정보를 불러올 수 없습니다. \n 관리자에게 문의해주세요."),
+
 
 
     //common error
