@@ -1,9 +1,6 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.error.exception.AlreadyExistException;
-import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
-import miraeassetmobile.backend.error.exception.UnavailableException;
+import miraeassetmobile.backend.error.exception.*;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
@@ -110,6 +107,18 @@ public class ErrorService {
 
 
 
+    //주식 시세 관련 API 서버에서 발생할 수 있는 에러
+
+
+    public void errorFromExternalServerNoResult(){ //외부 서버 에러 -> 결과가 존재하지 않음(조회 코드가 틀려서 결과가 없음)
+            throw new ExternalErrorException(ErrorCode.EXTERNAL_SERVER_NO_RESULT_ERROR);
+
+    }
+
+
+    public void errorFromExternalServer(){ //외부 서버 에러(공통)
+        throw new ExternalErrorException(ErrorCode.EXTERNAL_SERVER_ERROR);
+    }
 
 
 }

@@ -26,12 +26,14 @@ public class StockService {
     ClassRepository classRepository;
 
     StockApiCallService stockApiCallService;
+    ErrorService errorService;
 
-    StockService(ClassRepository classRepository, StudentRepository studentRepository, StudentStockRepository studentStockRepository, StockApiCallService stockApiCallService){
+    StockService(ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository, StudentStockRepository studentStockRepository, StockApiCallService stockApiCallService){
         this.studentRepository = studentRepository;
         this.studentStockRepository = studentStockRepository;
         this.stockApiCallService = stockApiCallService;
         this.classRepository = classRepository;
+        this.errorService= errorService;
     }
 
 
@@ -44,12 +46,12 @@ public class StockService {
          */
 
 
-
         Student s = studentRepository.findById(studentId).orElseThrow(()-> (new NotExistException(ErrorCode.NOT_EXIST_STUDENT)));
         Classes c = classRepository.findById(s.getClassId()).orElseThrow(() -> (new NotExistException(ErrorCode.NOT_EXIST_CLASS)));
 
 
         List<StudentStock> studentStockList = studentStockRepository.findByStudentId(studentId);
+
 
 
         //보유금액 (단위 이름 붙여서)
@@ -82,7 +84,15 @@ public class StockService {
 
              */
 
+
             StockApiResponseDto stockApiResponseDto = stockApiCallService.getStockInfoByCode(code).getBody();
+
+            // 보유하지 않은 것이 아니라 보유했는데 그 정보를 시세 조회 api에서 불러오지 못하는 경우 NOT FOUND에러발생시키기
+            if(stockApiResponseDto.getItems().isEmpty()){
+                errorService.errorFromExternalServerNoResult();
+            }
+
+
             // 보유 주식의 현 가격
             double price = Double.parseDouble(stockApiResponseDto.getItems().get(0).getClpr()) * 0.01;  // 미소 단위로 변환
 
@@ -93,7 +103,6 @@ public class StockService {
 
 
         }
-
 
 
 
@@ -108,6 +117,7 @@ public class StockService {
 
 
         }
+
 
         //평가손익 = 평가금액 - 매수금액
         double marketProfitLoss = marketValue - blendedPrice;

@@ -4,6 +4,8 @@ import static miraeassetmobile.backend.error.exception.ErrorCode.SERVER_ERROR;
 
 import lombok.extern.slf4j.Slf4j;
 
+import miraeassetmobile.backend.error.exception.AlreadyExistException;
+import miraeassetmobile.backend.error.exception.ExternalErrorException;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.error.exception.UnavailableException;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("handleNotExistException throw Exception : {}", ue.getErrorCode());
         return ErrorResponse.toResponseEntity(ue.getErrorCode());
     }
+
+
+    @ExceptionHandler(value = {AlreadyExistException.class })
+    public ResponseEntity<ErrorResponse> handleAlreadyExistException(AlreadyExistException ue) {
+        log.error("handleNotExistException throw Exception : {}", ue.getErrorCode());
+        return ErrorResponse.toResponseEntity(ue.getErrorCode());
+    }
+
+
+    @ExceptionHandler(value = {ExternalErrorException.class })
+    public ResponseEntity<ErrorResponse> handleExternalErrorException(ExternalErrorException ue) {
+        log.error("handleNotExistException throw Exception : {}", ue.getErrorCode());
+        return ErrorResponse.toResponseEntity(ue.getErrorCode());
+    }
+
+
 
     @ExceptionHandler(value = { Exception.class })
     public ResponseEntity<ErrorResponse> handleException() {

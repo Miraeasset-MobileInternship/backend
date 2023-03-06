@@ -42,9 +42,12 @@ public class StockApiCallService {
 
     private StockApiServiceUtils stockApiServiceUtils;
 
+    ErrorService errorService;
 
-    StockApiCallService(StockApiServiceUtils stockApiServiceUtils) {
+
+    StockApiCallService(StockApiServiceUtils stockApiServiceUtils, ErrorService errorService) {
         this.stockApiServiceUtils = stockApiServiceUtils;
+        this.errorService = errorService;
     }
 
 
@@ -73,6 +76,7 @@ public class StockApiCallService {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             } else {
                 rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                errorService.errorFromExternalServer();
             }
             StringBuffer sb = new StringBuffer();
             String line;
@@ -150,7 +154,7 @@ public class StockApiCallService {
 
 
 
-    // 제공하는 모든 주식정보를 20개씩 반환해줌 (페이지별로) -> 가공되지 않은 entity
+    // 주식 코드별로 검색해서 반환(결과 1개)
     public ResponseEntity<StockApiResponseDto> getStockInfoByCode(String code) {
 
         try {
@@ -174,6 +178,7 @@ public class StockApiCallService {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             } else {
                 rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                errorService.errorFromExternalServer();
             }
             StringBuffer sb = new StringBuffer();
             String line;
@@ -182,7 +187,7 @@ public class StockApiCallService {
             }
             rd.close();
             conn.disconnect();
-
+            
 
             //감싸진 response 부분 제거
             String s = sb.toString().substring(12, sb.length()-1); //response 부분 없애기
@@ -198,6 +203,7 @@ public class StockApiCallService {
             int pageNum = (Integer) bodyObject.get("pageNo");
             int totalCount = (Integer) bodyObject.get("totalCount");
             int rowNum = (Integer) bodyObject.get("numOfRows");
+
 
 
             //items로 감싸진 JSONObject 부분 추출
