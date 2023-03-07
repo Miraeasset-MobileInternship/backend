@@ -42,7 +42,7 @@ public class JobService {
     /*
     공통직업(classId=1로 등록)을 포함한 직업을 page에 따라 10개씩 반환하는 함수
      */
-    public List<Job> getJobListByClass(Long classId){
+    public List<JobDto> getJobListByClass(Long classId){
 
         //존재하는 학급인지
         errorService.isExistClass(classId);
@@ -52,12 +52,29 @@ public class JobService {
 
             List<Job> publicJob = jobRepository.findByClassId(1L); //공통직업리스트
 
+            List<JobDto> jobLists = new ArrayList<>();
 
-            return publicJob;
+            for (Job j: publicJob) {
+
+                jobLists.add(JobDto.builder()
+                        .jobId(j.getId())
+                        .title(j.getTitle())
+                        .detail(j.getDetail())
+                        .monthlySalary(j.getMonthlySalary())
+                        .creditLimit(j.getCreditLimit())
+                        .isWithdrawStudent(j.isWithdrawStudent())
+                        .isWithdrawClass(j.isWithdrawClass())
+                        .isModifyCredit(j.isModifyCredit())
+                        .build());
+
+
+            }
+
+
+            return jobLists;
 
         }else{ //특정 학급의 직업을 조회한 경우
 
-            //null일 경우 빈 배열로 반환 ( .get()으로 해도 빈 배열로 반환된다)
 
             List<Job> publicJob = jobRepository.findByClassId(1L); //공통직업리스트
 
@@ -67,10 +84,30 @@ public class JobService {
             List<Job> jobs = new ArrayList<Job>();
 
             //두 리스트를 합치기
-//            jobs.addAll(publicJob);
+            jobs.addAll(publicJob);
             jobs.addAll(localJobs);
 
-            return jobs;
+            List<JobDto> jobLists = new ArrayList<>();
+
+            for (Job j: jobs) {
+
+                jobLists.add(JobDto.builder()
+                        .jobId(j.getId())
+                        .title(j.getTitle())
+                        .detail(j.getDetail())
+                        .monthlySalary(j.getMonthlySalary())
+                        .creditLimit(j.getCreditLimit())
+                        .isWithdrawStudent(j.isWithdrawStudent())
+                        .isWithdrawClass(j.isWithdrawClass())
+                        .isModifyCredit(j.isModifyCredit())
+                        .build());
+
+
+            }
+
+
+
+            return jobLists;
         }
 
     }
@@ -93,7 +130,7 @@ public class JobService {
             Job job = jobRepository.findById(student.getJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
             studentJobs.add(StudentJobDto.builder()
-                    .id(student.getId())
+                    .studentId(student.getId())
                     .number(student.getNumber())
                     .studentName(student.getName())
                     .jobId(student.getJobId())
@@ -117,7 +154,7 @@ public class JobService {
         Job job = jobRepository.findById(id).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
         //필요한 것만 dto에 담아서 전달
-        return JobDto.builder().id(job.getId())
+        return JobDto.builder().jobId(job.getId())
                 .title(job.getTitle())
                 .monthlySalary(job.getMonthlySalary())
                 .creditLimit(job.getCreditLimit())

@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class JobDto { //forntend로 전달용
 
-    Long id;
+    Long jobId;
 
     private String title; //직업명
 

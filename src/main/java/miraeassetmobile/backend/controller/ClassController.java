@@ -2,6 +2,7 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
+import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorResponseDto;
 import miraeassetmobile.backend.domain.entity.Job;
@@ -37,10 +38,9 @@ public class ClassController {
     //선생님 직업조회 페이지 -> 해당 학급에서 가질 수 있는 모든 직업을 조회
     @GetMapping("/{class_id}/job/all")
     @Operation(description = "해당 학급에서 생성한 모든 직업과 공통 직업을 조회, 선생님 - 직업 변경 페이지(selector) 및 직업 조회 페이지")
-    public ResponseEntity<List<Job>> jobListByClass(@PathVariable(value = "class_id")Long classId){
+    public ResponseEntity<List<JobDto>> jobListByClass(@PathVariable(value = "class_id")Long classId){
         return ResponseEntity.ok(jobService.getJobListByClass(classId));
     }
-
 
 
     //반아이들 전체의 직업조회

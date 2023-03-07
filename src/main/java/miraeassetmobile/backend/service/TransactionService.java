@@ -237,7 +237,7 @@ public class TransactionService {
         Student s = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         return (StudentJobDto.builder()
-                .id(studentId)
+                .studentId(studentId)
                 .number(s.getNumber())
                 .studentName(s.getName())
                 .jobId(studentJobId) //주의 : student를 찾아서 걔의 jobId를 가져오면 직업이 변경되면 데이터 로그도 변경됨!! 로그는 그 당시 직업을 저장
