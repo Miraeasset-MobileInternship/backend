@@ -22,6 +22,15 @@ public class TransactionData extends BaseTimeEntity{
     private int money;
 
 
+    //거래 후에 학생 잔고 와 학교잔고
+    @NotNull
+    @Column(name = "student_money")
+    private int studentMoney;
+
+    @NotNull
+    @Column(name = "class_money")
+    private int classMoney;
+
     @NotNull
     @Column(name = "manager_id")
     private Long managerId;
@@ -56,8 +65,10 @@ public class TransactionData extends BaseTimeEntity{
 
 
     @Builder
-    public TransactionData(int money, Long managerId, Long managerJobId, Long studentId, Long studentJobId, Long classId, Long categoryId, String detail, String from) {
+    public TransactionData(int money, int studentMoney, int classMoney,Long managerId, Long managerJobId, Long studentId, Long studentJobId, Long classId, Long categoryId, String detail, String from) {
         this.money=money;
+        this.classMoney = classMoney;
+        this.studentMoney = studentMoney;
         this.managerId=managerId;
         this.managerJobId=managerJobId;
         this.studentId=studentId;
