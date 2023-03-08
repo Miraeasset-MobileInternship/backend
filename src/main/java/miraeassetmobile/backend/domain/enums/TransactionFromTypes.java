@@ -1,4 +1,4 @@
-package miraeassetmobile.backend.domain.entity.enums;
+package miraeassetmobile.backend.domain.enums;
 
 public enum TransactionFromTypes {
 

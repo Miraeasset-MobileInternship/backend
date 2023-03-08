@@ -4,6 +4,7 @@ import miraeassetmobile.backend.error.exception.*;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
+import miraeassetmobile.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,9 +14,11 @@ public class ErrorService {
     ClassRepository classRepository;
     JobRepository jobRepository;
     StudentRepository studentRepository;
+    UserRepository userRepository;
 
 
-    public ErrorService(ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+    public ErrorService(UserRepository userRepository,ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+        this.userRepository =userRepository;
         this.classRepository =classRepository;
         this.jobRepository =jobRepository;
         this.studentRepository =studentRepository;

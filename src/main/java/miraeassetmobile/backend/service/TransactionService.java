@@ -2,15 +2,11 @@ package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.dto.transactions.*;
-import miraeassetmobile.backend.domain.entity.Classes;
-import miraeassetmobile.backend.domain.entity.Student;
-import miraeassetmobile.backend.domain.entity.TransactionCategory;
-import miraeassetmobile.backend.domain.entity.TransactionData;
-import miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes;
-import miraeassetmobile.backend.domain.entity.enums.UriTypes;
+import miraeassetmobile.backend.domain.entity.*;
+import miraeassetmobile.backend.domain.enums.TransactionFromTypes;
+import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
-import miraeassetmobile.backend.error.exception.UnavailableException;
 import miraeassetmobile.backend.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import static miraeassetmobile.backend.domain.entity.enums.TransactionFromTypes.*;
+import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.*;
 
 
 @Service
@@ -36,15 +32,17 @@ public class TransactionService {
     StudentRepository studentRepository;
     ClassRepository classRepository;
     JobRepository jobRepository;
+    UserRepository userRepository;
 
 
-    TransactionService(ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(UserRepository userRepository, ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
         this.classRepository = classRepository;
         this.jobRepository = jobRepository;
         this.errorService =errorService;
+        this.userRepository = userRepository;
     }
 
 
@@ -236,10 +234,12 @@ public class TransactionService {
 
         Student s = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
+        UserInfo u = userRepository.findById(s.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+
         return (StudentJobDto.builder()
                 .studentId(studentId)
                 .number(s.getNumber())
-                .studentName(s.getName())
+                .studentName(u.getName())
                 .jobId(studentJobId) //주의 : student를 찾아서 걔의 jobId를 가져오면 직업이 변경되면 데이터 로그도 변경됨!! 로그는 그 당시 직업을 저장
                 .jobTitle(jobRepository.findById(studentJobId).get().getTitle())
                 .build());

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name="student")
+@Table(name="students")
 @Getter
 @NoArgsConstructor
 public class Student extends BaseTimeEntity{
@@ -26,10 +26,15 @@ public class Student extends BaseTimeEntity{
     @Column(name = "job_id")
     private Long jobId;
 
-
     @NotNull
-    @Column(name="student_name", length = 10)
-    private String name; //이름
+    @Column(name = "user_id")
+    private Long userId;
+
+
+
+//    @NotNull
+//    @Column(name="student_name", length = 10)
+//    private String name; //이름
 
     @NotNull
     @Column(length=2)
@@ -40,9 +45,9 @@ public class Student extends BaseTimeEntity{
     private int money;
 
 
-    @NotNull
-    @Column(name="phone_number", length = 15)
-    private String phoneNum;
+//    @NotNull
+//    @Column(name="phone_number", length = 15)
+//    private String phoneNum;
 
 
     @NotNull
@@ -66,11 +71,12 @@ public class Student extends BaseTimeEntity{
 
     // default 제외 나머지
     @Builder
-    public Student(String name, int number, int money, String phoneNum){
-        this.name=name;
+    public Student(Long userId, int number, int money){
+//        this.name=name;
+        this.userId = userId;
         this.number=number;
         this.money=money;
-        this.phoneNum=phoneNum;
+//        this.phoneNum=phoneNum;
     }
 
 

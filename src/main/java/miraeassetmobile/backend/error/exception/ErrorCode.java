@@ -9,6 +9,12 @@ import org.springframework.web.client.HttpClientErrorException;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    //로그인 (인증/인가 관련에러)
+    FORBBIDEN_USER(HttpStatus.FORBIDDEN, "서비스를 사용할 수 없는 사용자입니다."),
+    UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "유효하지 않은 사용자 입니다."),
+
+
+
 
     //권한이 없는 요청의 경우 (403경우)
     //403 : FORBBIDEN : 클라이언트는 접근 권리를 가지고 있지 않습니다. (클라이언트를 알고 있음)
@@ -31,6 +37,7 @@ public enum ErrorCode {
     //이미 존재하는 것을 등록하려고 할 때
     // 같은 학급에 같은 직업 등록 , 회원가입 중복
     ALREADY_EXIST_JOB(HttpStatus.FORBIDDEN, "이미 존재하는 직업입니다."),
+    ALREADY_EXIST_USER(HttpStatus.FORBIDDEN, "이미 회원가입된 전화번호입니다."),
 
 
 

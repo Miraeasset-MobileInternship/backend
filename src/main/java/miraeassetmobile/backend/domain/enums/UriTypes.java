@@ -1,7 +1,10 @@
-package miraeassetmobile.backend.domain.entity.enums;
+package miraeassetmobile.backend.domain.enums;
 
 public enum UriTypes {
 
+//    USER("user"),
+
+    TEACHER("teacher"),
     TRANSACTION("transaction"),
     STUDENT("student"),
     JOB("job");

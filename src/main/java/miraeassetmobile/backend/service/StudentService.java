@@ -7,6 +7,7 @@ import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorRespo
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
+import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.ClassRepository;
@@ -14,6 +15,7 @@ import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 
 
+import miraeassetmobile.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,14 +27,16 @@ public class StudentService {
     StudentRepository studentRepository;
     ClassRepository classRepository;
     JobRepository jobRepository;
+    UserRepository userRepository;
 
     ErrorService errorService;
 
-    public StudentService(ErrorService errorService,StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
+    public StudentService(UserRepository userRepository, ErrorService errorService,StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
         this.errorService = errorService;
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
+        this.userRepository=userRepository;
     }
 
 
@@ -93,11 +97,13 @@ public class StudentService {
 
         for (Student s: studentList) {
 
+            UserInfo u = userRepository.findById(s.getUserId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+
             result.add(StudentTransferSelectorResponseDto.builder()
                     .studentId(s.getId())
                     .studentNumber(s.getNumber())
-                    .studentName(s.getName())
-                    .studentNumberName(s.getNumber() + "번 "+s.getName())
+                    .studentName(u.getName())
+                    .studentNumberName(s.getNumber() + "번 "+u.getName())
                     .build());
 
         }
