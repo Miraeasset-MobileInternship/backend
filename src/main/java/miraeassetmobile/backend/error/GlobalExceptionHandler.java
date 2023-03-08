@@ -45,10 +45,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
 
-    @ExceptionHandler(value = { Exception.class })
-    public ResponseEntity<ErrorResponse> handleException() {
-        log.error("Exception throw Exception : {}", SERVER_ERROR.getDetail());
-        return ErrorResponse.toResponseEntity(SERVER_ERROR);
-    }
+//    @ExceptionHandler(value = { Exception.class })
+//    public ResponseEntity<ErrorResponse> handleException() {
+//        log.error("Exception throw Exception : {}", SERVER_ERROR.getDetail());
+//        return ErrorResponse.toResponseEntity(SERVER_ERROR);
+//    }
 
 }

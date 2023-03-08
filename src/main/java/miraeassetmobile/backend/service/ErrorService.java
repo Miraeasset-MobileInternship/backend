@@ -124,4 +124,20 @@ public class ErrorService {
     }
 
 
+
+
+
+    public void alreadyExistUser(String phoneNumber){
+
+        System.out.println(phoneNumber);
+
+        if(userRepository.existsByPhoneNum(phoneNumber)){
+            throw new AlreadyExistException(ErrorCode.ALREADY_EXIST_USER);
+        }
+
+
+    }
+
+
+
 }

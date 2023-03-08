@@ -1,16 +1,17 @@
 package miraeassetmobile.backend.controller;
 
 
+
+
+
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import miraeassetmobile.backend.domain.entity.Job;
-import miraeassetmobile.backend.service.AuthService;
-import org.springframework.beans.factory.annotation.Required;
+import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
+import miraeassetmobile.backend.service.auth.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URISyntaxException;
-import java.util.List;
+import javax.validation.Valid;
 
 @RequestMapping("/api/auth")
 @RestController
@@ -22,21 +23,21 @@ public class AuthController {
         this.authService=authService;
     }
 
-    @GetMapping("/sign-with-kakao")
-    @Operation(description = "카카오로 시작하기")
-    public ResponseEntity signWithKakao(@RequestParam String callBackUrl) throws URISyntaxException {
-        return authService.redirectToKakaoLoginPage(callBackUrl);
+
+
+    @PostMapping("/start")
+    @Operation(description = "시작하기 ")
+    public ResponseEntity getStartWithSignIn(@RequestBody @Valid SignInRequestDto signInRequestDto){
+        System.out.println(signInRequestDto.getPhoneNumber());
+        return ResponseEntity.ok(authService.getStart(signInRequestDto));
     }
 
 
-    @GetMapping("/get-token")
-    @Operation(description = "토큰으로 교환")
-    public String signWithKakao(@RequestParam(required = false) String code,
-                                        @RequestParam(required = false) String state,
-                                        @RequestParam(required = false) String error,
-                                        @RequestParam(required = false, value = "error_description") String errorDescription
-                                        ){
-        return authService.getKakaoTokenWithCode(code);
+    @PostMapping("/signup")
+    @Operation(description = "회원 가입부터 시작하기 ")
+    public ResponseEntity getStartWithSignUp(@RequestBody @Valid SignUpRequestDto signUpRequestDto){
+        return ResponseEntity.ok(authService.startWithSignUp(signUpRequestDto));
+
     }
 
 
