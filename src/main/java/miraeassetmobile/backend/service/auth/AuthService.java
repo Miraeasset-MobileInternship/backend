@@ -2,6 +2,7 @@ package miraeassetmobile.backend.service.auth;
 
 import miraeassetmobile.backend.config.security.jwt.TokenProvider;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.token.LogoutAccessToken;
 import miraeassetmobile.backend.domain.dto.auth.token.RefreshToken;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
 import miraeassetmobile.backend.domain.entity.Classes;
@@ -23,6 +24,7 @@ import miraeassetmobile.backend.domain.dto.auth.AccessTokenInfo;
 import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
 import miraeassetmobile.backend.domain.dto.auth.UserOnboardInfo;
 
+import miraeassetmobile.backend.repository.redis.LogoutAccessTokenRedisRepository;
 import miraeassetmobile.backend.repository.redis.RefreshTokenRedisRepository;
 import miraeassetmobile.backend.service.ErrorService;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.ArrayList;
@@ -52,9 +55,10 @@ public class AuthService {
     TokenProvider tokenProvider;
 
     RefreshTokenRedisRepository refreshTokenRedisRepository;
+    LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository;
 
 
-    AuthService(RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
+    AuthService(LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
         this.userInfoRepository =userInfoRepository;
         this.errorService=errorService;
         this.classRepository=classRepository;
@@ -62,6 +66,7 @@ public class AuthService {
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder=authenticationManagerBuilder;
         this.refreshTokenRedisRepository = refreshTokenRedisRepository;
+        this.logoutAccessTokenRedisRepository =logoutAccessTokenRedisRepository;
     }
 
 
@@ -317,6 +322,43 @@ public class AuthService {
 
 
 
+    @Transactional
+    public void logout(HttpServletRequest request) {
+
+        // 1. Request Header 에서 access token 빼기
+        String accessToken = tokenProvider.resolveToken(request);
+
+        Long userId = getUserIdFromAccessToken(accessToken);
+
+        //logout token의 TTL은 access token의 남은 기간동안 유지되어야 함
+        long remainAccessTokenExpiration = tokenProvider.getRemainExpiration(accessToken);
+
+
+        //redis에 존재하는 refreshToken 삭제
+        refreshTokenRedisRepository.deleteById(userId.toString());
+
+
+        //logout token를 redis에 저장 (이후 로그아웃된 유저의 AccessToken으로 접근 방지)
+        logoutAccessTokenRedisRepository.save(
+                LogoutAccessToken.of(accessToken, userId, remainAccessTokenExpiration));
+    }
+
+
+
+    public Long getUserIdFromAccessToken(String accessToken){
+
+        // access token 유효성 검사
+        if (!tokenProvider.validateToken(accessToken)) {
+            throw new RuntimeException("Access Token 이 유효하지 않습니다.");
+        }
+
+        // access token으로부터 userId 가져오기
+        String userId = tokenProvider.getAuthentication(accessToken).getName();
+
+
+        return Long.parseLong(userId);
+
+    }
 
 
 

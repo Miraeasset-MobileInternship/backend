@@ -12,6 +12,7 @@ import miraeassetmobile.backend.service.auth.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RequestMapping("/api/auth")
@@ -40,6 +41,13 @@ public class AuthController {
 
     }
 
+
+    @PostMapping("/logout")
+    @Operation(description = "로그아웃")
+    public ResponseEntity logout(HttpServletRequest request){
+        authService.logout(request);
+        return ResponseEntity.ok().build();
+    }
 
 
 
