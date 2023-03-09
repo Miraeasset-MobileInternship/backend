@@ -4,7 +4,7 @@ import miraeassetmobile.backend.error.exception.*;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
-import miraeassetmobile.backend.repository.UserRepository;
+import miraeassetmobile.backend.repository.UserInfoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,11 +14,11 @@ public class ErrorService {
     ClassRepository classRepository;
     JobRepository jobRepository;
     StudentRepository studentRepository;
-    UserRepository userRepository;
+    UserInfoRepository userInfoRepository;
 
 
-    public ErrorService(UserRepository userRepository,ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
-        this.userRepository =userRepository;
+    public ErrorService(UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+        this.userInfoRepository = userInfoRepository;
         this.classRepository =classRepository;
         this.jobRepository =jobRepository;
         this.studentRepository =studentRepository;
@@ -128,10 +128,7 @@ public class ErrorService {
 
 
     public void alreadyExistUser(String phoneNumber){
-
-        System.out.println(phoneNumber);
-
-        if(userRepository.existsByPhoneNum(phoneNumber)){
+        if(userInfoRepository.existsByPhoneNum(phoneNumber)){
             throw new AlreadyExistException(ErrorCode.ALREADY_EXIST_USER);
         }
 
