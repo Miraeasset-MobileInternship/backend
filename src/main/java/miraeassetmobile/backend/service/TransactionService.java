@@ -32,17 +32,17 @@ public class TransactionService {
     StudentRepository studentRepository;
     ClassRepository classRepository;
     JobRepository jobRepository;
-    UserRepository userRepository;
+    UserInfoRepository userInfoRepository;
 
 
-    TransactionService(UserRepository userRepository, ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
         this.classRepository = classRepository;
         this.jobRepository = jobRepository;
         this.errorService =errorService;
-        this.userRepository = userRepository;
+        this.userInfoRepository = userInfoRepository;
     }
 
 
@@ -234,12 +234,12 @@ public class TransactionService {
 
         Student s = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
-        UserInfo u = userRepository.findById(s.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
         return (StudentJobDto.builder()
                 .studentId(studentId)
                 .number(s.getNumber())
-                .studentName(u.getName())
+                .studentName(u.getUserName())
                 .jobId(studentJobId) //주의 : student를 찾아서 걔의 jobId를 가져오면 직업이 변경되면 데이터 로그도 변경됨!! 로그는 그 당시 직업을 저장
                 .jobTitle(jobRepository.findById(studentJobId).get().getTitle())
                 .build());

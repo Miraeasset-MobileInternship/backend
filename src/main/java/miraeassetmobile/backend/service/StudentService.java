@@ -15,7 +15,7 @@ import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 
 
-import miraeassetmobile.backend.repository.UserRepository;
+import miraeassetmobile.backend.repository.UserInfoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,16 +27,16 @@ public class StudentService {
     StudentRepository studentRepository;
     ClassRepository classRepository;
     JobRepository jobRepository;
-    UserRepository userRepository;
+    UserInfoRepository userInfoRepository;
 
     ErrorService errorService;
 
-    public StudentService(UserRepository userRepository, ErrorService errorService,StudentRepository studentRepository, JobRepository jobRepository,ClassRepository classRepository){
+    public StudentService(UserInfoRepository userInfoRepository, ErrorService errorService, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
         this.errorService = errorService;
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
-        this.userRepository=userRepository;
+        this.userInfoRepository = userInfoRepository;
     }
 
 
@@ -97,13 +97,13 @@ public class StudentService {
 
         for (Student s: studentList) {
 
-            UserInfo u = userRepository.findById(s.getUserId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+            UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
             result.add(StudentTransferSelectorResponseDto.builder()
                     .studentId(s.getId())
                     .studentNumber(s.getNumber())
-                    .studentName(u.getName())
-                    .studentNumberName(s.getNumber() + "번 "+u.getName())
+                    .studentName(u.getUserName())
+                    .studentNumberName(s.getNumber() + "번 "+u.getUserName())
                     .build());
 
         }

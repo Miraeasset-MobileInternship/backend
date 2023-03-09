@@ -12,7 +12,7 @@ import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
-import miraeassetmobile.backend.repository.UserRepository;
+import miraeassetmobile.backend.repository.UserInfoRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,14 +29,14 @@ public class JobService {
     private final ErrorService errorService;
     private final JobRepository jobRepository;
     private final StudentRepository studentRepository;
-    private final UserRepository userRepository;
+    private final UserInfoRepository userInfoRepository;
 
 
-    public JobService(UserRepository userRepository,ErrorService errorService,JobRepository jobRepository, StudentRepository studentRepository){
+    public JobService(UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, StudentRepository studentRepository){
         this.errorService =errorService;
         this.jobRepository = jobRepository;
         this.studentRepository = studentRepository;
-        this.userRepository = userRepository;
+        this.userInfoRepository = userInfoRepository;
     }
 
 
@@ -131,12 +131,12 @@ public class JobService {
             //존재하지 않는 직업 에러
             Job job = jobRepository.findById(student.getJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
-            UserInfo u = userRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
             studentJobs.add(StudentJobDto.builder()
                     .studentId(student.getId())
                     .number(student.getNumber())
-                    .studentName(u.getName())
+                    .studentName(u.getUserName())
                     .jobId(student.getJobId())
                     .jobTitle(job.getTitle())
                     .build());
