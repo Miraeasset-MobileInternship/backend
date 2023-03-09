@@ -1,64 +1,51 @@
 package miraeassetmobile.backend.config.security.jwt;
 
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import lombok.extern.slf4j.Slf4j;
-import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.security.Key;
-import java.util.stream.Collectors;
-
+// 실제 인증에 대한 부분 중 인증 전 객체를 받아 인증된 객체를 반환하는 역할
 @Slf4j
 @Component
-@PropertySource("classpath:/keys/jwtKey.properties")
 public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";     // token 인증 타입(jwt 토큰을 의미)
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24;       // 1일
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 14;  // 2주
-    public static final String AUTHORIZATION_HEADER = "Authorization";  // http header 종류
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
 
-
-
-
-
-
-
-    // key는 HS512 알고리즘을 사용함
+    // HS512알고리즘
+    //
     private final Key key;
-
-    public TokenProvider(@Value("${key}") String secretKey) {
+    public TokenProvider(@Value("${jwt.key}") String secretKey
+    ){
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public TokenDto generateToken(Authentication authentication) {
+    public TokenDto generateToken(Authentication authentication){
+
         // 권한 가져오기
         String auth = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
+
 
         long now = (new Date()).getTime();
 
@@ -71,36 +58,37 @@ public class TokenProvider {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
 
+
+
         // refresh token (만료일자만 저장)
         String refreshToken = Jwts.builder()
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
 
+
+
         return TokenDto.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
                 .accessTokenExpiresIn(accessTokenExpires.getTime())
                 .refreshToken(refreshToken)
-                .userId(Long.parseLong(authentication.getName())) // userId를 저장해둠 name에
+                .userId(
+                        Long.parseLong(authentication.getName())
+                )
                 .build();
     }
 
+    public Authentication getAuthentication(String accessToken){
 
-
-
-
-    //토큰으로 부터 정보 추출(phoneNum)
-    public Authentication getAuthentication(String accessToken) {
         // 토큰 복호화 (내부 정보 가져옴)
         Claims claims = parseClaims(accessToken);
 
-        if (claims.get(AUTHORITIES_KEY) == null) {
+        if (claims.get(AUTHORITIES_KEY) == null){
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
         // 권한 정보 가져옴
-
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString()
                                 .split(",")).map(SimpleGrantedAuthority::new)
@@ -113,22 +101,21 @@ public class TokenProvider {
                 "", authorities);
     }
 
-
-
-
     // 만료된 토큰의 경우에도 정보를 꺼내기 위한 메소드
-    private Claims parseClaims(String accessToken) {
+    private Claims parseClaims(String accessToken){
+
         try {
             return Jwts.parserBuilder().setSigningKey(key)
                     .build().parseClaimsJws(accessToken)
                     .getBody();
-        } catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException e){
             return e.getClaims();
         }
     }
 
     // 토큰 정보 검증
     public boolean validateToken(String token) {
+
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
@@ -146,35 +133,24 @@ public class TokenProvider {
 
 
     public static Date getRefreshTokenExpireTime() {
-        return new Date(new Date().getTime() + REFRESH_TOKEN_EXPIRE_TIME);
+        return new Date(new Date().getTime()+REFRESH_TOKEN_EXPIRE_TIME);
     }
 
-    //
-    public long getRefreshTokenRemainExpiration(){
-        Date currentTime = getRefreshTokenExpireTime();
-        Date now = new Date();
-        // redis의 단위는 초로, 밀리초를 초로 변환하는 과정의 오차를 감안하기 위해 1초 더함.
-        return ((currentTime.getTime() - now.getTime()) / 1000) + 1;
 
+    public long getRefreshTokenRemainExpiration() {
+        Date d = getRefreshTokenExpireTime();
+        Date now = new Date();
+
+
+        return ((d.getTime() - now.getTime())/1000)+1;
     }
 
 
     // logout token의 expiration 계산
-    public long getRemainExpiration(String token) {
+    public long getRemainExpiration(String token){
         Date currentTime = parseClaims(token).getExpiration();
         Date now = new Date();
         // redis의 단위는 초로, 밀리초를 초로 변환하는 과정의 오차를 감안하기 위해 1초 더함.
-        return ((currentTime.getTime() - now.getTime()) / 1000) + 1;
+        return ((currentTime.getTime() - now.getTime())/1000)+1;
     }
-
-    // Request Header에서 token정보 가져오기
-    public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken)) {
-            return bearerToken;
-        }
-        return null;
-    }
-
-
 }
