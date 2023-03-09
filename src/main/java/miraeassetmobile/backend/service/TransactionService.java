@@ -139,6 +139,8 @@ public class TransactionService {
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
                     .transactionDate(t.getCreateTimestamp().toLocalDateTime())
+                    .studentMoney(t.getStudentMoney())
+
                     .build();
 
             studentTransactionDatas.add(transaction);
@@ -210,6 +212,7 @@ public class TransactionService {
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
+                    .classMoney(t.getClassMoney())
                     .manager(managerDto)
                     .student(studentDto)
                     .build();
