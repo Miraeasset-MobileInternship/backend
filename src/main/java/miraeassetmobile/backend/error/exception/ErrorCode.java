@@ -37,6 +37,7 @@ public enum ErrorCode {
     NOT_EXIST_JOB(HttpStatus.NOT_FOUND,"존재하지 않는 직업입니다."),
     NOT_EXIST_STUDENT(HttpStatus.NOT_FOUND,"존재하지 않는 학생입니다."),
     NOT_EXSIT_USER(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
+    NOT_EXSIT_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않거나 조회할 수 없는 거래내역입니다."),
 
 
 

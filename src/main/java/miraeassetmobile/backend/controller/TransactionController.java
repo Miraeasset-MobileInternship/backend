@@ -126,4 +126,16 @@ public class TransactionController {
 
     }
 
+    @GetMapping("/student/detail/{transaction_id}")
+    @Operation(description = "거래 상세보기 - 학생계좌 기준")
+    public ResponseEntity<TransactionDetailResponseDto> getStudentTransactionDetail(@PathVariable(value = "transaction_id") Long transactionId){
+        return ResponseEntity.ok(transactionService.getStudentTransactionDetail(transactionId));
+    }
+
+    @GetMapping("/class/detail/{transaction_id}")
+    @Operation(description = "거래 상세보기 - 국고 조회 기준")
+    public ResponseEntity<TransactionDetailResponseDto> getClassTransactionDetail(@PathVariable(value = "transaction_id") Long transactionId){
+        return ResponseEntity.ok(transactionService.getClassTransactionDetail(transactionId));
+    }
+
 }
