@@ -1,10 +1,12 @@
 package miraeassetmobile.backend.service;
 
+import miraeassetmobile.backend.domain.dto.students.StudentInfoDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.domain.enums.TransactionFromTypes;
 import miraeassetmobile.backend.domain.enums.UriTypes;
+import miraeassetmobile.backend.domain.enums.UserTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.*;
@@ -456,6 +458,144 @@ public class TransactionService {
         studentRepository.save(updateStudent);
 
         return updateStudent.getMoney();
+    }
+
+    //학생계좌에서 상세보기를 조회한 경우
+    public TransactionDetailResponseDto getStudentTransactionDetail(Long transactionId){
+
+
+        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_TRANSACTION));
+
+
+        // class에서 온 돈인경우 true
+        boolean isDeposit = t.getFrom().equals("class");
+
+        //학급 화폐
+        Classes c = classRepository.findById(t.getClassId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+
+
+        //거래 카테고리
+        TransactionCategory tc = transactionCategoryRepository.findById(t.getCategoryId()).get();
+
+
+        //매니저 정보 찾아내기
+        Student m = studentRepository.findById(t.getManagerId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        UserInfo mu = userInfoRepository.findById(m.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        Job mj = jobRepository.findById(t.getManagerJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+
+        StudentInfoDto managerInfo = StudentInfoDto.builder()
+                .studentId(m.getId())
+                .studentName(mu.getUserName())
+                .studentJob(mj.getTitle())
+                .studentNumber(m.getNumber())
+                .build();
+
+
+        //거래 본인
+        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+
+
+
+        String depositAccount = "";
+        String withdrawAccount = "";
+
+        if(isDeposit){ //입금인 경우
+            depositAccount = sj.getTitle() +" " +su.getUserName(); //입금이 학생정보
+            withdrawAccount = c.getTitle();//출금은 학급정보
+        }else{//출금인 경우
+            withdrawAccount = sj.getTitle() +" " +su.getUserName(); //출금계좌가 학생계좌
+            depositAccount = c.getTitle();//입금은 학급정보
+        }
+
+
+
+        return TransactionDetailResponseDto.builder()
+                .transactionId(t.getId())
+                .transactionMoney(t.getMoney())
+                .plus(isDeposit)
+                .currency(c.getCurrency())
+                .category(tc.getTitle())
+                .depositAccount(depositAccount)
+                .withdrawAccount(withdrawAccount)
+                .managerInfo(managerInfo)
+                .detail(t.getDetail())
+                .transactionDate(t.getCreateTimestamp().toLocalDateTime())
+                .leftMoney(t.getStudentMoney()) //학생기준 거래잔금임
+                .build();
+
+
+    }
+
+
+
+    //국고에서 상세보기를 조회한 경우
+    public TransactionDetailResponseDto getClassTransactionDetail(Long transactionId){
+
+
+        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_TRANSACTION));
+
+
+        // student에서 온 돈인경우 true(입금)
+        boolean isDeposit = t.getFrom().equals("student");
+
+        //학급 화폐
+        Classes c = classRepository.findById(t.getClassId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+
+
+        //거래 카테고리
+        TransactionCategory tc = transactionCategoryRepository.findById(t.getCategoryId()).get();
+
+
+        //매니저 정보 찾아내기
+        Student m = studentRepository.findById(t.getManagerId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        UserInfo mu = userInfoRepository.findById(m.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        Job mj = jobRepository.findById(t.getManagerJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+
+        StudentInfoDto managerInfo = StudentInfoDto.builder()
+                .studentId(m.getId())
+                .studentName(mu.getUserName())
+                .studentJob(mj.getTitle())
+                .studentNumber(m.getNumber())
+                .build();
+
+
+        //거래 본인
+        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+
+
+
+        String depositAccount = "";
+        String withdrawAccount = "";
+
+        if(isDeposit){ //학급 기준으로 입금인 경우
+            withdrawAccount = sj.getTitle() +" " +su.getUserName(); //출금 계좌가 학생계좌
+            depositAccount = c.getTitle();//입금계좌가 학급이름
+        }else{//출금인 경우
+            depositAccount = sj.getTitle() +" " +su.getUserName(); //입금계좌가 학생계좌
+            withdrawAccount = c.getTitle();//출금계좌가 학급정보
+        }
+
+
+
+        return TransactionDetailResponseDto.builder()
+                .transactionId(t.getId())
+                .transactionMoney(t.getMoney())
+                .plus(isDeposit)
+                .currency(c.getCurrency())
+                .category(tc.getTitle())
+                .depositAccount(depositAccount)
+                .withdrawAccount(withdrawAccount)
+                .managerInfo(managerInfo)
+                .detail(t.getDetail())
+                .transactionDate(t.getCreateTimestamp().toLocalDateTime())
+                .leftMoney(t.getClassMoney()) //학급기준 거래잔금임
+                .build();
+
+
     }
 
 
