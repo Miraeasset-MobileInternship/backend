@@ -7,7 +7,11 @@ public enum UriTypes {
     TEACHER("teacher"),
     TRANSACTION("transaction"),
     STUDENT("student"),
-    JOB("job");
+    JOB("job"),
+
+    USER("USER")
+
+    ;
 
     private final String typeName;
 
