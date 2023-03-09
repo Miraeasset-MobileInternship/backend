@@ -26,28 +26,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserInfoRepository userInfoRepository;
 
     @Override
-//    @Cacheable(value = CacheKey.USER, key = "#phoneNum", unless = "#result == null")
     public UserDetails loadUserByUsername(String phoneNum) throws UsernameNotFoundException {
 
-        System.out.println("loadbyuser1");
-
         UserInfo isExist = userInfoRepository.findByPhoneNum(phoneNum).orElseThrow( () ->
-                new UsernameNotFoundException("유저를 찾을 수 없습니다. 이메일을 다시 확인해주세요."));
+                new UsernameNotFoundException("유저를 찾을 수 없습니다. 핸드폰 번호를 다시 확인해주세요."));
 
-        System.out.println("loadbyuser2");
-
-        System.out.println(isExist.getId());
-        System.out.println(isExist.getUserName());
-        System.out.println(isExist.getPhoneNum());
-
-//        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-//        grantedAuthorities.add(new SimpleGrantedAuthority("USER"));
 
         return User.builder()
                 .username(String.valueOf(isExist.getId()))
                 .password("")
                 .roles(isExist.getUserRole())
-//                .authorities(grantedAuthorities)
                 .build();
     }
 }

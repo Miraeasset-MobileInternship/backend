@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         // 1. Request Header 에서 access token 추출
-        String accessToken = resolveToken(request);;
+        String accessToken = tokenProvider.resolveToken(request);
 
         // 2. validateToken 으로 토큰 유효성 검사
         if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)){
@@ -42,16 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request,response);
     }
 
-    // Request Header에서 토큰 정보 가져오기
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-
-
-        if (StringUtils.hasText(bearerToken) &&
-                bearerToken.startsWith(BEARER_PREFIX))
-            return bearerToken.substring(7); //bearer 제거하고 나머지
-        return null;
-    }
 
 
     // logout인 회원인 경우에는 기존의 access token 접근을 금지시키기

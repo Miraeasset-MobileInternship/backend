@@ -20,6 +20,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter.AUTHORIZATION_HEADER;
+import static miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter.BEARER_PREFIX;
 
 // 실제 인증에 대한 부분 중 인증 전 객체를 받아 인증된 객체를 반환하는 역할
 @Slf4j
@@ -154,4 +160,19 @@ public class TokenProvider {
         // redis의 단위는 초로, 밀리초를 초로 변환하는 과정의 오차를 감안하기 위해 1초 더함.
         return ((currentTime.getTime() - now.getTime())/1000)+1;
     }
+
+    // Request Header에서 토큰 정보 가져오기
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+
+
+        if (StringUtils.hasText(bearerToken) &&
+                bearerToken.startsWith(BEARER_PREFIX))
+            return bearerToken.substring(7); //bearer 제거하고 나머지
+        return null;
+    }
+
+
+
+
 }
