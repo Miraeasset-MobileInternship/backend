@@ -8,22 +8,20 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class UserOnboardInfo {
 
     Long userId;
 
 
-    String role;
+    String userRole;
 
 
-    String name;
+    String userName;
 
 
     List<ClassOnboardInfo> classInfo;
-
-
 
 }

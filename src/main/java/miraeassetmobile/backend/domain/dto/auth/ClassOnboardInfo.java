@@ -8,23 +8,24 @@ import lombok.NoArgsConstructor;
 import java.sql.Timestamp;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class ClassOnboardInfo {
 
 
-    Long classId; //학급 아이디
+    Long classId;
 
-    String title;//나라이름
+    String title;
 
-    String grade; //학년, 반
+    String grade;
 
-    Long teacherId; //담당 선생님
-
-    String currency; //화폐 단위
+    Long teacherId;
 
 
-    Timestamp createTimestamp; //생성일자
+    String currency;
+
+
+    Timestamp createTimestamp;
 
 }
