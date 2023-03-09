@@ -138,7 +138,7 @@ public class TransactionService {
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
-                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
+                    .transactionDate(t.getCreateTimestamp().toLocalDateTime())
                     .build();
 
             studentTransactionDatas.add(transaction);
@@ -205,7 +205,7 @@ public class TransactionService {
 
             ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
                     .transactionId(t.getId())
-                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
+                    .transactionDate(t.getCreateTimestamp().toLocalDateTime())
                     .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
@@ -302,17 +302,19 @@ public class TransactionService {
         errorService.unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
 
         //2. 학생 계좌 잔고를 수정한다
-        updateTransferStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
+        int studentMoney = updateTransferStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
 
 
         //3.국고 계좌에 돈을 추가함(plus)
-        updateTransferClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
+        int classMoney = updateTransferClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
 
         //4.transfer_data table에 데이터 추가
 
 
         TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
                 .money(transferMoneyRequestDto.getMoney())
+                .studentMoney(studentMoney)
+                .classMoney(classMoney)
                 .managerId(manager.getId())
                 .managerJobId(manager.getJobId())
                 .studentId(student.getId())
@@ -353,18 +355,20 @@ public class TransactionService {
         errorService.unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
 
         //2. 국고 잔고를 수정한다
-        updatePayClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
+        int classMoney = updatePayClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
 
 
 
         //3.학생 계좌에 돈을 추가함(plus)
-        updatePayStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
+        int studentMoney = updatePayStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
 
         //4.transfer_data table에 데이터 추가
 
 
         TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
                 .money(transferMoneyRequestDto.getMoney())
+                .studentMoney(studentMoney)
+                .classMoney(classMoney)
                 .managerId(manager.getId())
                 .managerJobId(manager.getJobId()) //현재 가지고 있는 직업이 저장
                 .studentId(student.getId())
@@ -398,7 +402,7 @@ public class TransactionService {
 
     }
 
-    public void updateTransferStudentMoney(Long studentId, int transferMoney){
+    public int updateTransferStudentMoney(Long studentId, int transferMoney){
 
 
         Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
@@ -407,9 +411,11 @@ public class TransactionService {
         Student updateStudent = student.updateMoney(student.getMoney() - transferMoney); //보유금액 - 출금금액
 
         studentRepository.save(updateStudent);
+
+        return updateStudent.getMoney();
     }
 
-    public void updateTransferClassMoney(Long classId, int transferMoney){
+    public int updateTransferClassMoney(Long classId, int transferMoney){
 
         //속해있는 학급 구하기
         Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
@@ -419,10 +425,12 @@ public class TransactionService {
 
         classRepository.save(updateClass);
 
+        return updateClass.getMoney();
+
     }
 
 
-    public void updatePayClassMoney(Long classId, int transferMoney){
+    public int updatePayClassMoney(Long classId, int transferMoney){
 
 
         //속해있는 학급 구하기
@@ -433,9 +441,11 @@ public class TransactionService {
 
         classRepository.save(updateClass);
 
+        return updateClass.getMoney();
+
     }
 
-    public void updatePayStudentMoney(Long studentId, int transferMoney){
+    public int updatePayStudentMoney(Long studentId, int transferMoney){
 
 
         Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
@@ -444,6 +454,8 @@ public class TransactionService {
         Student updateStudent = student.updateMoney(student.getMoney() + transferMoney); //보유금액 + 출금금액
 
         studentRepository.save(updateStudent);
+
+        return updateStudent.getMoney();
     }
 
 

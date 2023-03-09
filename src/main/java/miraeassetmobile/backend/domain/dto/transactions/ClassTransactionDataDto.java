@@ -6,6 +6,7 @@ import lombok.Getter;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -14,8 +15,8 @@ public class ClassTransactionDataDto {
     Long transactionId; //거래 아이디
 
     //거래일
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd", timezone = "Asia/Seoul")
-    private LocalDate transactionDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY.MM.dd HH:mm", timezone = "Asia/Seoul")
+    private LocalDateTime transactionDate;
 
     String category; //카테고리
 
@@ -26,6 +27,8 @@ public class ClassTransactionDataDto {
     int transactionMoney; //거래금액
 
 
+    int classMoney; //거래 후 잔고
+
     //담당자 와 입금자
 
     StudentJobDto manager; //거래 담당자
@@ -35,3 +38,4 @@ public class ClassTransactionDataDto {
 
 
 }
+
