@@ -245,6 +245,7 @@ public class AuthService {
                 .accessToken(tokenDto.getAccessToken())
                 .grantType(tokenDto.getGrantType())
                 .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
+                .refreshToken(tokenDto.getRefreshToken())
                 .build();
 
 
@@ -343,6 +344,63 @@ public class AuthService {
                 LogoutAccessToken.of(accessToken, userId, remainAccessTokenExpiration));
     }
 
+
+    @Transactional
+    public AccessTokenInfo reissue(HttpServletRequest request, String refreshToken) {
+
+        // 1. Refresh token 검증
+        if (!tokenProvider.validateToken(refreshToken)) {
+            throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
+        }
+
+        // 2. Request Header 에서 access toke 추출
+        String accessToken = tokenProvider.resolveToken(request);
+
+
+        // 3. Access Token이 만료된 경우 동일 유저의 정보로 새로운 authentication 생성
+        Authentication authentication = tokenProvider.getAuthentication(
+                accessToken);
+
+        // 4. redis에서 userId를(id) 기반으로 Refresh Token 값 가져오기
+        RefreshToken storedRefreshToken = refreshTokenRedisRepository.findById(
+                        authentication.getName())
+                .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
+
+        // 4. Refresh Token 일치 여부 검사 (프론트에서 보유한 refresh토큰과 레디스에 저장해둔 정보가 일치하는가)
+        if (!storedRefreshToken.getRefreshToken().equals(refreshToken)) {
+            throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
+        }
+
+        // 5. 새로운 토큰 생성
+        TokenDto tokenDto = tokenProvider.generateToken(authentication);
+
+
+        //6. redis에 존재하는 refreshToken 삭제
+        refreshTokenRedisRepository.deleteById(authentication.getName());
+
+
+        //7. 새로운 refresh토큰으로 다시저장
+        RefreshToken updatedRefreshToken = RefreshToken.builder()
+                .id(authentication.getName()) //어느 유저의 리프레시 토큰인가
+                .refreshToken(tokenDto.getRefreshToken())//새로 생성된 리프래시 토큰
+                .expiration(tokenProvider.getRefreshTokenRemainExpiration())//만료시간
+                .build();
+
+
+
+        // 5. redis에 토큰 저장
+        refreshTokenRedisRepository.save(updatedRefreshToken);
+
+
+        // 새로운 토큰 정보를 이용해
+        return AccessTokenInfo.builder()
+                .grantType(tokenDto.getGrantType())
+                .accessToken(tokenDto.getAccessToken())
+                .refreshToken(tokenDto.getRefreshToken())
+                .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
+                .build();
+
+    }
 
 
     public Long getUserIdFromAccessToken(String accessToken){

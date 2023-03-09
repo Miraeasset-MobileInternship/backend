@@ -36,6 +36,7 @@ public enum ErrorCode {
     NOT_EXIST_CLASS(HttpStatus.NOT_FOUND,"존재하지 않는 학급입니다."),
     NOT_EXIST_JOB(HttpStatus.NOT_FOUND,"존재하지 않는 직업입니다."),
     NOT_EXIST_STUDENT(HttpStatus.NOT_FOUND,"존재하지 않는 학생입니다."),
+    NOT_EXSIT_USER(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
 
 
 

@@ -50,6 +50,12 @@ public class AuthController {
     }
 
 
+    @PostMapping(value = "/reissue")
+    @Operation(description = "accessToken이 만료되어 401 에러를 받은 경우, 보유한 리프레스 토큰으로 갱신 요청")
+    public ResponseEntity reissue(HttpServletRequest request,
+                                            @RequestHeader String refreshToken) {
+        return ResponseEntity.ok(authService.reissue(request, refreshToken));
+    }
 
 
 }
