@@ -17,5 +17,7 @@ public class AccessTokenInfo {
 
     private Long accessTokenExpiresIn;
 
+    private String refreshToken;
+
 
 }
