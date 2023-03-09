@@ -8,7 +8,7 @@ import lombok.Getter;
 public class StudentJobDto {
 
     //학생의 pk
-    Long id;
+    Long studentId;
 
     //학생의 번호
     int number;

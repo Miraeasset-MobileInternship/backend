@@ -4,10 +4,7 @@ import static miraeassetmobile.backend.error.exception.ErrorCode.SERVER_ERROR;
 
 import lombok.extern.slf4j.Slf4j;
 
-import miraeassetmobile.backend.error.exception.AlreadyExistException;
-import miraeassetmobile.backend.error.exception.ExternalErrorException;
-import miraeassetmobile.backend.error.exception.NotExistException;
-import miraeassetmobile.backend.error.exception.UnavailableException;
+import miraeassetmobile.backend.error.exception.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -32,23 +29,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {AlreadyExistException.class })
     public ResponseEntity<ErrorResponse> handleAlreadyExistException(AlreadyExistException ue) {
-        log.error("handleNotExistException throw Exception : {}", ue.getErrorCode());
+        log.error("handleAlreadyExistException throw Exception : {}", ue.getErrorCode());
         return ErrorResponse.toResponseEntity(ue.getErrorCode());
     }
 
 
     @ExceptionHandler(value = {ExternalErrorException.class })
     public ResponseEntity<ErrorResponse> handleExternalErrorException(ExternalErrorException ue) {
-        log.error("handleNotExistException throw Exception : {}", ue.getErrorCode());
+        log.error("handleExternalErrorException throw Exception : {}", ue.getErrorCode());
         return ErrorResponse.toResponseEntity(ue.getErrorCode());
     }
 
 
-
-    @ExceptionHandler(value = { Exception.class })
-    public ResponseEntity<ErrorResponse> handleException() {
-        log.error("Exception throw Exception : {}", SERVER_ERROR.getDetail());
-        return ErrorResponse.toResponseEntity(SERVER_ERROR);
+    @ExceptionHandler(value = {CustomLoginException.class })
+    public ResponseEntity<ErrorResponse> handleCustomLoginException(CustomLoginException ue) {
+        log.error("handleExternalErrorException throw Exception : {}", ue.getErrorCode());
+        return ErrorResponse.toResponseEntity(ue.getErrorCode());
     }
+
+
+//    @ExceptionHandler(value = { Exception.class })
+//    public ResponseEntity<ErrorResponse> handleException() {
+//        log.error("Exception throw Exception : {}", SERVER_ERROR.getDetail());
+//        return ErrorResponse.toResponseEntity(SERVER_ERROR);
+//    }
 
 }

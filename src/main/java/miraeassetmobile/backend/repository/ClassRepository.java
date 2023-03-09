@@ -3,6 +3,7 @@ package miraeassetmobile.backend.repository;
 import miraeassetmobile.backend.domain.entity.Classes;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ClassRepository extends JpaRepository<Classes,Long> {
@@ -12,5 +13,7 @@ public interface ClassRepository extends JpaRepository<Classes,Long> {
     Optional<Classes> findById(Long id);
 
     int countById(Long id);
+
+    List<Classes> findByTeacherId(Long teacherId);
 
 }

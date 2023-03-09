@@ -6,7 +6,6 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Getter
 @Builder
@@ -27,9 +26,6 @@ public class StudentTransactionDataDto {
     int transactionMoney; //거래금액
 
     int studentMoney; //거래 후 잔고
-
-
-
 
 
 
