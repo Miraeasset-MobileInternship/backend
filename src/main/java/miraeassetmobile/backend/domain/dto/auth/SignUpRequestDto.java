@@ -1,30 +1,30 @@
 package miraeassetmobile.backend.domain.dto.auth;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import miraeassetmobile.backend.domain.entity.UserInfo;
-import reactor.util.annotation.Nullable;
 
 @Getter
 @Builder
-@Setter
 public class SignUpRequestDto {
 
-    private String phoneNumber;
+    private String phoneNum;
 
     private String userName;
 
+    private String userRole;
 
-    private String userRole; //선생님인지 학생인지
 
+    public UserInfo toUser(String phoneNum, String userName, String userRole){
 
-    public UserInfo toUser(String phoneNumber, String userName, String userRole){
         return UserInfo.builder()
-                .name(userName)
-                .phoneNum(phoneNumber)
-                .role(userRole)
+                .userName(userName)
+                .userRole(userRole)
+                .phoneNum(phoneNum)
                 .build();
     }
-
 
 
 }
