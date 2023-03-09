@@ -13,6 +13,9 @@ public enum ErrorCode {
     FORBBIDEN_USER(HttpStatus.FORBIDDEN, "서비스를 사용할 수 없는 사용자입니다."),
     UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "유효하지 않은 사용자 입니다."),
 
+    //로그인 중 가입안된 사람이라 가입 처리 요청시
+    SIGN_UP_REQUIRED(HttpStatus.SEE_OTHER, "회원가입이 필요한 사용자 입니다. 회원가입 창으로 넘어가 진행 후 다시 로그인을 시도해주세요."),
+
 
 
 
@@ -59,6 +62,8 @@ public enum ErrorCode {
     private final HttpStatus httpStatus;
 
     private final String detail;
+
+
 
 
 }
