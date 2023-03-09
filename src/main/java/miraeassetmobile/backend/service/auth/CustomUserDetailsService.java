@@ -1,0 +1,53 @@
+package miraeassetmobile.backend.service.auth;
+
+import lombok.RequiredArgsConstructor;
+
+import miraeassetmobile.backend.domain.entity.UserInfo;
+import miraeassetmobile.backend.repository.UserInfoRepository;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
+
+
+/*
+    Repository를 통해 database로부터 필요한 user 정보를 가져오는 service
+*/
+@Service
+@RequiredArgsConstructor
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserInfoRepository userInfoRepository;
+
+    @Override
+//    @Cacheable(value = CacheKey.USER, key = "#phoneNum", unless = "#result == null")
+    public UserDetails loadUserByUsername(String phoneNum) throws UsernameNotFoundException {
+
+        System.out.println("loadbyuser1");
+
+        UserInfo isExist = userInfoRepository.findByPhoneNum(phoneNum).orElseThrow( () ->
+                new UsernameNotFoundException("유저를 찾을 수 없습니다. 이메일을 다시 확인해주세요."));
+
+        System.out.println("loadbyuser2");
+
+        System.out.println(isExist.getId());
+        System.out.println(isExist.getUserName());
+        System.out.println(isExist.getPhoneNum());
+
+//        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+//        grantedAuthorities.add(new SimpleGrantedAuthority("USER"));
+
+        return User.builder()
+                .username(String.valueOf(isExist.getId()))
+                .password("")
+                .roles(isExist.getUserRole())
+//                .authorities(grantedAuthorities)
+                .build();
+    }
+}
