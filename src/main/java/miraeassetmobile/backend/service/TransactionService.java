@@ -138,9 +138,7 @@ public class TransactionService {
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
-                    .transactionDate(t.getCreateTimestamp().toLocalDateTime())
-                    .studentMoney(t.getStudentMoney())
-
+                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
                     .build();
 
             studentTransactionDatas.add(transaction);
@@ -207,12 +205,11 @@ public class TransactionService {
 
             ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
                     .transactionId(t.getId())
-                    .transactionDate(t.getCreateTimestamp().toLocalDateTime())
+                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
                     .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
-                    .classMoney(t.getClassMoney())
                     .manager(managerDto)
                     .student(studentDto)
                     .build();

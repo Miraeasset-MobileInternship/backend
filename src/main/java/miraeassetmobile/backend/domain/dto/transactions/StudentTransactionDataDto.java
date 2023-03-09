@@ -14,8 +14,8 @@ public class StudentTransactionDataDto {
     Long transactionId; //거래 아이디
 
     //거래일
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY.MM.dd HH:mm", timezone = "Asia/Seoul")
-    private LocalDateTime transactionDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY.MM.dd", timezone = "Asia/Seoul")
+    private LocalDate transactionDate;
 
     String category; //카테고리
 
@@ -25,7 +25,6 @@ public class StudentTransactionDataDto {
 
     int transactionMoney; //거래금액
 
-    int studentMoney; //거래 후 잔고
 
 
 
