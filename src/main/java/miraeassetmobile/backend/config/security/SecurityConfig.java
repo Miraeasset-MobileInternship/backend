@@ -32,6 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/swagger-ui/**",
             "/webjars/**",
             "/api/auth/**",
+            "/api/**",//개발단계 편의를 위해 임시 추가
     };
 
     @Bean
