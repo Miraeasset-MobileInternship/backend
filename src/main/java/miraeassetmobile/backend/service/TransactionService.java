@@ -2,6 +2,7 @@ package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.students.StudentInfoDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
+import miraeassetmobile.backend.domain.dto.students.StudentMoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.domain.enums.TransactionFromTypes;
@@ -18,6 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.*;
@@ -597,6 +603,79 @@ public class TransactionService {
                 .leftMoney(t.getClassMoney()) //학급기준 거래잔금임
                 .build();
 
+
+    }
+
+
+
+
+    public StudentMoneyChangeResponseDto getStudentChangedMoney(Long studentId){
+
+        //학생
+        Student s = studentRepository.findById(studentId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+
+
+        int currentMoney = s.getMoney();
+
+
+
+
+
+        /*
+        학생 거래 조회
+        오늘을 제외한 거래 중에 가장 최근 거래(1개) 를 조회
+        거래가 존재하지 않는다면 ERROR 말고 프론트에서 요청한 값으로 커스텀해서 보내기
+
+         */
+        TransactionData t = transactionDataRepository.findLastTransaction(studentId).orElse(TransactionData.builder().money(-1).build());
+
+        ///
+        if(t.getMoney() == -1){
+            return StudentMoneyChangeResponseDto.builder()
+                    .isPlus(true)
+                    .changeMoney(0)
+                    .lastDay(-1)
+                    .build();
+        }
+
+
+        int lastMoney = t.getStudentMoney();
+
+        //마지막 거래일
+        LocalDate lastdate = t.getCreateTimestamp().toLocalDateTime().toLocalDate();
+        LocalDate today = LocalDate.now();
+
+        //LocalDate차이를 일자로 계산하기
+        long days = ChronoUnit.DAYS.between(lastdate,today);
+
+        if(lastMoney<=currentMoney){
+
+            return StudentMoneyChangeResponseDto.builder()
+                    .isPlus(true)
+                    .changeMoney(currentMoney-lastMoney)
+                    .lastDay(days)
+                    .build();
+
+        }else{
+
+            return StudentMoneyChangeResponseDto.builder()
+                    .isPlus(false)
+                    .changeMoney(lastMoney-currentMoney)
+                    .lastDay(days)
+                    .build();
+
+        }
+
+
+    }
+
+
+    public TransactionData returnNoData(){
+
+        return TransactionData
+                .builder()
+                .money(-1)
+                .build();
 
     }
 
