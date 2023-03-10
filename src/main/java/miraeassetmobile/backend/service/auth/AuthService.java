@@ -2,18 +2,19 @@ package miraeassetmobile.backend.service.auth;
 
 import miraeassetmobile.backend.config.security.jwt.TokenProvider;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.sms.PhoneNumberCode;
+import miraeassetmobile.backend.domain.dto.auth.sms.SmsAuthUtil;
 import miraeassetmobile.backend.domain.dto.auth.token.LogoutAccessToken;
 import miraeassetmobile.backend.domain.dto.auth.token.RefreshToken;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
+import miraeassetmobile.backend.domain.dto.users.UserNameResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.domain.enums.UserTypes;
-import miraeassetmobile.backend.error.exception.CustomLoginException;
-import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.*;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
@@ -25,8 +26,13 @@ import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
 import miraeassetmobile.backend.domain.dto.auth.UserOnboardInfo;
 
 import miraeassetmobile.backend.repository.redis.LogoutAccessTokenRedisRepository;
+import miraeassetmobile.backend.repository.redis.PhoneNumberCodeRedisRepository;
 import miraeassetmobile.backend.repository.redis.RefreshTokenRedisRepository;
 import miraeassetmobile.backend.service.ErrorService;
+import net.nurigo.java_sdk.api.Message;
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
+
+import org.json.simple.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,7 +43,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -56,9 +64,11 @@ public class AuthService {
 
     RefreshTokenRedisRepository refreshTokenRedisRepository;
     LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository;
+    SmsAuthUtil smsAuthUtil;
+    PhoneNumberCodeRedisRepository phoneNumberCodeRedisRepository;
 
 
-    AuthService(LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
+    AuthService(PhoneNumberCodeRedisRepository phoneNumberCodeRedisRepository, SmsAuthUtil smsAuthUtil, LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
         this.userInfoRepository =userInfoRepository;
         this.errorService=errorService;
         this.classRepository=classRepository;
@@ -67,8 +77,17 @@ public class AuthService {
         this.authenticationManagerBuilder=authenticationManagerBuilder;
         this.refreshTokenRedisRepository = refreshTokenRedisRepository;
         this.logoutAccessTokenRedisRepository =logoutAccessTokenRedisRepository;
+        this.smsAuthUtil=smsAuthUtil;
+        this.phoneNumberCodeRedisRepository = phoneNumberCodeRedisRepository;
     }
 
+
+    public UserNameResponseDto getUserName(Long userId){
+
+        UserInfo user = userInfoRepository.findById(userId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
+        return UserNameResponseDto.builder().userName(user.getUserName()).build();
+    }
 
 
     public UserInfo getUser(Long userId){
@@ -88,6 +107,16 @@ public class AuthService {
     //2가지 리턴 경우의 수가 존재함..
     @Transactional
     public SignInResponseDto getStart(SignInRequestDto signInRequestDto){
+
+
+        //1. 핸드폰 번호 유효성 인증 (코드가 맞는지 체크)
+        checkValidCode(signInRequestDto.getPhoneNum(),signInRequestDto.getCode());
+
+
+
+        //2. 유효한 핸드폰 번호 인경우
+
+        //1) 미가입자 오류
 //        가입안된 유저임 -> 303 SEE OTHER return
         if(!userInfoRepository.existsByPhoneNum(signInRequestDto.getPhoneNum())){
             //핸드폰 번호 포함-가입을 다시 진행하라는 의미
@@ -95,7 +124,7 @@ public class AuthService {
         }
 
 
-        //가입된 유저인 경우(로그인)
+        //2) 가입된 유저인 경우(로그인)
         TokenDto t = login(signInRequestDto.getPhoneNum()); //이건잘딤
 
         return createSignInInfo(t);
@@ -415,6 +444,94 @@ public class AuthService {
 
 
         return Long.parseLong(userId);
+
+    }
+
+
+
+    //문자전송
+    public void sendMessage(String toNumber) {
+
+        Message coolsms = new Message(smsAuthUtil.getApiKey(), smsAuthUtil.getApiSecret());
+
+        String code = createCode();
+
+
+        //redis에 3분 유효기간으로 저장
+        phoneNumberCodeRedisRepository.save(PhoneNumberCode.builder()
+                .id(toNumber)
+                .code(code)
+                .expiration(smsAuthUtil.getExpiration())
+                .build());
+
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("to", toNumber);
+        params.put("from", smsAuthUtil.getFromNumber());
+        params.put("type", "SMS");
+        params.put("text", "[MiraeAsset:BANKlass]\n인증번호 ["+ code +"]를 입력하세요.\n인증번호는 3분 동안만 유효합니다.");
+        params.put("app_version", "test app 1.0"); // application name and version
+
+        try {
+
+            JSONObject obj = (JSONObject) coolsms.send(params);
+
+            //정상적으로 작동했으나 에러인 경우들이 있다
+            // https://docs.coolsms.co.kr/api-reference/message-status-codes
+            // error_count가 0개가 아니면 에러로 반환해야함
+
+            String result = obj.get("error_count").toString();
+
+            if(!result.equals("0")){
+                throw new ExternalErrorException(ErrorCode.MESSAGE_SERVER_ERROR);
+            }
+
+            System.out.println(obj.toString());
+
+
+        } catch (CoolsmsException e) {
+            System.out.println(e.getMessage());
+            System.out.println(e.getCode());
+            throw new ExternalErrorException(ErrorCode.MESSAGE_SERVER_ERROR);
+        }
+    }
+
+
+
+
+    //6자리 랜덤 암호 만들기
+    public String createCode(){
+
+        // 숫자만으로 랜덤번호 생성
+        String numList = "0123456789";
+        int alphaNumLength = numList.length();
+
+        Random random = new Random();
+
+        StringBuffer code = new StringBuffer();
+        for (int i = 0; i < 6; i++) { //6자리암호
+            code.append(numList.charAt(random.nextInt(alphaNumLength)));
+        }
+
+        return code.toString();
+
+    }
+
+
+
+    //6자리 코드가 맞는지 검사하기
+    public boolean checkValidCode(String phoneNumber, String code){
+
+        // redis에서 번호를 이용해 가져오기
+        PhoneNumberCode phoneNumberCode = phoneNumberCodeRedisRepository.findById(phoneNumber)
+                .orElseThrow(() -> new UnavailableException(ErrorCode.UNVALID_CODE));
+
+        // code 일치 여부 검사 (프론트에서 보유한 refresh토큰과 레디스에 저장해둔 정보가 일치하는가)
+        if (!phoneNumberCode.getCode().equals(code)) {
+            throw new UnavailableException(ErrorCode.INCORRECT_CODE);
+        }
+
+        return true;
 
     }
 

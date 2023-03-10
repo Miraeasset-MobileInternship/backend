@@ -65,6 +65,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-test'
 
+
+
+	//sms 문자인증 - coolsms
+	compileOnly group: 'net.nurigo', name: 'javaSDK', version: '2.2'
+
+
 }
 
 tasks.named('test') {

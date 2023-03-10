@@ -13,4 +13,6 @@ public class SignInRequestDto {
 
     private String phoneNum;
 
+    private String code;
+
 }

@@ -5,6 +5,11 @@ api:
 jwt:
   key: "jwt 암호화 key : https://8gwifi.org/jwsgen.jsp 직접 생성가능(Shared secret) "
 
+coolsms:
+  api-key: "api key"
+  api-secret: "secret key"
+  from-number: "from number"
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
