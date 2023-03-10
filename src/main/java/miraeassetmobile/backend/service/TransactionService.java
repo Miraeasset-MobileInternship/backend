@@ -249,7 +249,7 @@ public class TransactionService {
 
 
 
-    public List<TransactionCategoryDto> getCategoryList(String type){
+    public TransactionCategoryListResonseDto getCategoryList(String type){
 
 
 
@@ -274,7 +274,9 @@ public class TransactionService {
 
         }
 
-        return result;
+        return TransactionCategoryListResonseDto.builder()
+                .categoryList(result)
+                .build();
     }
 
 
