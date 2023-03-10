@@ -473,8 +473,22 @@ public class AuthService {
         params.put("app_version", "test app 1.0"); // application name and version
 
         try {
+
             JSONObject obj = (JSONObject) coolsms.send(params);
+
+            //정상적으로 작동했으나 에러인 경우들이 있다
+            // https://docs.coolsms.co.kr/api-reference/message-status-codes
+            // error_count가 0개가 아니면 에러로 반환해야함
+
+            String result = obj.get("error_count").toString();
+
+            if(!result.equals("0")){
+                throw new ExternalErrorException(ErrorCode.MESSAGE_SERVER_ERROR);
+            }
+
             System.out.println(obj.toString());
+
+
         } catch (CoolsmsException e) {
             System.out.println(e.getMessage());
             System.out.println(e.getCode());

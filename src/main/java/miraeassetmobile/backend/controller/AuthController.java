@@ -71,8 +71,8 @@ public class AuthController {
 
     // coolSMS 구현 로직 연결
     @PostMapping("/sendSMS")
-    public ResponseEntity sendSMS(@RequestParam(value="phone_number") String phoneNumeber) throws CoolsmsException {
-        authService.sendMessage(phoneNumeber);
+    public ResponseEntity sendSMS(@RequestParam(value="phone_number") String phoneNumber) throws CoolsmsException {
+        authService.sendMessage(phoneNumber);
         return ResponseEntity.ok().build();
     }
 
