@@ -65,12 +65,18 @@ public class AuthController {
         return ResponseEntity.ok(authService.reissue(request, refreshToken));
     }
 
-    // coolSMS 구현 로직 연결
 
-    @PostMapping("/check/sendSMS")
-    public ResponseEntity sendSMS(@RequestParam(value="to") String to) throws CoolsmsException {
-        authService.sendMessage(to);
+
+
+
+    // coolSMS 구현 로직 연결
+    @PostMapping("/sendSMS")
+    public ResponseEntity sendSMS(@RequestParam(value="phone_number") String phoneNumeber) throws CoolsmsException {
+        authService.sendMessage(phoneNumeber);
         return ResponseEntity.ok().build();
     }
+
+
+
 
 }

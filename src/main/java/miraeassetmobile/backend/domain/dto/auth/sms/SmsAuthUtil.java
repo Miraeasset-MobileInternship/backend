@@ -19,4 +19,7 @@ public class SmsAuthUtil {
     @Value("${coolsms.from-number}")
     private String fromNumber;
 
+
+    private long expiration = 1000 * 60 * 3;
+
 }
