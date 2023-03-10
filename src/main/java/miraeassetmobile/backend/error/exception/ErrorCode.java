@@ -23,6 +23,8 @@ public enum ErrorCode {
     //SMS인증 관련
     MESSAGE_SERVER_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
 
+    UNVALID_CODE(HttpStatus.UNAUTHORIZED, "올바르지 않은 인증번호 입니다."),
+    INCORRECT_CODE(HttpStatus.UNAUTHORIZED, "올바르지 않거나 만료된 인증번호입니다. 다시 시도해주세요."),
 
 
     //권한이 없는 요청의 경우 (403경우)
