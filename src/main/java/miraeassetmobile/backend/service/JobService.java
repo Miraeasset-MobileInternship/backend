@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.service;
 
+import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
@@ -132,7 +133,7 @@ public class JobService {
 
 
     //특정 학급의 아이들의 전체 직업과 정보를 넘김
-    public List<StudentJobDto> getAllStduentJobList(Long classId){
+    public CurrenClassStudentJobResponseDto getAllStudentJobList(Long classId){
 
         //존재하는 학급인지
         errorService.isExistClass(classId);
@@ -159,7 +160,9 @@ public class JobService {
 
         }
 
-        return studentJobs;
+        return CurrenClassStudentJobResponseDto.builder()
+                .studentJobList(studentJobs)
+                .build();
 
     }
 

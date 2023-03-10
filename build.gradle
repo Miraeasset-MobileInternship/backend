@@ -42,7 +42,8 @@ dependencies {
 	//json Parsing
 //	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 //	compileOnly 'com.google.code.gson:gson:2.8.2'
-	implementation group: 'org.json', name: 'json', version: '20201115'
+	implementation group: 'org.json', name: 'json', version: '20201115' // 국가 인증 api parsing에 활용
+	implementation 'net.sf.json-lib:json-lib:2.4:jdk15' //json-lib : list to json
 
 
 	//redis

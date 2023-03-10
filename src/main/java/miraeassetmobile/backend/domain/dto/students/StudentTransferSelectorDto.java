@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class StudentTransferSelectorResponseDto {
+public class StudentTransferSelectorDto {
     /*
     학생 계좌 출금/입금 시
 
