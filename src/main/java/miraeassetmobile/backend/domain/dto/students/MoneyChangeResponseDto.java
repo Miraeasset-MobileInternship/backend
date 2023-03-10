@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class StudentMoneyChangeResponseDto {
+public class MoneyChangeResponseDto {
 
 
     boolean isPlus; //+인지 -인지
