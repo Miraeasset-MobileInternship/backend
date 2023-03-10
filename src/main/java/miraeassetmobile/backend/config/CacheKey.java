@@ -9,4 +9,6 @@ public class CacheKey {
     public static final String USER = "user";
     public static final String RefreshToken = "RefreshToken";
     public static final String LogoutAccessToken = "LogoutAccessToken";
+
+    public static final String PhoneNumberCode = "PhoneNumberCode";
 }
