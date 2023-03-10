@@ -4,12 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
+import miraeassetmobile.backend.domain.dto.students.MoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentSelectorListResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorDto;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
 
+import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,11 +28,13 @@ public class ClassController {
     StudentService studentService;
 
     ClassService classService;
+    TransactionService transactionService;
 
-    public ClassController(ClassService classService, JobService jobService, StudentService studentService){
+    public ClassController(TransactionService transactionService,ClassService classService, JobService jobService, StudentService studentService){
         this.jobService =jobService;
         this.studentService =studentService;
         this.classService = classService;
+        this.transactionService = transactionService;
     }
 
 
@@ -63,6 +67,14 @@ public class ClassController {
     @Operation(description = "현 학급의 국고 상태 정보 제공 , 국고 페이지 - 국가명, 잔고, 국가화폐 단위")
     public ResponseEntity<ClassAccountResponseDto> getClassAccountInfo(@PathVariable(value = "class_id") Long classId){
         return ResponseEntity.ok(classService.getClassAccountInfo(classId));
+    }
+
+
+    //이전날 대비 변동가격
+    @GetMapping("/{class_id}/change")
+    @Operation(description = "국고의 계좌금액 : 전날대비 변동가격 - 국과 화면 국고 계좌")
+    public ResponseEntity<MoneyChangeResponseDto> getClassChangeMoney(@PathVariable(value = "class_id") Long classId){
+        return ResponseEntity.ok(transactionService.getClassChangedMoney(classId));
     }
 
 

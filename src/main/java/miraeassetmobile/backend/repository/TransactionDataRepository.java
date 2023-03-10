@@ -27,6 +27,8 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
     @Query(value = "SELECT * FROM transaction_data WHERE student_id=:studentId AND DATE(create_timestamp) < DATE(NOW()) ORDER BY create_timestamp DESC LIMIT 1", nativeQuery = true)
     Optional<TransactionData> findLastTransaction(Long studentId);
 
+    @Query(value = "SELECT * FROM transaction_data WHERE class_id=:classId AND DATE(create_timestamp) < DATE(NOW()) ORDER BY create_timestamp DESC LIMIT 1", nativeQuery = true)
+    Optional<TransactionData> findLastTransactionClass(Long classId);
 
 
     int countByStudentId(Long studentId);

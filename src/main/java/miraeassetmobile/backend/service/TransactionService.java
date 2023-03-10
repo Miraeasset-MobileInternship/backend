@@ -2,12 +2,11 @@ package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.students.StudentInfoDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
-import miraeassetmobile.backend.domain.dto.students.StudentMoneyChangeResponseDto;
+import miraeassetmobile.backend.domain.dto.students.MoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.domain.enums.TransactionFromTypes;
 import miraeassetmobile.backend.domain.enums.UriTypes;
-import miraeassetmobile.backend.domain.enums.UserTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.*;
@@ -19,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -609,7 +605,7 @@ public class TransactionService {
 
 
 
-    public StudentMoneyChangeResponseDto getStudentChangedMoney(Long studentId){
+    public MoneyChangeResponseDto getStudentChangedMoney(Long studentId){
 
         //학생
         Student s = studentRepository.findById(studentId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
@@ -631,7 +627,7 @@ public class TransactionService {
 
         ///
         if(t.getMoney() == -1){
-            return StudentMoneyChangeResponseDto.builder()
+            return MoneyChangeResponseDto.builder()
                     .isPlus(true)
                     .changeMoney(0)
                     .lastDay(-1)
@@ -650,7 +646,7 @@ public class TransactionService {
 
         if(lastMoney<=currentMoney){
 
-            return StudentMoneyChangeResponseDto.builder()
+            return MoneyChangeResponseDto.builder()
                     .isPlus(true)
                     .changeMoney(currentMoney-lastMoney)
                     .lastDay(days)
@@ -658,7 +654,7 @@ public class TransactionService {
 
         }else{
 
-            return StudentMoneyChangeResponseDto.builder()
+            return MoneyChangeResponseDto.builder()
                     .isPlus(false)
                     .changeMoney(lastMoney-currentMoney)
                     .lastDay(days)
@@ -668,6 +664,70 @@ public class TransactionService {
 
 
     }
+
+
+
+    public MoneyChangeResponseDto getClassChangedMoney(Long classId){
+
+        //학급 구하기
+        Classes c = classRepository.findById(classId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+
+        //현 국고 잔고
+        int currentMoney = c.getMoney();
+
+
+
+
+
+        /*
+        학급 거래 조회
+        오늘을 제외한 거래 중에 가장 최근 거래(1개) 를 조회
+        거래가 존재하지 않는다면 ERROR 말고 프론트에서 요청한 값으로 커스텀해서 보내기
+
+         */
+        TransactionData t = transactionDataRepository.findLastTransactionClass(classId).orElse(TransactionData.builder().money(-1).build());
+
+        ///
+        if(t.getMoney() == -1){
+            return MoneyChangeResponseDto.builder()
+                    .isPlus(true)
+                    .changeMoney(0)
+                    .lastDay(-1)
+                    .build();
+        }
+
+
+        int lastMoney = t.getStudentMoney();
+
+        //마지막 거래일
+        LocalDate lastdate = t.getCreateTimestamp().toLocalDateTime().toLocalDate();
+        LocalDate today = LocalDate.now();
+
+        //LocalDate차이를 일자로 계산하기
+        long days = ChronoUnit.DAYS.between(lastdate,today);
+
+        if(lastMoney<=currentMoney){
+
+            return MoneyChangeResponseDto.builder()
+                    .isPlus(true)
+                    .changeMoney(currentMoney-lastMoney)
+                    .lastDay(days)
+                    .build();
+
+        }else{
+
+            return MoneyChangeResponseDto.builder()
+                    .isPlus(false)
+                    .changeMoney(lastMoney-currentMoney)
+                    .lastDay(days)
+                    .build();
+
+        }
+
+
+    }
+
+
 
 
     public TransactionData returnNoData(){
