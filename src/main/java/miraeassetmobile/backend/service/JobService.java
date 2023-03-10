@@ -1,5 +1,7 @@
 package miraeassetmobile.backend.service;
 
+import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
+import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
@@ -14,12 +16,16 @@ import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
 
+import net.sf.json.JSONObject;
+import org.json.JSONArray;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -44,7 +50,7 @@ public class JobService {
     /*
     공통직업(classId=1로 등록)을 포함한 직업을 page에 따라 10개씩 반환하는 함수
      */
-    public List<JobDto> getJobListByClass(Long classId){
+    public ClassJobListResponseDto getJobListByClass(Long classId){
 
         //존재하는 학급인지
         errorService.isExistClass(classId);
@@ -73,7 +79,13 @@ public class JobService {
             }
 
 
-            return jobLists;
+
+            return ClassJobListResponseDto.builder()
+                    .totalNum(jobLists.size())
+                    .jobs(jobLists)
+                    .build();
+
+
 
         }else{ //특정 학급의 직업을 조회한 경우
 
@@ -109,14 +121,19 @@ public class JobService {
 
 
 
-            return jobLists;
+            return ClassJobListResponseDto.builder()
+                    .totalNum(jobLists.size())
+                    .jobs(jobLists)
+                    .build();
+
+
         }
 
     }
 
 
     //특정 학급의 아이들의 전체 직업과 정보를 넘김
-    public List<StudentJobDto> getAllStduentJobList(Long classId){
+    public CurrenClassStudentJobResponseDto getAllStudentJobList(Long classId){
 
         //존재하는 학급인지
         errorService.isExistClass(classId);
@@ -143,7 +160,9 @@ public class JobService {
 
         }
 
-        return studentJobs;
+        return CurrenClassStudentJobResponseDto.builder()
+                .studentJobList(studentJobs)
+                .build();
 
     }
 

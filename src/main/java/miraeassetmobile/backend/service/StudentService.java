@@ -3,7 +3,8 @@ package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentSelectorListResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
@@ -84,7 +85,7 @@ public class StudentService {
     }
 
 
-    public List<StudentTransferSelectorResponseDto> getStudentSelectorList(Long classId){
+    public StudentSelectorListResponseDto getStudentSelectorList(Long classId){
 
         //존재하는 학급인가
         errorService.isExistClass(classId);
@@ -93,13 +94,13 @@ public class StudentService {
         List<Student> studentList = studentRepository.findByClassId(classId);
 
 
-        List<StudentTransferSelectorResponseDto> result = new ArrayList<>();
+        List<StudentTransferSelectorDto> result = new ArrayList<>();
 
         for (Student s: studentList) {
 
             UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
 
-            result.add(StudentTransferSelectorResponseDto.builder()
+            result.add(StudentTransferSelectorDto.builder()
                     .studentId(s.getId())
                     .studentNumber(s.getNumber())
                     .studentName(u.getUserName())
@@ -108,7 +109,9 @@ public class StudentService {
 
         }
 
-        return result;
+        return StudentSelectorListResponseDto.builder()
+                .studentSelectorList(result)
+                .build();
     }
 
 }
