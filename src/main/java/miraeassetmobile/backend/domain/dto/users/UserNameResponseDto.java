@@ -1,4 +1,4 @@
-package com.m.test.domain.dto.users;
+package miraeassetmobile.backend.domain.dto.users;
 
 import lombok.Builder;
 import lombok.Getter;
