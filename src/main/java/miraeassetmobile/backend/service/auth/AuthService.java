@@ -6,6 +6,7 @@ import miraeassetmobile.backend.domain.dto.auth.sms.SmsAuthUtil;
 import miraeassetmobile.backend.domain.dto.auth.token.LogoutAccessToken;
 import miraeassetmobile.backend.domain.dto.auth.token.RefreshToken;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
+import miraeassetmobile.backend.domain.dto.users.UserNameResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.UserInfo;
@@ -79,11 +80,11 @@ public class AuthService {
     }
 
 
-    public String getUserName(Long userId){
+    public UserNameResponseDto getUserName(Long userId){
 
         UserInfo user = userInfoRepository.findById(userId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
 
-        return user.getUserName();
+        return UserNameResponseDto.builder().userName(user.getUserName()).build();
     }
 
 

@@ -7,6 +7,7 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
+import miraeassetmobile.backend.domain.dto.users.UserNameResponseDto;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.service.auth.AuthService;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
@@ -29,7 +30,7 @@ public class AuthController {
 
     @GetMapping("/user/{user_id}/get-name")
     @Operation(description = "userId를 이용해 이름을 알아내는 API")
-    public ResponseEntity<String> getUserName(@PathVariable(value = "user_id") Long userId){
+    public ResponseEntity<UserNameResponseDto> getUserName(@PathVariable(value = "user_id") Long userId){
         return ResponseEntity.ok(authService.getUserName(userId));
     }
 
