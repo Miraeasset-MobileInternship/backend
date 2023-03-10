@@ -48,12 +48,19 @@ public class StudentService {
 
         Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
+        UserInfo teacher = userInfoRepository.findById(studentClass.getTeacherId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
 
         StudentAccountResponseDto accountInfo = StudentAccountResponseDto.builder()
                 .studentId(student.getId())
                 .money(student.getMoney())
                 .creditScore(student.getCreditScore())
                 .currency(studentClass.getCurrency())
+                .classGrade(studentClass.getGrade())
+                .classNumber(studentClass.getClassNum())
+                .schoolName(studentClass.getSchoolName())
+                .studentNumber(student.getNumber())
+                .teacherName(teacher.getUserName())
                 .build();
 
         return accountInfo;

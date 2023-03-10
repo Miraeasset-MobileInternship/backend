@@ -24,6 +24,9 @@ public class Classes extends BaseTimeEntity {
     @Column(name = "teacher_id")
     private Long teacherId;
 
+    @NotNull
+    @Column(name = "school_name")
+    private String schoolName;
 
     @NotNull
     @Column(length = 10)
@@ -53,12 +56,13 @@ public class Classes extends BaseTimeEntity {
 
     // default 제외 나머지
     @Builder
-    public Classes(Long teacherId, String title, int grade, int classNum, String currency){
+    public Classes(Long teacherId, String schoolName,String title, int grade, int classNum, String currency){
         this.teacherId = teacherId;
         this.title = title;
         this.grade=grade;
         this.classNum=classNum;
         this.currency=currency;
+        this.schoolName=schoolName;
     }
 
 

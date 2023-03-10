@@ -15,4 +15,13 @@ public class ClassAccountResponseDto {
 
     int classMoney;
 
+    String teacherName;
+
+    int classGrade;
+    int classNumber;
+
+    String schoolName;
+
+
+
 }
