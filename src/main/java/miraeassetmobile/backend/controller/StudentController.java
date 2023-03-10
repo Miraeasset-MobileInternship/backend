@@ -3,7 +3,7 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentMoneyChangeResponseDto;
+import miraeassetmobile.backend.domain.dto.students.MoneyChangeResponseDto;
 import miraeassetmobile.backend.service.StudentService;
 import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,7 @@ public class StudentController {
     //이전날 대비 변동가격
     @GetMapping("/{student_id}/change")
     @Operation(description = "학생의 계좌금액 : 전날대비 변동가격 - 직업 화면 학생 본인 계좌")
-    public ResponseEntity<StudentMoneyChangeResponseDto> getStudentChangeMoney(@PathVariable(value = "student_id") Long studentId){
+    public ResponseEntity<MoneyChangeResponseDto> getStudentChangeMoney(@PathVariable(value = "student_id") Long studentId){
         return ResponseEntity.ok(transactionService.getStudentChangedMoney(studentId));
     }
 
