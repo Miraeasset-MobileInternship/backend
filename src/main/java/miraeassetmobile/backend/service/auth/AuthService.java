@@ -79,6 +79,13 @@ public class AuthService {
     }
 
 
+    public String getUserName(Long userId){
+
+        UserInfo user = userInfoRepository.findById(userId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
+        return user.getUserName();
+    }
+
 
     public UserInfo getUser(Long userId){
 

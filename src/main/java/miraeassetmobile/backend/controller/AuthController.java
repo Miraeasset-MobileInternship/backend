@@ -27,6 +27,12 @@ public class AuthController {
     }
 
 
+    @GetMapping("/user/{user_id}/get-name")
+    @Operation(description = "userId를 이용해 이름을 알아내는 API")
+    public ResponseEntity<String> getUserName(@PathVariable(value = "user_id") Long userId){
+        return ResponseEntity.ok(authService.getUserName(userId));
+    }
+
 
     @PostMapping("/start-signin")
     @Operation(description = "시작하기/로그인 - 가입진행된 유저일 경우(바로 로그인됨), 가입안된 유저의 경우(303 : 가입진행창으로 넘어가게)")
