@@ -2,6 +2,7 @@ package miraeassetmobile.backend.service.auth;
 
 import miraeassetmobile.backend.config.security.jwt.TokenProvider;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.sms.SmsAuthUtil;
 import miraeassetmobile.backend.domain.dto.auth.token.LogoutAccessToken;
 import miraeassetmobile.backend.domain.dto.auth.token.RefreshToken;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
@@ -13,6 +14,7 @@ import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.domain.enums.UserTypes;
 import miraeassetmobile.backend.error.exception.CustomLoginException;
 import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ExternalErrorException;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
@@ -27,6 +29,10 @@ import miraeassetmobile.backend.domain.dto.auth.UserOnboardInfo;
 import miraeassetmobile.backend.repository.redis.LogoutAccessTokenRedisRepository;
 import miraeassetmobile.backend.repository.redis.RefreshTokenRedisRepository;
 import miraeassetmobile.backend.service.ErrorService;
+import net.nurigo.java_sdk.api.Message;
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
+
+import org.json.simple.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -56,9 +63,10 @@ public class AuthService {
 
     RefreshTokenRedisRepository refreshTokenRedisRepository;
     LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository;
+    SmsAuthUtil smsAuthUtil;
 
 
-    AuthService(LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
+    AuthService(SmsAuthUtil smsAuthUtil, LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
         this.userInfoRepository =userInfoRepository;
         this.errorService=errorService;
         this.classRepository=classRepository;
@@ -67,6 +75,7 @@ public class AuthService {
         this.authenticationManagerBuilder=authenticationManagerBuilder;
         this.refreshTokenRedisRepository = refreshTokenRedisRepository;
         this.logoutAccessTokenRedisRepository =logoutAccessTokenRedisRepository;
+        this.smsAuthUtil=smsAuthUtil;
     }
 
 
@@ -417,6 +426,32 @@ public class AuthService {
         return Long.parseLong(userId);
 
     }
+
+
+
+    //문자인증
+    public void sendMessage(String toNumber) {
+
+        Message coolsms = new Message(smsAuthUtil.getApiKey(), smsAuthUtil.getApiSecret());
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("to", toNumber);
+        params.put("from", smsAuthUtil.getFromNumber());
+        params.put("type", "SMS");
+        params.put("text", "[grabMe] 인증번호 "+1234+" 를 입력하세요.");
+        params.put("app_version", "test app 1.2"); // application name and version
+
+        try {
+            JSONObject obj = (JSONObject) coolsms.send(params);
+            System.out.println(obj.toString());
+        } catch (CoolsmsException e) {
+            System.out.println(e.getMessage());
+            System.out.println(e.getCode());
+            throw new ExternalErrorException(ErrorCode.MESSAGE_SERVER_ERROR);
+        }
+    }
+
+
 
 
 

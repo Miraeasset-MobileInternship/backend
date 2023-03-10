@@ -20,6 +20,10 @@ public enum ErrorCode {
     FORBIDDEN_USER_LOGOUT(HttpStatus.FORBIDDEN, "이미 로그아웃한 유저입니다. 다시 로그인을 진행해주세요."),
 
 
+    //SMS인증 관련
+    MESSAGE_SERVER_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
+
+
 
     //권한이 없는 요청의 경우 (403경우)
     //403 : FORBIDEN : 클라이언트는 접근 권리를 가지고 있지 않습니다. (클라이언트를 알고 있음)

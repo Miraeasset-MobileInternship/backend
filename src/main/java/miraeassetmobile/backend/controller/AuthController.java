@@ -9,6 +9,7 @@ import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.service.auth.AuthService;
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,5 +58,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.reissue(request, refreshToken));
     }
 
+    // coolSMS 구현 로직 연결
+
+    @PostMapping("/check/sendSMS")
+    public ResponseEntity sendSMS(@RequestParam(value="to") String to) throws CoolsmsException {
+        authService.sendMessage(to);
+        return ResponseEntity.ok().build();
+    }
 
 }
