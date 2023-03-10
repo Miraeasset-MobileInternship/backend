@@ -17,6 +17,6 @@ public class ClassJobListResponseDto {
 
     int totalNum; //총 직업의 갯수
 
-    List<Job> jobs;
+    List<JobDto> jobs;
 
 }
