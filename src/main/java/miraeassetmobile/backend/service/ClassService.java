@@ -2,9 +2,11 @@ package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
+import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.ClassRepository;
+import miraeassetmobile.backend.repository.UserInfoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,12 +18,13 @@ public class ClassService {
 
     //레포
     ClassRepository classRepository;
+    UserInfoRepository userInfoRepository;
 
-
-    ClassService(ClassRepository classRepository, ErrorService errorService){
+    ClassService(UserInfoRepository userInfoRepository,ClassRepository classRepository, ErrorService errorService){
 
         this.classRepository = classRepository;
         this.errorService = errorService;
+        this.userInfoRepository=userInfoRepository;
     }
 
 
@@ -30,14 +33,19 @@ public class ClassService {
 
 
         //학급조회
-        Classes classInfo = classRepository.findById(classId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes c = classRepository.findById(classId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
+        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
 
         return (ClassAccountResponseDto.builder()
-                .classId(classInfo.getId())
-                .classTitle(classInfo.getTitle())
-                .classCurrency(classInfo.getCurrency())
-                .classMoney(classInfo.getMoney())
+                .classId(c.getId())
+                .classTitle(c.getTitle())
+                .classCurrency(c.getCurrency())
+                .classMoney(c.getMoney())
+                .teacherName(teacher.getUserName())
+                .classGrade(c.getGrade())
+                .classNumber(c.getClassNum())
+                .schoolName(c.getSchoolName())
                 .build());
 
     }

@@ -3,7 +3,10 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentSalaryResponseDto;
+import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.service.StudentService;
+import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class StudentController {
 
     private StudentService studentService;
+    private TransactionService transactionService;
 
-    public StudentController(StudentService studentService){
+    public StudentController(StudentService studentService, TransactionService transactionService){
         this.studentService =studentService;
+        this.transactionService=transactionService;
     }
 
 
@@ -36,6 +41,18 @@ public class StudentController {
     }
 
 
+    //이전날 대비 변동가격
+    @GetMapping("/{student_id}/change")
+    @Operation(description = "학생의 계좌금액 : 전날대비 변동가격 - 직업 화면 학생 본인 계좌")
+    public ResponseEntity<MoneyChangeResponseDto> getStudentChangeMoney(@PathVariable(value = "student_id") Long studentId){
+        return ResponseEntity.ok(transactionService.getStudentChangedMoney(studentId));
+    }
 
+
+    @GetMapping("/salary/{student_id}")
+    @Operation(description = "월급 지급 태그 선택시 자동으로 해당 학생의 월급 표기")
+    public ResponseEntity<StudentSalaryResponseDto> getStudentSalary(@PathVariable(value = "student_id") Long studentId){
+        return ResponseEntity.ok(studentService.getStudentSalary(studentId));
+    }
 
 }

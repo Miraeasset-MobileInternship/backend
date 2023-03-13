@@ -1,10 +1,7 @@
 package miraeassetmobile.backend.service;
 
 
-import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentSelectorListResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorDto;
+import miraeassetmobile.backend.domain.dto.students.*;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.Student;
@@ -48,12 +45,19 @@ public class StudentService {
 
         Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
+        UserInfo teacher = userInfoRepository.findById(studentClass.getTeacherId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
 
         StudentAccountResponseDto accountInfo = StudentAccountResponseDto.builder()
                 .studentId(student.getId())
                 .money(student.getMoney())
                 .creditScore(student.getCreditScore())
                 .currency(studentClass.getCurrency())
+                .classGrade(studentClass.getGrade())
+                .classNumber(studentClass.getClassNum())
+                .schoolName(studentClass.getSchoolName())
+                .studentNumber(student.getNumber())
+                .teacherName(teacher.getUserName())
                 .build();
 
         return accountInfo;
@@ -112,6 +116,20 @@ public class StudentService {
         return StudentSelectorListResponseDto.builder()
                 .studentSelectorList(result)
                 .build();
+    }
+
+    public StudentSalaryResponseDto getStudentSalary(Long studentId){
+
+        Student s = studentRepository.findById(studentId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+
+        Job j = jobRepository.findById(s.getJobId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
+
+        return StudentSalaryResponseDto.builder()
+                .jobId(j.getId())
+                .jobTitle(j.getTitle())
+                .monthlySalary(j.getMonthlySalary())
+                .build();
+
     }
 
 }
