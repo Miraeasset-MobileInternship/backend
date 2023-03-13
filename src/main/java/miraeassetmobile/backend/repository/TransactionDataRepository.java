@@ -21,11 +21,9 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
 
 
     //최상단 거래를 조회(가장 최신의 거래)
-    Optional<TransactionData> findTop1ByStudentIdOrderByCreateTimestampDesc(Long studentId);
-
 
     @Query(value = "SELECT * FROM transaction_data WHERE student_id=:studentId AND DATE(create_timestamp) < DATE(NOW()) ORDER BY create_timestamp DESC LIMIT 1", nativeQuery = true)
-    Optional<TransactionData> findLastTransaction(Long studentId);
+    Optional<TransactionData> findLastTransactionStudent(Long studentId);
 
     @Query(value = "SELECT * FROM transaction_data WHERE class_id=:classId AND DATE(create_timestamp) < DATE(NOW()) ORDER BY create_timestamp DESC LIMIT 1", nativeQuery = true)
     Optional<TransactionData> findLastTransactionClass(Long classId);

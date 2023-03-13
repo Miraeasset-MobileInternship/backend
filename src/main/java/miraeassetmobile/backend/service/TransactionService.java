@@ -2,7 +2,7 @@ package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.students.StudentInfoDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
-import miraeassetmobile.backend.domain.dto.students.MoneyChangeResponseDto;
+import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.domain.enums.TransactionFromTypes;
@@ -623,7 +623,7 @@ public class TransactionService {
         거래가 존재하지 않는다면 ERROR 말고 프론트에서 요청한 값으로 커스텀해서 보내기
 
          */
-        TransactionData t = transactionDataRepository.findLastTransaction(studentId).orElse(TransactionData.builder().money(-1).build());
+        TransactionData t = transactionDataRepository.findLastTransactionStudent(studentId).orElse(TransactionData.builder().money(-1).build());
 
         ///
         if(t.getMoney() == -1){

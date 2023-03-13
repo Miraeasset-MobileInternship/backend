@@ -1,4 +1,4 @@
-package miraeassetmobile.backend.domain.dto.students;
+package miraeassetmobile.backend.domain.dto.transactions;
 
 
 import lombok.Builder;

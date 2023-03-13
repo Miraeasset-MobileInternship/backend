@@ -3,7 +3,7 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
-import miraeassetmobile.backend.domain.dto.students.MoneyChangeResponseDto;
+import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.service.StudentService;
 import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;

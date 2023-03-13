@@ -4,9 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
-import miraeassetmobile.backend.domain.dto.students.MoneyChangeResponseDto;
+import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentSelectorListResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorDto;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
@@ -17,8 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RequestMapping("/api/class")
 @RestController
