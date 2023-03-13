@@ -2,6 +2,7 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
+import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
@@ -12,10 +13,9 @@ import miraeassetmobile.backend.service.StudentService;
 
 import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RequestMapping("/api/class")
 @RestController
@@ -74,5 +74,11 @@ public class ClassController {
         return ResponseEntity.ok(transactionService.getClassChangedMoney(classId));
     }
 
+
+    @PostMapping("/create")
+    @Operation(description = "학급 생성 API : 선생님 기능")
+    public ResponseEntity<MoneyChangeResponseDto> createClass(@RequestBody @Valid ClassCreateRequestDto classCreateRequestDto){
+        return ResponseEntity.created(classService.createClass(classCreateRequestDto)).build();
+    }
 
 }

@@ -11,4 +11,6 @@ public class CacheKey {
     public static final String LogoutAccessToken = "LogoutAccessToken";
 
     public static final String PhoneNumberCode = "PhoneNumberCode";
+
+    public static final String ClassInvitationCode = "ClassInvitationCode";
 }
