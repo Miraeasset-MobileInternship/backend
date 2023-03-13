@@ -2,18 +2,12 @@ package miraeassetmobile.backend.service;
 
 
 import miraeassetmobile.backend.domain.dto.students.*;
-import miraeassetmobile.backend.domain.entity.Classes;
-import miraeassetmobile.backend.domain.entity.Job;
-import miraeassetmobile.backend.domain.entity.Student;
-import miraeassetmobile.backend.domain.entity.UserInfo;
+import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
-import miraeassetmobile.backend.repository.ClassRepository;
-import miraeassetmobile.backend.repository.JobRepository;
-import miraeassetmobile.backend.repository.StudentRepository;
+import miraeassetmobile.backend.repository.*;
 
 
-import miraeassetmobile.backend.repository.UserInfoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,15 +20,17 @@ public class StudentService {
     ClassRepository classRepository;
     JobRepository jobRepository;
     UserInfoRepository userInfoRepository;
+    ProfileImgRepository profileImgRepository;
 
     ErrorService errorService;
 
-    public StudentService(UserInfoRepository userInfoRepository, ErrorService errorService, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
+    public StudentService(ProfileImgRepository profileImgRepository,UserInfoRepository userInfoRepository, ErrorService errorService, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
         this.errorService = errorService;
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
         this.userInfoRepository = userInfoRepository;
+        this.profileImgRepository = profileImgRepository;
     }
 
 
@@ -72,6 +68,10 @@ public class StudentService {
 
         Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
+        UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
+
         String classInfo = studentClass.getGrade() + "학년 " + studentClass.getClassNum() + "반";
 
 
@@ -81,6 +81,7 @@ public class StudentService {
                 .jobId(student.getJobId())
                 .JobTitle(studentJob.getTitle())
                 .JobDetail(studentJob.getDetail())
+                .profileImg(p.getIconCode())
                 .isTransfer(studentJob.isWithdrawStudent()) // 이체하기 -> 학생계좌 출금
                 .isPay(studentJob.isWithdrawClass()) //지급하기 -> 국고 출금
                 .build();

@@ -31,12 +31,17 @@ public class UserInfo extends BaseTimeEntity{
     @Column(name = "user_role")
     private String userRole;
 
+    @NotNull
+    @Column(name = "profile_img_id")
+    private Long profileImgId;
+
 
     @Builder
-    public UserInfo(String userName, String phoneNum, String userRole){
+    public UserInfo(String userName, String phoneNum, String userRole, Long profileImgId){
         this.userName=userName;
         this.phoneNum=phoneNum;
         this.userRole = userRole;
+        this.profileImgId =profileImgId;
     }
 
 

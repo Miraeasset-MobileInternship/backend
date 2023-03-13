@@ -9,6 +9,8 @@ public class StudentJobResponseDto {
 
     Long studentId;
 
+    String profileImg;
+
     String classInfo;
 
     Long jobId;

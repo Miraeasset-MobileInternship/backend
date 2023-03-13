@@ -44,7 +44,7 @@ public enum ErrorCode {
     NOT_EXIST_STUDENT(HttpStatus.NOT_FOUND,"존재하지 않는 학생입니다."),
     NOT_EXSIT_USER(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
     NOT_EXSIT_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않거나 조회할 수 없는 거래내역입니다."),
-
+    NOT_EXIST_IMAGE(HttpStatus.NOT_FOUND, "존재하지 않는 이미지입니다."),
 
 
     //이미 존재하는 것을 등록하려고 할 때

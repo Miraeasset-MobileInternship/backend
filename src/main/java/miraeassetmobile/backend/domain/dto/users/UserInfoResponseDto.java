@@ -5,8 +5,10 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class UserNameResponseDto {
+public class UserInfoResponseDto {
 
     private String userName;
+
+    private String profileImg;
 
 }

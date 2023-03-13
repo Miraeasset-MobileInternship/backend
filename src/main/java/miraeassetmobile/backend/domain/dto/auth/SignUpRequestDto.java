@@ -16,13 +16,16 @@ public class SignUpRequestDto {
 
     private String userRole;
 
+    private Long profileImgId;
 
-    public UserInfo toUser(String phoneNum, String userName, String userRole){
+
+    public UserInfo toUser(String phoneNum, String userName, String userRole, Long profileImgId){
 
         return UserInfo.builder()
                 .userName(userName)
                 .userRole(userRole)
                 .phoneNum(phoneNum)
+                .profileImgId(profileImgId)
                 .build();
     }
 
