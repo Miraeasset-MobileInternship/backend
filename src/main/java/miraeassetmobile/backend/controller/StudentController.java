@@ -3,6 +3,7 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentSalaryResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.service.StudentService;
 import miraeassetmobile.backend.service.TransactionService;
@@ -47,5 +48,11 @@ public class StudentController {
         return ResponseEntity.ok(transactionService.getStudentChangedMoney(studentId));
     }
 
+
+    @GetMapping("/salary/{student_id}")
+    @Operation(description = "월급 지급 태그 선택시 자동으로 해당 학생의 월급 표기")
+    public ResponseEntity<StudentSalaryResponseDto> getStudentSalary(@PathVariable(value = "student_id") Long studentId){
+        return ResponseEntity.ok(studentService.getStudentSalary(studentId));
+    }
 
 }
