@@ -144,6 +144,26 @@ public class ClassService {
     }
 
 
+    public ClassInvitationCodeResponseDto getClassInvitationCode(Long classId){
+
+
+
+        ClassInvitationCode classInvitationCode = classInvitationCodeRedisRepository.findById(classId.toString())
+                .orElseGet(() -> reissueInvitationCode(classId)); // 만료되었으면 재생성해서 돌려줌
+
+
+
+        return ClassInvitationCodeResponseDto.builder()
+                .classId(classId)
+                .invitationCode(classInvitationCode.getInvitationCode())
+                .build();
+
+    }
+
+
+
+
+
     @Transactional
     public ClassInvitationCode reissueInvitationCode(Long classId){
 

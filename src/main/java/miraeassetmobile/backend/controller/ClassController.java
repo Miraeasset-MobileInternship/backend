@@ -1,9 +1,7 @@
 package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
-import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
-import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
+import miraeassetmobile.backend.domain.dto.classes.*;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentSelectorListResponseDto;
@@ -15,6 +13,7 @@ import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RequestMapping("/api/class")
@@ -79,6 +78,13 @@ public class ClassController {
     @Operation(description = "학급 생성 API : 선생님 기능")
     public ResponseEntity<MoneyChangeResponseDto> createClass(@RequestBody @Valid ClassCreateRequestDto classCreateRequestDto){
         return ResponseEntity.created(classService.createClass(classCreateRequestDto)).build();
+    }
+
+    //학급 초대 코드 복사 ( 만료되었으면 자동 재발급 )
+    @GetMapping("/{class_id}/invitation-code")
+    @Operation(description = "학급 초대 코드 제공 (복사하기)")
+    public ResponseEntity<ClassInvitationCodeResponseDto> getClassInvitationCode(@PathVariable(value = "class_id") Long classId){
+        return ResponseEntity.ok(classService.getClassInvitationCode(classId));
     }
 
 }
