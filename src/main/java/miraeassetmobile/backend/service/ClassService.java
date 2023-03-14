@@ -185,4 +185,31 @@ public class ClassService {
         return code;
     }
 
+
+    public ClassValidInvitationResponseDto checkInvitationCode(String invitationCode){
+
+
+        ClassInvitationCode classInvitationCode = classInvitationCodeRedisRepository.findByInvitationCode(invitationCode)
+                .orElseThrow(() -> new RuntimeException("만료되었거나 존재하지 않는 코드입니다."));
+
+
+        Classes c = classRepository.findById(Long.parseLong(classInvitationCode.getId()))
+                .orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+
+
+        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
+        return ClassValidInvitationResponseDto.builder()
+                .classId(c.getId())
+                .title(c.getTitle())
+                .schoolName(c.getSchoolName())
+                .grade(c.getGrade())
+                .classNumber(c.getClassNum())
+                .teacherName(teacher.getUserName())
+                .build();
+
+    }
+
+
+
 }

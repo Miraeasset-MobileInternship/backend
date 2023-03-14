@@ -87,4 +87,21 @@ public class ClassController {
         return ResponseEntity.ok(classService.getClassInvitationCode(classId));
     }
 
+
+    //학급 초대 코드 복사
+//    @PostMapping("/{class_id}/reissue-code")
+//    @Operation(description = "학급 초대 코드 재발급")
+//    public ResponseEntity reissueClassInvitationCode(@PathVariable(value = "class_id") Long classId){
+//        classService.reissueInvitationCode(classId);
+//        return ResponseEntity.ok().build();
+//    }
+
+    @GetMapping("/check/invitation-code")
+    @Operation(description = "유효한 초대 코드인지 검증 후 학급 정보를 보내줌")
+    public ResponseEntity<ClassValidInvitationResponseDto> checkInvitationCode(@RequestParam(value = "invitation_code") String invitationCode){
+        return ResponseEntity.ok(classService.checkInvitationCode(invitationCode));
+    }
+
+
+
 }
