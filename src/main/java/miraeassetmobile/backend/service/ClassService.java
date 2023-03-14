@@ -1,9 +1,7 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.auth.sms.PhoneNumberCode;
-import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
-import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
-import miraeassetmobile.backend.domain.dto.classes.ClassInvitationCode;
+import miraeassetmobile.backend.domain.dto.classes.*;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Job;
@@ -81,7 +79,7 @@ public class ClassService {
         errorService.isExistClassWithSameName(classCreateRequestDto.getSchoolName(), classCreateRequestDto.getTitle());
 
 
-        //직업등록
+        //새로운 클래스 동록
         Classes newClass = classCreateRequestDto.toClass(classCreateRequestDto.getTeacher_id(), classCreateRequestDto.getTitle(), classCreateRequestDto.getGrade(), classCreateRequestDto.getClassNumber(), classCreateRequestDto.getCurrency(), classCreateRequestDto.getSchoolName()); //save에서 에러난다
 
 
@@ -93,13 +91,15 @@ public class ClassService {
 
         long expiration = 60 * 60 * 24 * 7; //유효기간 일주일
 
-
-        //redis에 유효기간 일주일로 저장
-        classInvitationCodeRedisRepository.save(ClassInvitationCode.builder()
+        ClassInvitationCode classCode = ClassInvitationCode.builder()
                 .id(c.getId().toString()) //새로 생성된 클래스
                 .invitationCode(createInvitationCode())
                 .expiration(expiration)
-                .build());
+                .build();
+
+        //redis에 유효기간 일주일로 저장
+        classInvitationCodeRedisRepository.save(classCode);
+
 
         return createUri(c.getId(), UriTypes.CLASS); //등록된 직업에 대해 URI를 같이 반환함
 
@@ -144,5 +144,25 @@ public class ClassService {
     }
 
 
+    @Transactional
+    public ClassInvitationCode reissueInvitationCode(Long classId){
+
+        //초대 코드 생성
+
+        long expiration = 60 * 60 * 24 * 7; //유효기간 일주일
+
+
+        ClassInvitationCode code = ClassInvitationCode.builder()
+                .id(classId.toString()) //새로 생성된 클래스
+                .invitationCode(createInvitationCode())
+                .expiration(expiration)
+                .build();
+
+        //redis에 유효기간 일주일로 저장
+        classInvitationCodeRedisRepository.save(code);
+
+
+        return code;
+    }
 
 }
