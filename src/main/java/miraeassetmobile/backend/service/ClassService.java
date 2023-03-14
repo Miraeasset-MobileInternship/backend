@@ -91,7 +91,7 @@ public class ClassService {
 
         //초대 코드 생성
 
-        long expiration = 1000 * 60 * 60 * 24 * 7; //유효기간 일주일
+        long expiration = 60 * 60 * 24 * 7; //유효기간 일주일
 
 
         //redis에 유효기간 일주일로 저장
