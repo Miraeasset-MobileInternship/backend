@@ -1,7 +1,9 @@
 package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
 import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentClassJoinRequestDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentSalaryResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
@@ -9,6 +11,8 @@ import miraeassetmobile.backend.service.StudentService;
 import miraeassetmobile.backend.service.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RequestMapping("/api/student")
 @RestController
@@ -54,5 +58,16 @@ public class StudentController {
     public ResponseEntity<StudentSalaryResponseDto> getStudentSalary(@PathVariable(value = "student_id") Long studentId){
         return ResponseEntity.ok(studentService.getStudentSalary(studentId));
     }
+
+
+
+    @PostMapping("/join-class")
+    @Operation(description = "해당 학급에 가입시켜주는 API")
+    public ResponseEntity joinClass(@RequestBody @Valid StudentClassJoinRequestDto studentClassJoinReqeustDto){
+        return ResponseEntity.created(studentService.createStudentInClass(studentClassJoinReqeustDto)).build();
+    }
+
+
+
 
 }

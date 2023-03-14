@@ -24,7 +24,7 @@ public class Student extends BaseTimeEntity{
 
     @NotNull
     @Column(name = "job_id")
-    private Long jobId;
+    private Long jobId = 2L;
 
     @NotNull
     @Column(name = "user_id")
@@ -42,7 +42,7 @@ public class Student extends BaseTimeEntity{
 
 
     @NotNull
-    private int money;
+    private int money = 0;
 
 
 //    @NotNull
@@ -52,7 +52,7 @@ public class Student extends BaseTimeEntity{
 
     @NotNull
     @Column(name="credit_score")
-    private int creditScore;
+    private int creditScore = 0;
 
 
 
@@ -71,11 +71,11 @@ public class Student extends BaseTimeEntity{
 
     // default 제외 나머지
     @Builder
-    public Student(Long userId, int number, int money){
+    public Student(Long userId, Long classId, int number){
 //        this.name=name;
         this.userId = userId;
         this.number=number;
-        this.money=money;
+        this.classId = classId;
 //        this.phoneNum=phoneNum;
     }
 
