@@ -2,15 +2,16 @@ package miraeassetmobile.backend.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import miraeassetmobile.backend.domain.dto.students.StudentClassJoinRequestDto;
 import miraeassetmobile.backend.domain.dto.transactions.TransactionDetailResponseDto;
+import miraeassetmobile.backend.domain.dto.users.JoinedClassResponseDto;
 import miraeassetmobile.backend.domain.dto.users.ProfileImgListResponseDto;
 import miraeassetmobile.backend.domain.dto.users.UserInfoResponseDto;
 import miraeassetmobile.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RequestMapping("/api/user")
 @RestController
@@ -39,6 +40,13 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserName(userId));
     }
 
+
+
+    @GetMapping("/{user_id}/student/join-class-list")
+    @Operation(description = "속해 있는 모든 학급 리스트를 반환 - 학생용")
+    public ResponseEntity<JoinedClassResponseDto> getJoinedClass(@PathVariable(value = "user_id") Long userId){
+        return ResponseEntity.ok(userService.getJoinedClassList(userId));
+    }
 
 
 }
