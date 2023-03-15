@@ -54,9 +54,9 @@ public class TransactionController {
     }
 
 
-    @GetMapping("/category")
+    @GetMapping("/category/{type}")
     @Operation(description = "출금/입금 카테고리 내역을 조회(SELECTOR), 학생 - 업무수행 - 특수업무 수행 중 출입금 카테고리SELECTOR")
-    public ResponseEntity<TransactionCategoryListResonseDto> getCategoryList(@PathVariable String type){
+    public ResponseEntity<TransactionCategoryListResonseDto> getCategoryList(@PathVariable(value = "type") String type){
         return ResponseEntity.ok(transactionService.getCategoryList(type));
     }
 
