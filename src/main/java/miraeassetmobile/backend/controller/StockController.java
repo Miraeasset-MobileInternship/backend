@@ -1,15 +1,14 @@
 package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import miraeassetmobile.backend.domain.dto.api.StockApiResponseDto;
+import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
 import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
-import miraeassetmobile.backend.service.StockApiCallService;
 import miraeassetmobile.backend.service.StockService;
+import miraeassetmobile.backend.service.YahooFinanceApiCallService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.io.IOException;
 
 @RequestMapping("/api/stock")
 @RestController
@@ -17,10 +16,12 @@ public class StockController {
 
 
     StockService stockService;
+    YahooFinanceApiCallService yahooFinanceApiCallService;
 
 
-    StockController(StockService stockService){
+    StockController(StockService stockService, YahooFinanceApiCallService yahooFinanceApiCallService){
         this.stockService=stockService;
+        this.yahooFinanceApiCallService = yahooFinanceApiCallService;
     }
 
 
@@ -32,12 +33,64 @@ public class StockController {
 
 
 
+    //인기종목 Top N개
+//    @GetMapping("/trending")
+//    @Operation(description = "인기 종목 리스트")
+//    public ResponseEntity getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
+//        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
+//
+
+
 //    @GetMapping("/student/{student_id}")
 //    @Operation(description = "보유 주식 종목별 정보, 학생 - 내 주식페이지 하단 보유 주식리스트 부분")
 //    public ResponseEntity<List<StudentStockInfoResponseDto>> getStudentAccountInfo(@PathVariable(value = "student_id") Long studentId){
 //        return ResponseEntity.ok(stockService.getStudentStockList(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
 //    }
 
+
+    @GetMapping("/get/finance-quote")
+    @Operation(description = "야후 파이낸스 테스트용")
+    public void getStudentAccountInfo(@RequestParam String region, @RequestParam String symbol) throws IOException {
+
+        yahooFinanceApiCallService.useFinanceQuote(region, symbol);
+         //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
+
+    @GetMapping("/get/trending")
+    @Operation(description = "야후 파이낸스 테스트용")
+    public ResponseEntity<TrendingByRegion> trending() throws IOException {
+
+        return yahooFinanceApiCallService.trendingByRegion();
+        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
+
+
+    @GetMapping("/get/realtime")
+    @Operation(description = "야후 파이낸스 테스트용")
+    public void realtimeprice(@RequestParam String symbol) throws IOException {
+
+        yahooFinanceApiCallService.getRealtimePrice(symbol);
+        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
+
+
+    @GetMapping("/get/chart")
+    @Operation(description = "야후 파이낸스 테스트용")
+    public void realtimeprice(@RequestParam String period, @RequestParam String symbol) throws IOException {
+
+        yahooFinanceApiCallService.getChart(period,symbol);
+        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
+
+
+    @GetMapping("/get/autocomplete")
+    @Operation(description = "야후 파이낸스 테스트용")
+    public void realtimeprice(@RequestParam String region, @RequestParam String lang, @RequestParam String query) throws IOException {
+
+        yahooFinanceApiCallService.getAutocomplete(region, lang, query);
+        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
 
 
 
