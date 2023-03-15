@@ -5,33 +5,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
-import miraeassetmobile.backend.domain.dto.api.Item;
-import miraeassetmobile.backend.domain.dto.api.StockApiResponseDto;
-import miraeassetmobile.backend.domain.dto.api.StockApiServiceUtils;
+import miraeassetmobile.backend.domain.dto.api.dataGoKr.Item;
+import miraeassetmobile.backend.domain.dto.api.dataGoKr.StockApiResponseDto;
+import miraeassetmobile.backend.domain.dto.api.dataGoKr.StockApiServiceUtils;
 
-import net.bytebuddy.description.method.MethodDescription;
-import org.hibernate.mapping.Any;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 import org.json.*;

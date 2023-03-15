@@ -1,6 +1,6 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.domain.dto.api.StockApiResponseDto;
+import miraeassetmobile.backend.domain.dto.api.dataGoKr.StockApiResponseDto;
 import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
@@ -12,8 +12,9 @@ import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.StudentStockRepository;
 import org.springframework.stereotype.Service;
 
+
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -156,8 +157,6 @@ public class StockService {
 //        return
 //
 //    }
-
-
 
 
 

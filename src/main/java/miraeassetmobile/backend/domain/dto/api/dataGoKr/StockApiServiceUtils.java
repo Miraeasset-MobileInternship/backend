@@ -1,4 +1,4 @@
-package miraeassetmobile.backend.domain.dto.api;
+package miraeassetmobile.backend.domain.dto.api.dataGoKr;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 @Getter
 public class StockApiServiceUtils {
 
-    @Value("${api.key}")
+    @Value("${api.data-go-kr.key}")
     private String secretKey;
 
-    @Value("${api.url}")
+    @Value("${api.data-go-kr.url}")
     private String hostUrl;
 }

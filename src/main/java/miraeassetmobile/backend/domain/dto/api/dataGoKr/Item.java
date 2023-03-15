@@ -1,4 +1,4 @@
-package miraeassetmobile.backend.domain.dto.api;
+package miraeassetmobile.backend.domain.dto.api.dataGoKr;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
