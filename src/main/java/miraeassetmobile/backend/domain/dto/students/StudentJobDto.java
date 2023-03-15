@@ -23,6 +23,8 @@ public class StudentJobDto {
     //직업명
     String jobTitle;
 
+    String profileImg;
+
 
 
 }

@@ -7,12 +7,14 @@ import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.entity.Job;
+import miraeassetmobile.backend.domain.entity.ProfileImg;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.JobRepository;
+import miraeassetmobile.backend.repository.ProfileImgRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
 
@@ -36,13 +38,15 @@ public class JobService {
     private final JobRepository jobRepository;
     private final StudentRepository studentRepository;
     private final UserInfoRepository userInfoRepository;
+    private final ProfileImgRepository profileImgRepository;
 
 
-    public JobService(UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, StudentRepository studentRepository){
+    public JobService(ProfileImgRepository profileImgRepository,UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, StudentRepository studentRepository){
         this.errorService =errorService;
         this.jobRepository = jobRepository;
         this.studentRepository = studentRepository;
         this.userInfoRepository = userInfoRepository;
+        this.profileImgRepository = profileImgRepository;
     }
 
 
@@ -149,9 +153,11 @@ public class JobService {
             Job job = jobRepository.findById(student.getJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB));
 
             UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
 
             studentJobs.add(StudentJobDto.builder()
                     .studentId(student.getId())
+                    .profileImg(p.getIconCode())
                     .number(student.getNumber())
                     .studentName(u.getUserName())
                     .jobId(student.getJobId())

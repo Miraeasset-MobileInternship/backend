@@ -9,9 +9,9 @@ public enum UriTypes {
     STUDENT("student"),
     JOB("job"),
 
-    USER("USER")
+    USER("user"),
 
-    ;
+    CLASS("class");
 
     private final String typeName;
 

@@ -1,21 +1,22 @@
 package miraeassetmobile.backend.service;
 
 
+import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
+import miraeassetmobile.backend.domain.dto.classes.ClassInvitationCode;
 import miraeassetmobile.backend.domain.dto.students.*;
-import miraeassetmobile.backend.domain.entity.Classes;
-import miraeassetmobile.backend.domain.entity.Job;
-import miraeassetmobile.backend.domain.entity.Student;
-import miraeassetmobile.backend.domain.entity.UserInfo;
+import miraeassetmobile.backend.domain.entity.*;
+import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.NotExistException;
-import miraeassetmobile.backend.repository.ClassRepository;
-import miraeassetmobile.backend.repository.JobRepository;
-import miraeassetmobile.backend.repository.StudentRepository;
+import miraeassetmobile.backend.repository.*;
 
 
-import miraeassetmobile.backend.repository.UserInfoRepository;
+import miraeassetmobile.backend.repository.redis.ClassInvitationCodeRedisRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,15 +27,19 @@ public class StudentService {
     ClassRepository classRepository;
     JobRepository jobRepository;
     UserInfoRepository userInfoRepository;
+    ProfileImgRepository profileImgRepository;
+    ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository;
 
     ErrorService errorService;
 
-    public StudentService(UserInfoRepository userInfoRepository, ErrorService errorService, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
+    public StudentService(ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository,ProfileImgRepository profileImgRepository,UserInfoRepository userInfoRepository, ErrorService errorService, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
         this.errorService = errorService;
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
         this.userInfoRepository = userInfoRepository;
+        this.profileImgRepository = profileImgRepository;
+        this.classInvitationCodeRedisRepository =classInvitationCodeRedisRepository;
     }
 
 
@@ -72,6 +77,10 @@ public class StudentService {
 
         Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
 
+        UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
+
         String classInfo = studentClass.getGrade() + "학년 " + studentClass.getClassNum() + "반";
 
 
@@ -81,6 +90,7 @@ public class StudentService {
                 .jobId(student.getJobId())
                 .JobTitle(studentJob.getTitle())
                 .JobDetail(studentJob.getDetail())
+                .profileImg(p.getIconCode())
                 .isTransfer(studentJob.isWithdrawStudent()) // 이체하기 -> 학생계좌 출금
                 .isPay(studentJob.isWithdrawClass()) //지급하기 -> 국고 출금
                 .build();
@@ -129,6 +139,52 @@ public class StudentService {
                 .jobTitle(j.getTitle())
                 .monthlySalary(j.getMonthlySalary())
                 .build();
+
+    }
+
+
+    @Transactional
+    public URI createStudentInClass(StudentClassJoinRequestDto studentClassJoinRequestDto){
+
+
+        Classes c = classRepository.findById(studentClassJoinRequestDto.getClassId())
+                .orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+
+        UserInfo u = userInfoRepository.findById(studentClassJoinRequestDto.getUserId())
+                .orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+
+
+        Student newStudent = Student.builder()
+                .userId(studentClassJoinRequestDto.getUserId())
+                .number(studentClassJoinRequestDto.getStudentNumber())
+                .classId(studentClassJoinRequestDto.getClassId())
+                .build();
+
+        Student s = studentRepository.save(newStudent);
+
+
+
+        return createUri(s.getId(), UriTypes.STUDENT);
+
+
+
+    }
+
+
+    //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
+    public URI createUri(Long id, UriTypes uriTypes){
+        URI uri = UriComponentsBuilder.newInstance()
+//                .scheme("https")
+//                .host("m-crew.iptime.org")
+//                .port(8001)
+                .scheme("http")
+                .host("localhost")
+                .port(8080)
+                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
+                .build()
+                .toUri(); //UriComponents into URI
+
+        return uri;
 
     }
 

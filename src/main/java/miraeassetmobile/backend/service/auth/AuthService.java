@@ -7,8 +7,9 @@ import miraeassetmobile.backend.domain.dto.auth.sms.SmsAuthUtil;
 import miraeassetmobile.backend.domain.dto.auth.token.LogoutAccessToken;
 import miraeassetmobile.backend.domain.dto.auth.token.RefreshToken;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
-import miraeassetmobile.backend.domain.dto.users.UserNameResponseDto;
+
 import miraeassetmobile.backend.domain.entity.Classes;
+import miraeassetmobile.backend.domain.entity.ProfileImg;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 
@@ -16,6 +17,7 @@ import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.domain.enums.UserTypes;
 import miraeassetmobile.backend.error.exception.*;
 import miraeassetmobile.backend.repository.ClassRepository;
+import miraeassetmobile.backend.repository.ProfileImgRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
 
@@ -60,6 +62,7 @@ public class AuthService {
     UserInfoRepository userInfoRepository;
     ClassRepository classRepository;
     StudentRepository studentRepository;
+    ProfileImgRepository profileImgRepository;
     TokenProvider tokenProvider;
 
     RefreshTokenRedisRepository refreshTokenRedisRepository;
@@ -68,7 +71,7 @@ public class AuthService {
     PhoneNumberCodeRedisRepository phoneNumberCodeRedisRepository;
 
 
-    AuthService(PhoneNumberCodeRedisRepository phoneNumberCodeRedisRepository, SmsAuthUtil smsAuthUtil, LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
+    AuthService(ProfileImgRepository profileImgRepository,PhoneNumberCodeRedisRepository phoneNumberCodeRedisRepository, SmsAuthUtil smsAuthUtil, LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository, RefreshTokenRedisRepository refreshTokenRedisRepository,AuthenticationManagerBuilder authenticationManagerBuilder,TokenProvider tokenProvider, UserInfoRepository userInfoRepository, ErrorService errorService, ClassRepository classRepository, StudentRepository studentRepository){
         this.userInfoRepository =userInfoRepository;
         this.errorService=errorService;
         this.classRepository=classRepository;
@@ -79,25 +82,11 @@ public class AuthService {
         this.logoutAccessTokenRedisRepository =logoutAccessTokenRedisRepository;
         this.smsAuthUtil=smsAuthUtil;
         this.phoneNumberCodeRedisRepository = phoneNumberCodeRedisRepository;
+        this.profileImgRepository = profileImgRepository;
     }
 
 
-    public UserNameResponseDto getUserName(Long userId){
 
-        UserInfo user = userInfoRepository.findById(userId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
-
-        return UserNameResponseDto.builder().userName(user.getUserName()).build();
-    }
-
-
-    public UserInfo getUser(Long userId){
-
-        UserInfo u = userInfoRepository.findById(userId).get();
-
-        System.out.println(u.getUserName());
-
-        return u;
-    }
 
     public UserInfo getUserByPhone(String phoneNumber){
         return userInfoRepository.findByPhoneNum(phoneNumber).get();
@@ -235,11 +224,11 @@ public class AuthService {
     public URI signUp(SignUpRequestDto signUpRequestDto){
 
         /*
-        save가 안됩니다 -> 근데 id return은 잘되는데 데베에는 없음;;;
+        save가 안됩니다 -> 근데 id return은 잘되는데 데베에는 없다 -> Transaction annotation 걸어놔서 그런거였음
          */
 
         //유저 가입
-        UserInfo newUser = signUpRequestDto.toUser(signUpRequestDto.getPhoneNum(), signUpRequestDto.getUserName(), signUpRequestDto.getUserRole());
+        UserInfo newUser = signUpRequestDto.toUser(signUpRequestDto.getPhoneNum(), signUpRequestDto.getUserName(), signUpRequestDto.getUserRole(), signUpRequestDto.getProfileImgId());
         UserInfo u = userInfoRepository.save(newUser);
 
 
@@ -332,7 +321,7 @@ public class AuthService {
         }
 
 
-
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
 
 
 
@@ -340,6 +329,7 @@ public class AuthService {
                 .userId(u.getId())
                 .userName(u.getUserName())
                 .userRole(u.getUserRole())
+                .profileImg(p.getIconCode())
                 .classInfo(classOnboardInfos)
                 .build();
 
@@ -469,7 +459,7 @@ public class AuthService {
         params.put("to", toNumber);
         params.put("from", smsAuthUtil.getFromNumber());
         params.put("type", "SMS");
-        params.put("text", "[MiraeAsset:BANKlass]\n인증번호 ["+ code +"]를 입력하세요.\n인증번호는 3분 동안만 유효합니다.");
+        params.put("text", "[MiraeAsset:Banklass]\n인증번호 ["+ code +"]를 입력하세요.\n인증번호는 3분 동안만 유효합니다.");
         params.put("app_version", "test app 1.0"); // application name and version
 
         try {

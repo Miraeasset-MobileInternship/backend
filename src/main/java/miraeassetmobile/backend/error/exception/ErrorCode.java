@@ -44,7 +44,7 @@ public enum ErrorCode {
     NOT_EXIST_STUDENT(HttpStatus.NOT_FOUND,"존재하지 않는 학생입니다."),
     NOT_EXSIT_USER(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
     NOT_EXSIT_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않거나 조회할 수 없는 거래내역입니다."),
-
+    NOT_EXIST_IMAGE(HttpStatus.NOT_FOUND, "존재하지 않는 이미지입니다."),
 
 
     //이미 존재하는 것을 등록하려고 할 때
@@ -52,6 +52,8 @@ public enum ErrorCode {
     ALREADY_EXIST_JOB(HttpStatus.FORBIDDEN, "이미 존재하는 직업입니다."),
     ALREADY_EXIST_USER(HttpStatus.FORBIDDEN, "이미 회원가입된 전화번호입니다."),
 
+    ALREADY_EXIST_CLASS_SAME_YEAR(HttpStatus.FORBIDDEN, "이미 해당 년도에 학교/학년/반 정보로 생성된 학급이 존재합니다"),
+    ALREADY_EXIST_CLASS_SAME_NAME(HttpStatus.FORBIDDEN, "이미 해당 학교에서 사용중인 나라이름입니다."),
 
 
 
