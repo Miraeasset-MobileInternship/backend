@@ -85,7 +85,7 @@ public class YahooFinanceApiCallService {
 
 
     //트랜딩한 종목 리스트 가져오는 API사용
-    public ResponseEntity<TrendingByRegion> trendingByRegion() {
+    public ResponseEntity<TrendingByRegion> getTrendingByRegion() {
 
         try {
 
@@ -131,17 +131,12 @@ public class YahooFinanceApiCallService {
 
             JSONObject trendingObject = trendingByRegion.getJSONObject(0);
 
-            System.out.println(trendingByRegion);
 
 
             Long startInterval = (Long) trendingObject.get("startInterval");
             Long jobTimestamp = (Long) trendingObject.get("jobTimestamp");
             int count = (Integer) trendingObject.get("count");
-
-
-            System.out.println(startInterval);
-            System.out.println(jobTimestamp);
-            System.out.println(count);
+            
 
 
             //내부에 array로 구성된 결과값 가져오기
@@ -222,8 +217,8 @@ public class YahooFinanceApiCallService {
 //        return ResponseEntity.badRequest().body(null);
 //
 //    }
-//
-//
+
+
 //
 //    public ResponseEntity getChart(String period, String symbol) {
 //
