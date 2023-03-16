@@ -12,7 +12,7 @@ import miraeassetmobile.backend.domain.dto.users.UserInfoResponseDto;
 import miraeassetmobile.backend.domain.entity.ProfileImg;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.Exception;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -49,10 +49,10 @@ public class UserService {
     public BanklassResponseEntity getUserName(Long userId){
 
         UserInfo user = userInfoRepository.findById(userId).orElseThrow(
-                ()-> new Exception(ErrorCode.NOT_EXIST)
+                ()-> new ServiceException(ErrorCode.NOT_EXIST)
         );
 
-        ProfileImg p = profileImgRepository.findById(user.getProfileImgId()).orElseThrow(() -> new Exception(ErrorCode.NOT_EXIST));
+        ProfileImg p = profileImgRepository.findById(user.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         UserInfoResponseDto result = UserInfoResponseDto.builder()
@@ -70,7 +70,7 @@ public class UserService {
     public BanklassResponseEntity getStudentJoinedClassList(Long userId) {
 
 
-        UserInfo u = userInfoRepository.findById(userId).orElseThrow(() -> new Exception(ErrorCode.NOT_EXIST));
+        UserInfo u = userInfoRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         List<Student> studentClassList = studentRepository.findByUserId(u.getId());
 
@@ -83,7 +83,7 @@ public class UserService {
 
 
             //해당 반의 id로 반의 정보를 끌어오기 (1개)
-            Classes c = classRepository.findById(classId).orElseThrow(() -> new Exception(ErrorCode.NOT_EXIST));
+            Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
             ClassOnboardInfo cInfo = ClassOnboardInfo.builder()
                     .classId(c.getId())

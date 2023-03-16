@@ -1,16 +1,13 @@
 package miraeassetmobile.backend.service;
 
-
-import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
-import miraeassetmobile.backend.domain.dto.classes.ClassInvitationCode;
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.students.*;
 import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.*;
-
-
 import miraeassetmobile.backend.repository.redis.ClassInvitationCodeRedisRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,30 +27,34 @@ public class StudentService {
     ProfileImgRepository profileImgRepository;
     ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository;
 
-    ErrorService errorService;
 
-    public StudentService(ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository,ProfileImgRepository profileImgRepository,UserInfoRepository userInfoRepository, ErrorService errorService, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
-        this.errorService = errorService;
+
+    ResponseService responseService;
+
+
+    public StudentService(ResponseService responseService, ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository, ProfileImgRepository profileImgRepository, UserInfoRepository userInfoRepository, StudentRepository studentRepository, JobRepository jobRepository, ClassRepository classRepository){
+
         this.studentRepository = studentRepository;
         this.jobRepository = jobRepository;
         this.classRepository = classRepository;
         this.userInfoRepository = userInfoRepository;
         this.profileImgRepository = profileImgRepository;
         this.classInvitationCodeRedisRepository =classInvitationCodeRedisRepository;
+        this.responseService=responseService;
     }
 
 
-    public StudentAccountResponseDto getStudentAccountInfo(Long id){
+    public BanklassResponseEntity getStudentAccountInfo(Long id){
 
         //존재하는 학생 아닌지 검사
-        Student student = studentRepository.findById(id).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        UserInfo teacher = userInfoRepository.findById(studentClass.getTeacherId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        UserInfo teacher = userInfoRepository.findById(studentClass.getTeacherId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
-        StudentAccountResponseDto accountInfo = StudentAccountResponseDto.builder()
+        StudentAccountResponseDto result = StudentAccountResponseDto.builder()
                 .studentId(student.getId())
                 .money(student.getMoney())
                 .creditScore(student.getCreditScore())
@@ -65,26 +66,27 @@ public class StudentService {
                 .teacherName(teacher.getUserName())
                 .build();
 
-        return accountInfo;
+        return responseService.successHandler(result);
     }
 
 
-    public StudentJobResponseDto getStudentJobInfo(Long studentId) {
+    public BanklassResponseEntity getStudentJobInfo(Long studentId) {
 
-        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        Job studentJob = jobRepository.findById(student.getJobId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
+        Job studentJob = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         String classInfo = studentClass.getGrade() + "학년 " + studentClass.getClassNum() + "반";
 
 
-        return StudentJobResponseDto.builder()
+        return responseService.successHandler(
+                StudentJobResponseDto.builder()
                 .studentId(student.getId())
                 .classInfo(classInfo)
                 .jobId(student.getJobId())
@@ -93,16 +95,17 @@ public class StudentService {
                 .profileImg(p.getIconCode())
                 .isTransfer(studentJob.isWithdrawStudent()) // 이체하기 -> 학생계좌 출금
                 .isPay(studentJob.isWithdrawClass()) //지급하기 -> 국고 출금
-                .build();
+                .build())
+                ;
 
 
     }
 
 
-    public StudentSelectorListResponseDto getStudentSelectorList(Long classId){
+    public BanklassResponseEntity getStudentSelectorList(Long classId){
 
         //존재하는 학급인가
-        errorService.isExistClass(classId);
+        responseService.isExistClass(classId);
 
 
         List<Student> studentList = studentRepository.findByClassId(classId);
@@ -112,46 +115,42 @@ public class StudentService {
 
         for (Student s: studentList) {
 
-            UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+            UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
             result.add(StudentTransferSelectorDto.builder()
                     .studentId(s.getId())
                     .studentNumber(s.getNumber())
                     .studentName(u.getUserName())
-                    .studentNumberName(s.getNumber() + "번 "+u.getUserName())
                     .build());
 
         }
 
-        return StudentSelectorListResponseDto.builder()
-                .studentSelectorList(result)
-                .build();
+        return responseService.successHandler(result);
     }
 
-    public StudentSalaryResponseDto getStudentSalary(Long studentId){
+    public BanklassResponseEntity getStudentSalary(Long studentId){
 
-        Student s = studentRepository.findById(studentId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student s = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        Job j = jobRepository.findById(s.getJobId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
+        Job j = jobRepository.findById(s.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        return StudentSalaryResponseDto.builder()
+        return
+                responseService.successHandler(
+                StudentSalaryResponseDto.builder()
                 .jobId(j.getId())
                 .jobTitle(j.getTitle())
                 .monthlySalary(j.getMonthlySalary())
-                .build();
+                .build()
+                );
 
     }
 
 
     @Transactional
-    public URI createStudentInClass(StudentClassJoinRequestDto studentClassJoinRequestDto){
+    public BanklassResponseEntity createStudentInClass(StudentClassJoinRequestDto studentClassJoinRequestDto){
 
-
-        Classes c = classRepository.findById(studentClassJoinRequestDto.getClassId())
-                .orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
-
-        UserInfo u = userInfoRepository.findById(studentClassJoinRequestDto.getUserId())
-                .orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        //해당 유저가 이미 해당 반에 존재하면 가입을 막아야함
+        responseService.isUserExistInClass(studentClassJoinRequestDto.getClassId(), studentClassJoinRequestDto.getUserId());
 
 
         Student newStudent = Student.builder()
@@ -160,32 +159,26 @@ public class StudentService {
                 .classId(studentClassJoinRequestDto.getClassId())
                 .build();
 
-        Student s = studentRepository.save(newStudent);
+        try {
+            Student s = studentRepository.save(newStudent);
 
 
 
-        return createUri(s.getId(), UriTypes.STUDENT);
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                        .status("created")
+                        .url(responseService.createUri(s.getId(), UriTypes.STUDENT))
+                        .build()
+            );
 
+        }catch (Exception e){
+            //저장하는 과정에서 에러가 발생했을 경우
+            throw new ServiceException(ErrorCode.NOT_SAVE);
+        }
 
 
     }
 
 
-    //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
-    public URI createUri(Long id, UriTypes uriTypes){
-        URI uri = UriComponentsBuilder.newInstance()
-//                .scheme("https")
-//                .host("m-crew.iptime.org")
-//                .port(8001)
-                .scheme("http")
-                .host("localhost")
-                .port(8080)
-                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
-                .build()
-                .toUri(); //UriComponents into URI
-
-        return uri;
-
-    }
 
 }
