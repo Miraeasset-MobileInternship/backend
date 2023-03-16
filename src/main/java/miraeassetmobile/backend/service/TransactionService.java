@@ -1,14 +1,16 @@
 package miraeassetmobile.backend.service;
 
+
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.students.StudentInfoDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
-import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.*;
 import miraeassetmobile.backend.domain.entity.*;
 import miraeassetmobile.backend.domain.enums.TransactionFromTypes;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +24,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.*;
+
+import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.CLASS;
+import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.STUDENT;
 
 
 @Service
@@ -38,8 +42,10 @@ public class TransactionService {
     JobRepository jobRepository;
     UserInfoRepository userInfoRepository;
 
+    ResponseService responseService;
 
-    TransactionService(UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+
+    TransactionService(ResponseService responseService,UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
@@ -47,6 +53,7 @@ public class TransactionService {
         this.jobRepository = jobRepository;
         this.errorService =errorService;
         this.userInfoRepository = userInfoRepository;
+        this.responseService = responseService;
     }
 
 
@@ -99,11 +106,11 @@ public class TransactionService {
 
 
     //학생별 거래내역 조회 (입출금 분리)
-    public StudentTransactionResponseDto getStudentTransactionDataWithType(Long studentId, int page, String type){
+    public BanklassResponseEntity getStudentTransactionDataWithType(Long studentId, int page, String type){
 
 
         //존재하는 학생인지
-        errorService.isExistStudent(studentId);
+        responseService.isExistStudent(studentId);
 
 
         int pageSize = 10;
@@ -149,12 +156,12 @@ public class TransactionService {
 
         }
 
-        return StudentTransactionResponseDto.builder()
+        return responseService.successHandler(StudentTransactionResponseDto.builder()
                 .currentPage(page)
                 .totalData(totalData)
                 .maxPage(maxPage)
                 .studentTransactionData(studentTransactionDatas)
-                .build();
+                .build());
 
     }
 
@@ -164,11 +171,11 @@ public class TransactionService {
 
 
     //학급별 "국고" 거래내역 조회 (입출금 분리)
-    public ClassTransactionResponseDto getClassTransactionDataWithType(Long classId, int page, String type){
+    public BanklassResponseEntity getClassTransactionDataWithType(Long classId, int page, String type){
 
 
         //존재하는학급인지
-        errorService.isExistClass(classId);
+        responseService.isExistClass(classId);
 
 
 
@@ -204,8 +211,8 @@ public class TransactionService {
 
             //**주의**
             // JobId를 t에서 가져와야 해당 거래 당시의 직업으로 출력 가능( 학생에서 가져오면 변경된 직업으로 나옴)
-            StudentJobDto managerDto = getStudentJobDto(t.getManagerId(), t.getManagerJobId());
-            StudentJobDto studentDto = getStudentJobDto(t.getStudentId(), t.getStudentJobId());
+            StudentJobDto managerDto = (StudentJobDto) getStudentJobDto(t.getManagerId(), t.getManagerJobId()).getResult();
+            StudentJobDto studentDto = (StudentJobDto) getStudentJobDto(t.getStudentId(), t.getStudentJobId()).getResult();
 
             ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
                     .transactionId(t.getId())
@@ -222,25 +229,26 @@ public class TransactionService {
 
         }
 
-        return ClassTransactionResponseDto.builder()
+        return responseService.successHandler(
+                ClassTransactionResponseDto.builder()
                 .currentPage(page)
                 .maxPage(maxPage)
                 .totalData(totalData)
                 .classTransactionData(classTransactionDatas)
-                .build();
-
+                .build()
+            );
     }
 
 
     //student Id를 주면 stduentjobDto를 반환해주는 함수
-    public StudentJobDto getStudentJobDto(Long studentId, Long studentJobId){
+    public BanklassResponseEntity getStudentJobDto(Long studentId, Long studentJobId){
 
 
-        Student s = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student s = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        return (StudentJobDto.builder()
+        return responseService.successHandler(StudentJobDto.builder()
                 .studentId(studentId)
                 .number(s.getNumber())
                 .studentName(u.getUserName())
@@ -251,7 +259,7 @@ public class TransactionService {
 
 
 
-    public TransactionCategoryListResonseDto getCategoryList(String type){
+    public BanklassResponseEntity getCategoryList(String type){
 
 
 
@@ -276,15 +284,15 @@ public class TransactionService {
 
         }
 
-        return TransactionCategoryListResonseDto.builder()
-                .categoryList(result)
-                .build();
+        return responseService.successHandler(
+                result
+        );
     }
 
 
 
 
-    public URI transferMoney(TransferMoneyRequestDto transferMoneyRequestDto){
+    public BanklassResponseEntity transferMoney(TransferMoneyRequestDto transferMoneyRequestDto){
 
                 /*
         1. 학생의 계좌의 잔고를 확인함
@@ -295,17 +303,17 @@ public class TransactionService {
          */
 
 
-        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         //0. "매니저"가 송금 권한이 있는 (직업의) 학생인가
-        errorService.unavailableJobTransfer(manager.getJobId());
+        responseService.unavailableJobTransfer(manager.getJobId());
 
 
         //1. 학생의 계좌의 잔고를 확인한다.
         //송금하려는 금액이 계좌에 충분히 있는지 검사
-        errorService.unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
+        responseService.unavailableTransfer(transferMoneyRequestDto.getStudentId(), transferMoneyRequestDto.getMoney());
 
         //2. 학생 계좌 잔고를 수정한다
         int studentMoney = updateTransferStudentMoney(student.getId(), transferMoneyRequestDto.getMoney());
@@ -331,14 +339,19 @@ public class TransactionService {
                 .from(STUDENT.getTypeName()) //이체하기 (학생 잔고에서 뽑아오는 것) FROM 학생
                 .build());
 
-        return(createUri(transactionData.getId(), UriTypes.TRANSACTION));
 
+        return responseService.successHandler(
+                CreatedUriDto.builder()
+                        .status("created")
+                        .url( responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
+                        .build()
+        );
 
     }
 
 
 
-    public URI payMoney(TransferMoneyRequestDto transferMoneyRequestDto){
+    public BanklassResponseEntity payMoney(TransferMoneyRequestDto transferMoneyRequestDto){
 
         /*
         1. 국고의 잔고를 확인함
@@ -348,17 +361,17 @@ public class TransactionService {
         4. transfer_data table에 데이터를 추가함
          */
 
-        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         //0. "매니저"가 권한이 있는 (직업의) 학생인가
-        errorService.unavailableJobPay(manager.getJobId());
+        responseService.unavailableJobPay(manager.getJobId());
 
 
         //1. 국고의 잔고를 확인한다.
         //송금하려는 금액이 계좌에 충분히 있는지 검사
-        errorService.unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
+        responseService.unavailablePay(student.getClassId(), transferMoneyRequestDto.getMoney());
 
         //2. 국고 잔고를 수정한다
         int classMoney = updatePayClassMoney(student.getClassId(), transferMoneyRequestDto.getMoney());
@@ -385,33 +398,23 @@ public class TransactionService {
                 .from(CLASS.getTypeName()) //지급하기 (국고 잔고에서 뽑아오는 것) FROM class
                 .build());
 
-        return(createUri(transactionData.getId(), UriTypes.TRANSACTION));
 
-
-    }
-
-
-
-    public URI createUri(Long id, UriTypes uriTypes){
-        URI uri = UriComponentsBuilder.newInstance()
-//                .scheme("https")
-//                .host("m-crew.iptime.org")
-//                .port(8001)
-                .scheme("http")
-                .host("localhost")
-                .port(8080)
-                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
-                .build()
-                .toUri(); //UriComponents into URI
-
-        return uri;
+        return responseService.successHandler(
+                CreatedUriDto.builder()
+                        .status("created")
+                        .url(responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
+                        .build()
+        );
 
     }
+
+
+
 
     public int updateTransferStudentMoney(Long studentId, int transferMoney){
 
 
-        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() - transferMoney); //보유금액 - 출금금액
@@ -424,7 +427,7 @@ public class TransactionService {
     public int updateTransferClassMoney(Long classId, int transferMoney){
 
         //속해있는 학급 구하기
-        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 + 출금금액
@@ -440,7 +443,7 @@ public class TransactionService {
 
 
         //속해있는 학급 구하기
-        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes studentClass = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() - transferMoney); //보유금액 - 출금금액 (돈사용)
@@ -454,7 +457,7 @@ public class TransactionService {
     public int updatePayStudentMoney(Long studentId, int transferMoney){
 
 
-        Student student = studentRepository.findById(studentId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() + transferMoney); //보유금액 + 출금금액
@@ -465,17 +468,17 @@ public class TransactionService {
     }
 
     //학생계좌에서 상세보기를 조회한 경우
-    public TransactionDetailResponseDto getStudentTransactionDetail(Long transactionId){
+    public BanklassResponseEntity getStudentTransactionDetail(Long transactionId){
 
 
-        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_TRANSACTION));
+        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         // class에서 온 돈인경우 true
         boolean isDeposit = t.getFrom().equals("class");
 
         //학급 화폐
-        Classes c = classRepository.findById(t.getClassId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes c = classRepository.findById(t.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         //거래 카테고리
@@ -483,9 +486,9 @@ public class TransactionService {
 
 
         //매니저 정보 찾아내기
-        Student m = studentRepository.findById(t.getManagerId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-        UserInfo mu = userInfoRepository.findById(m.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
-        Job mj = jobRepository.findById(t.getManagerJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+        Student m = studentRepository.findById(t.getManagerId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo mu = userInfoRepository.findById(m.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job mj = jobRepository.findById(t.getManagerJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         StudentInfoDto managerInfo = StudentInfoDto.builder()
                 .studentId(m.getId())
@@ -496,9 +499,9 @@ public class TransactionService {
 
 
         //거래 본인
-        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
-        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
 
@@ -515,7 +518,8 @@ public class TransactionService {
 
 
 
-        return TransactionDetailResponseDto.builder()
+        return responseService.successHandler(
+                TransactionDetailResponseDto.builder()
                 .transactionId(t.getId())
                 .transactionMoney(t.getMoney())
                 .plus(isDeposit)
@@ -527,7 +531,8 @@ public class TransactionService {
                 .detail(t.getDetail())
                 .transactionDate(t.getCreateTimestamp().toLocalDateTime())
                 .leftMoney(t.getStudentMoney()) //학생기준 거래잔금임
-                .build();
+                .build()
+        );
 
 
     }
@@ -535,17 +540,17 @@ public class TransactionService {
 
 
     //국고에서 상세보기를 조회한 경우
-    public TransactionDetailResponseDto getClassTransactionDetail(Long transactionId){
+    public BanklassResponseEntity getClassTransactionDetail(Long transactionId){
 
 
-        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_TRANSACTION));
+        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         // student에서 온 돈인경우 true(입금)
         boolean isDeposit = t.getFrom().equals("student");
 
         //학급 화폐
-        Classes c = classRepository.findById(t.getClassId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes c = classRepository.findById(t.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         //거래 카테고리
@@ -553,9 +558,9 @@ public class TransactionService {
 
 
         //매니저 정보 찾아내기
-        Student m = studentRepository.findById(t.getManagerId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-        UserInfo mu = userInfoRepository.findById(m.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
-        Job mj = jobRepository.findById(t.getManagerJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+        Student m = studentRepository.findById(t.getManagerId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo mu = userInfoRepository.findById(m.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job mj = jobRepository.findById(t.getManagerJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         StudentInfoDto managerInfo = StudentInfoDto.builder()
                 .studentId(m.getId())
@@ -566,9 +571,9 @@ public class TransactionService {
 
 
         //거래 본인
-        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
-        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB)); // 해당 기준 당시 직업
+        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
 
@@ -585,7 +590,8 @@ public class TransactionService {
 
 
 
-        return TransactionDetailResponseDto.builder()
+        return responseService.successHandler(
+                TransactionDetailResponseDto.builder()
                 .transactionId(t.getId())
                 .transactionMoney(t.getMoney())
                 .plus(isDeposit)
@@ -597,7 +603,8 @@ public class TransactionService {
                 .detail(t.getDetail())
                 .transactionDate(t.getCreateTimestamp().toLocalDateTime())
                 .leftMoney(t.getClassMoney()) //학급기준 거래잔금임
-                .build();
+                .build()
+        );
 
 
     }
@@ -605,10 +612,10 @@ public class TransactionService {
 
 
 
-    public MoneyChangeResponseDto getStudentChangedMoney(Long studentId){
+    public BanklassResponseEntity getStudentChangedMoney(Long studentId){
 
         //학생
-        Student s = studentRepository.findById(studentId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student s = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         int currentMoney = s.getMoney();
@@ -623,16 +630,17 @@ public class TransactionService {
         거래가 존재하지 않는다면 ERROR 말고 프론트에서 요청한 값으로 커스텀해서 보내기
 
          */
-        TransactionData t = transactionDataRepository.findLastTransactionStudent(studentId).orElse(TransactionData.builder().money(-1).build());
+        TransactionData t = transactionDataRepository.findLastTransactionStudent(studentId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.TRANSACTION_DATA_NOT_EXIST));
 
         ///
-        if(t.getMoney() == -1){
-            return MoneyChangeResponseDto.builder()
-                    .isPlus(true)
-                    .changeMoney(0)
-                    .lastDay(-1)
-                    .build();
-        }
+//        if(t.getMoney() == -1){
+//            return MoneyChangeResponseDto.builder()
+//                    .isPlus(true)
+//                    .changeMoney(0)
+//                    .lastDay(-1)
+//                    .build();
+//        }
 
 
         int lastMoney = t.getStudentMoney();
@@ -646,19 +654,23 @@ public class TransactionService {
 
         if(lastMoney<=currentMoney){
 
-            return MoneyChangeResponseDto.builder()
+            return responseService.successHandler(
+                    MoneyChangeResponseDto.builder()
                     .isPlus(true)
                     .changeMoney(currentMoney-lastMoney)
                     .lastDay(days)
-                    .build();
+                    .build()
+                );
 
         }else{
 
-            return MoneyChangeResponseDto.builder()
+            return responseService.successHandler(
+                    MoneyChangeResponseDto.builder()
                     .isPlus(false)
                     .changeMoney(lastMoney-currentMoney)
                     .lastDay(days)
-                    .build();
+                    .build()
+                );
 
         }
 
@@ -667,11 +679,10 @@ public class TransactionService {
 
 
 
-    public MoneyChangeResponseDto getClassChangedMoney(Long classId){
+    public BanklassResponseEntity getClassChangedMoney(Long classId){
 
         //학급 구하기
-        Classes c = classRepository.findById(classId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
-
+        Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
         //현 국고 잔고
         int currentMoney = c.getMoney();
 
@@ -685,16 +696,17 @@ public class TransactionService {
         거래가 존재하지 않는다면 ERROR 말고 프론트에서 요청한 값으로 커스텀해서 보내기
 
          */
-        TransactionData t = transactionDataRepository.findLastTransactionClass(classId).orElse(TransactionData.builder().money(-1).build());
+        TransactionData t = transactionDataRepository.findLastTransactionClass(classId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.TRANSACTION_DATA_NOT_EXIST));
 
         ///
-        if(t.getMoney() == -1){
-            return MoneyChangeResponseDto.builder()
-                    .isPlus(true)
-                    .changeMoney(0)
-                    .lastDay(-1)
-                    .build();
-        }
+//        if(t.getMoney() == -1){
+//            return MoneyChangeResponseDto.builder()
+//                    .isPlus(true)
+//                    .changeMoney(0)
+//                    .lastDay(-1)
+//                    .build();
+//        }
 
 
         int lastMoney = t.getStudentMoney();
@@ -708,36 +720,28 @@ public class TransactionService {
 
         if(lastMoney<=currentMoney){
 
-            return MoneyChangeResponseDto.builder()
+            return responseService.successHandler(MoneyChangeResponseDto.builder()
                     .isPlus(true)
                     .changeMoney(currentMoney-lastMoney)
                     .lastDay(days)
-                    .build();
+                    .build()
+            );
 
         }else{
 
-            return MoneyChangeResponseDto.builder()
+            return responseService.successHandler(
+                    MoneyChangeResponseDto.builder()
                     .isPlus(false)
                     .changeMoney(lastMoney-currentMoney)
                     .lastDay(days)
-                    .build();
-
+                    .build()
+                );
         }
 
 
     }
 
 
-
-
-    public TransactionData returnNoData(){
-
-        return TransactionData
-                .builder()
-                .money(-1)
-                .build();
-
-    }
 
 
 }
