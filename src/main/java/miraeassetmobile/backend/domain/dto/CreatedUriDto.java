@@ -1,2 +1,15 @@
-package miraeassetmobile.backend.domain.dto;public class CreatedUriDto {
+package miraeassetmobile.backend.domain.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+
+
+@Builder
+@Getter
+public class CreatedUriDto {
+
+    String status;
+    String url;
+
+
 }

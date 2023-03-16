@@ -3,7 +3,7 @@ package miraeassetmobile.backend.error;
 
 import lombok.extern.slf4j.Slf4j;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
-import miraeassetmobile.backend.error.exception.Exception;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,8 +16,8 @@ import java.util.ArrayList;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
-    @ExceptionHandler(value = {Exception.class })
-    public ResponseEntity<BanklassResponseEntity> handleException(Exception ue) {
+    @ExceptionHandler(value = {ServiceException.class })
+    public ResponseEntity<BanklassResponseEntity> handleException(ServiceException ue) {
         log.error("Exception : ", ue.getErrorCode().getDetail());
 
         return ResponseEntity.ok(

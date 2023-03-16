@@ -13,6 +13,30 @@ public enum ErrorCode {
 
     //존재하지 않는 리소스
     NOT_EXIST("E401", "존재하지 않는 리소스에 대한 접근입니다."),
+    TRANSACTION_DATA_NOT_EXIST("E402", "이전 거래내역이 존재하지 않습니다."),
+
+
+    //저장 에러
+    NOT_SAVE("E802", "새로운 객체를 생성하는 과정에서 에러가 발생했습니다."),
+    NOT_DELETED("E803", "객체를 삭제하는 과정에서 에러가 발생했습니다."),
+
+    // 중복 등록
+    ALREADY_EXIST_IN_CLASS("E601", "해당 유저가 이미 학급에 존재합니다."),
+    ALREADY_EXIST_JOB_IN_CLASS("E602", "해당 이름의 직업이 이미 학급에 존재합니다."),
+    UNAVAILABLE_ACTION_TOO_MANY_JOBS("E603", "학급에 직업을 50개 이상 등록할 수 없습니다."),
+
+
+    //
+    UNAVAILABLE_ACTION_DELETE_JOB("E501", "삭제 불가능한 필수 직업입니다."),
+
+
+
+    //출금
+    UNAVAILABLE_ACTION_TRANSFER_MONEY("E701", "학생 잔고가 부족하여 돈을 이체할 수 없습니다."),
+    UNAVAILABLE_ACTION_PAY_MONEY("E701", "국고가 부족하여 돈을 이체할 수 없습니다."),
+    UNAVAILABLE_ACTION_JOB_TRANSFER("E702", "학생 잔고를 이체할 수 있는 권한이 없는 직업입니다."),
+    UNAVAILABLE_ACTION_JOB_PAY("E702", "국고를 출금할 수 있는 권한이 없는 직업입니다."),
+
 
 
 //    //로그인 (인증/인가 관련에러)
