@@ -1,6 +1,8 @@
 package miraeassetmobile.backend.config.security.jwt;
 
 
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         // 유효 자격증명을 제공하지 않고 접근할 경우 401
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        throw new ServiceException(ErrorCode.UNAUTHORIZED_USER);
     }
 }

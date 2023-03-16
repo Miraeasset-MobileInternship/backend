@@ -2,6 +2,8 @@ package miraeassetmobile.backend.config.security.jwt;
 
 import lombok.RequiredArgsConstructor;
 
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.redis.LogoutAccessTokenRedisRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void checkLogout(String accessToken) {
         // logoutToken은 해당 회원의 access token을 id로 (unqiue해야함)
         if (logoutAccessTokenRedisRepository.existsById(accessToken)){
-            throw new IllegalArgumentException("이미 로그아웃한 회원입니다. 다시 로그인을 진행해주세요.");
+            throw new ServiceException(ErrorCode.LOGOUT_USER);
         }
     }
 }

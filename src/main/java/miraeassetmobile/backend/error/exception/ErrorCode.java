@@ -10,10 +10,29 @@ public enum ErrorCode {
     //정상
     SUCCESS("E000", "Success"),
 
+    //핸드폰 인증
+    UNVALID_CODE("E407", "올바르지 않은 인증번호 입니다."),
+    INCORRECT_CODE("E408", "올바르지 않거나 만료된 인증번호입니다. 다시 시도해주세요."),
+
+    //로그인
+    FORBIDDEN_USER("E403", "권한이 없는 사용자 입니다."),
+    UNAUTHORIZED_USER("E401", "인증되지 않은 사용자 입니다."),
+    INVALID_PHONENUMBER("E402","유저를 찾을 수 없습니다. 핸드폰 번호를 다시 확인해주세요."),
+    ALREADY_EXIST_USER("E405", "이미 가입된 핸드폰 번호 입니다."),
+    SIGN_UP_REQUIRED("E406", "가입이 되지 않은 유저입니다. 회원정보를 입력해주세요"),
+
+    //토큰
+    INVALID_SIGNATURE("E004","잘못된 JWT 서명입니다."),
+    EXPIRED_TOKEN("E003","만료된 토큰 입니다."),
+    UNSUPPORTED_TOKEN("E008","지원하지 않는 토큰 입니다."),
+    TOKEN_NOT_EXIST("E005","존재하지 않는 토큰입니다."),
+    UNAUTHORIZED_TOKEN("E007","인증되지 않은 토큰입니다."),
+    INVALID_TOKEN("E009","유효하지 않은 토큰입니다."),
 
     //존재하지 않는 리소스
     NOT_EXIST("E401", "존재하지 않는 리소스에 대한 접근입니다."),
     TRANSACTION_DATA_NOT_EXIST("E402", "이전 거래내역이 존재하지 않습니다."),
+    LOGOUT_USER("E006", "이미 로그아웃된 유저의 token정보 입니다."),
 
 
     //저장 에러
@@ -24,7 +43,8 @@ public enum ErrorCode {
     ALREADY_EXIST_IN_CLASS("E601", "해당 유저가 이미 학급에 존재합니다."),
     ALREADY_EXIST_JOB_IN_CLASS("E602", "해당 이름의 직업이 이미 학급에 존재합니다."),
     UNAVAILABLE_ACTION_TOO_MANY_JOBS("E603", "학급에 직업을 50개 이상 등록할 수 없습니다."),
-
+    ALREADY_EXIST_CLASS_SAME_YEAR("E604", "이미 해당 년도에 학교/학년/반 정보로 생성된 학급이 존재합니다"),
+    ALREADY_EXIST_CLASS_SAME_NAME("E605", "이미 해당 학교에서 사용중인 나라이름입니다."),
 
     //
     UNAVAILABLE_ACTION_DELETE_JOB("E501", "삭제 불가능한 필수 직업입니다."),
@@ -97,7 +117,9 @@ public enum ErrorCode {
 
 
     //common error
-    SERVER_ERROR("E500", "예상치 못한 에러가 발생했습니다.")
+    SERVER_ERROR("E500", "예상치 못한 에러가 발생했습니다."),
+    MESSAGE_SERVER_ERROR("E501", "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
+
 
     ;
 

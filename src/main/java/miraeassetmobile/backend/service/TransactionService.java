@@ -33,8 +33,6 @@ import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.STUDENT
 public class TransactionService {
 
 
-    ErrorService errorService;
-
     TransactionDataRepository transactionDataRepository;
     TransactionCategoryRepository transactionCategoryRepository;
     StudentRepository studentRepository;
@@ -45,13 +43,12 @@ public class TransactionService {
     ResponseService responseService;
 
 
-    TransactionService(ResponseService responseService,UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(ResponseService responseService,UserInfoRepository userInfoRepository,  JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
         this.classRepository = classRepository;
         this.jobRepository = jobRepository;
-        this.errorService =errorService;
         this.userInfoRepository = userInfoRepository;
         this.responseService = responseService;
     }

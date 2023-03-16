@@ -1,9 +1,10 @@
-package miraeassetmobile.backend.v1.controller;
+package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 
+import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
@@ -72,36 +73,36 @@ public class ClassController {
     public ResponseEntity<BanklassResponseEntity> getClassChangeMoney(@PathVariable(value = "class_id") Long classId){
         return ResponseEntity.ok(transactionService.getClassChangedMoney(classId));
     }
-//
-//
-//    @PostMapping("/create")
-//    @Operation(description = "학급 생성 API : 선생님 기능")
-//    public ResponseEntity<MoneyChangeResponseDto> createClass(@RequestBody @Valid ClassCreateRequestDto classCreateRequestDto){
-//        return ResponseEntity.created(classService.createClass(classCreateRequestDto)).build();
+
+
+    @PostMapping("/create")
+    @Operation(description = "학급 생성 API : 선생님 기능")
+    public ResponseEntity<BanklassResponseEntity> createClass(@RequestBody @Valid ClassCreateRequestDto classCreateRequestDto){
+        return ResponseEntity.ok(classService.createClass(classCreateRequestDto));
+    }
+
+    //학급 초대 코드 복사 ( 만료되었으면 자동 재발급 )
+    @GetMapping("/{class_id}/invitation-code")
+    @Operation(description = "학급 초대 코드 제공 (복사하기)")
+    public ResponseEntity<BanklassResponseEntity> getClassInvitationCode(@PathVariable(value = "class_id") Long classId){
+        return ResponseEntity.ok(classService.getClassInvitationCode(classId));
+    }
+
+
+    //학급 초대 코드 복사
+//    @PostMapping("/{class_id}/reissue-code")
+//    @Operation(description = "학급 초대 코드 재발급")
+//    public ResponseEntity reissueClassInvitationCode(@PathVariable(value = "class_id") Long classId){
+//        classService.reissueInvitationCode(classId);
+//        return ResponseEntity.ok().build();
 //    }
-//
-//    //학급 초대 코드 복사 ( 만료되었으면 자동 재발급 )
-//    @GetMapping("/{class_id}/invitation-code")
-//    @Operation(description = "학급 초대 코드 제공 (복사하기)")
-//    public ResponseEntity<ClassInvitationCodeResponseDto> getClassInvitationCode(@PathVariable(value = "class_id") Long classId){
-//        return ResponseEntity.ok(classService.getClassInvitationCode(classId));
-//    }
-//
-//
-//    //학급 초대 코드 복사
-////    @PostMapping("/{class_id}/reissue-code")
-////    @Operation(description = "학급 초대 코드 재발급")
-////    public ResponseEntity reissueClassInvitationCode(@PathVariable(value = "class_id") Long classId){
-////        classService.reissueInvitationCode(classId);
-////        return ResponseEntity.ok().build();
-////    }
-//
-//    @GetMapping("/check/invitation-code")
-//    @Operation(description = "유효한 초대 코드인지 검증 후 학급 정보를 보내줌")
-//    public ResponseEntity<ClassValidInvitationResponseDto> checkInvitationCode(@RequestParam(value = "invitation_code") String invitationCode){
-//        return ResponseEntity.ok(classService.checkInvitationCode(invitationCode));
-//    }
-//
-//
-//
+
+    @GetMapping("/check/invitation-code")
+    @Operation(description = "유효한 초대 코드인지 검증 후 학급 정보를 보내줌")
+    public ResponseEntity<BanklassResponseEntity> checkInvitationCode(@RequestParam(value = "invitation_code") String invitationCode){
+        return ResponseEntity.ok(classService.checkInvitationCode(invitationCode));
+    }
+
+
+
 }

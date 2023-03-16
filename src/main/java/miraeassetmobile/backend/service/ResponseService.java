@@ -188,5 +188,27 @@ public class ResponseService {
         }
     }
 
+    public void alreadyExistUser(String phoneNumber){
+        if(userInfoRepository.existsByPhoneNum(phoneNumber)){
+            throw new ServiceException(ErrorCode.ALREADY_EXIST_USER);
+        }
+
+
+    }
+
+        //같은 년도에 같은 학교에 같은 반, 학년에 반이 생성되었음
+    public void isExistClassWithSameInfo(String schoolName, int grade, int classNumber, String year){
+        if(!classRepository.findSameClassInYear(schoolName,grade,classNumber,year).isEmpty()){
+            throw new ServiceException(ErrorCode.ALREADY_EXIST_CLASS_SAME_YEAR);
+        }
+    }
+
+
+    public void isExistClassWithSameName(String schoolName, String title){
+        if(classRepository.existsBySchoolNameAndTitle(schoolName, title)){
+            throw new ServiceException(ErrorCode.ALREADY_EXIST_CLASS_SAME_NAME);
+        }
+    }
+
 
 }

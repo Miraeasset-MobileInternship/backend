@@ -32,7 +32,6 @@ import java.util.List;
 public class JobService {
 
 
-    private final ErrorService errorService;
     private final JobRepository jobRepository;
     private final StudentRepository studentRepository;
     private final UserInfoRepository userInfoRepository;
@@ -40,8 +39,7 @@ public class JobService {
     private final ResponseService responseService;
 
 
-    public JobService(ResponseService responseService, ProfileImgRepository profileImgRepository, UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, StudentRepository studentRepository){
-        this.errorService =errorService;
+    public JobService(ResponseService responseService, ProfileImgRepository profileImgRepository, UserInfoRepository userInfoRepository, JobRepository jobRepository, StudentRepository studentRepository){
         this.jobRepository = jobRepository;
         this.studentRepository = studentRepository;
         this.userInfoRepository = userInfoRepository;

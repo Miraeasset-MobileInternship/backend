@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -89,7 +91,7 @@ public class TokenProvider {
         Claims claims = parseClaims(accessToken);
 
         if (claims.get(AUTHORITIES_KEY) == null){
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            throw new ServiceException(ErrorCode.UNAUTHORIZED_TOKEN);
         }
 
         // 권한 정보 가져옴
@@ -125,14 +127,18 @@ public class TokenProvider {
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
+            throw new ServiceException(ErrorCode.INVALID_SIGNATURE);
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
+            throw new ServiceException(ErrorCode.EXPIRED_TOKEN);
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
+            throw new ServiceException(ErrorCode.UNSUPPORTED_TOKEN);
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.");
+            throw new ServiceException(ErrorCode.TOKEN_NOT_EXIST);
         }
-        return false;
+//        return false;
     }
 
 
