@@ -23,7 +23,7 @@ public class StudentTransferSelectorDto {
 
     String studentName;
 
-    String studentNumberName;
+
 
 
 
