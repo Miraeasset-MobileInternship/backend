@@ -21,11 +21,11 @@ public class UserController {
 
 
 
-//    @GetMapping("/profile-img-list")
-//    @Operation(description = "프로필 이미지 후보 리스트 보기")
-//    public ResponseEntity<ProfileImgListResponseDto> getProfileImgList(){
-//        return ResponseEntity.ok(userService.getProfileImgList());
-//    }
+    @GetMapping("/profile-img-list")
+    @Operation(description = "프로필 이미지 후보 리스트 보기")
+    public ResponseEntity<BanklassResponseEntity> getProfileImgList(){
+        return ResponseEntity.ok(userService.getProfileImgList());
+    }
 
 
     @GetMapping("/{user_id}/header-info")
@@ -35,11 +35,11 @@ public class UserController {
     }
 
 
-//    @GetMapping("/{user_id}/student/join-class-list")
-//    @Operation(description = "속해 있는 모든 학급 리스트를 반환 - 학생용")
-//    public ResponseEntity<JoinedClassResponseDto> getJoinedClass(@PathVariable(value = "user_id") Long userId){
-//        return ResponseEntity.ok(userService.getJoinedClassList(userId));
-//    }
+    @GetMapping("/{user_id}/student/join-class-list")
+    @Operation(description = "속해 있는 모든 학급 리스트를 반환 - 학생용")
+    public ResponseEntity<BanklassResponseEntity> getJoinedClass(@PathVariable(value = "user_id") Long userId){
+        return ResponseEntity.ok(userService.getStudentJoinedClassList(userId));
+    }
 
 
 }
