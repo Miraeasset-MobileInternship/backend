@@ -3,7 +3,6 @@ package miraeassetmobile.backend.domain.dto.jobs;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import miraeassetmobile.backend.domain.entity.Job;
 
 import java.util.List;
 

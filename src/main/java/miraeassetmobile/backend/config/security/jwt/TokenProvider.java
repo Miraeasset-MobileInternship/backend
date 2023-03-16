@@ -24,9 +24,6 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter.AUTHORIZATION_HEADER;
-import static miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter.BEARER_PREFIX;
-
 // 실제 인증에 대한 부분 중 인증 전 객체를 받아 인증된 객체를 반환하는 역할
 @Slf4j
 @Component
@@ -163,11 +160,11 @@ public class TokenProvider {
 
     // Request Header에서 토큰 정보 가져오기
     public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        String bearerToken = request.getHeader(JwtAuthenticationFilter.AUTHORIZATION_HEADER);
 
 
         if (StringUtils.hasText(bearerToken) &&
-                bearerToken.startsWith(BEARER_PREFIX))
+                bearerToken.startsWith(JwtAuthenticationFilter.BEARER_PREFIX))
             return bearerToken.substring(7); //bearer 제거하고 나머지
         return null;
     }

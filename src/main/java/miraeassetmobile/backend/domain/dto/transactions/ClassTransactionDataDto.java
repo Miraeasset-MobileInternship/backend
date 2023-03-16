@@ -6,7 +6,6 @@ import lombok.Getter;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
