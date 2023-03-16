@@ -1,7 +1,7 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.domain.TestInfo;
 import miraeassetmobile.backend.repository.TestRepository;
+import miraeassetmobile.backend.domain.TestInfo;
 import org.springframework.stereotype.Service;
 
 @Service
