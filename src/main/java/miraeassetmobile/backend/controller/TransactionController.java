@@ -1,4 +1,4 @@
-package miraeassetmobile.backend.v1.controller;
+package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 
