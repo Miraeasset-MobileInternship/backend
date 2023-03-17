@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 @Getter
 public class StockApiServiceUtils {
 
-    @Value("${api.key}")
+    @Value("${api.data-go-kr.key}")
     private String secretKey;
 
-    @Value("${api.url}")
+    @Value("${api.data-go-kr.url}")
     private String hostUrl;
 }

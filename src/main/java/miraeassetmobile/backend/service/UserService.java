@@ -1,19 +1,18 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
-import miraeassetmobile.backend.domain.dto.users.JoinedClassResponseDto;
-import miraeassetmobile.backend.domain.dto.users.ProfileImgListResponseDto;
-import miraeassetmobile.backend.domain.dto.users.UserInfoResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
-import miraeassetmobile.backend.domain.entity.ProfileImg;
 import miraeassetmobile.backend.domain.entity.Student;
-import miraeassetmobile.backend.domain.entity.UserInfo;
-import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.ProfileImgRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.users.UserInfoResponseDto;
+import miraeassetmobile.backend.domain.entity.ProfileImg;
+import miraeassetmobile.backend.domain.entity.UserInfo;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,54 +25,52 @@ public class UserService {
     ProfileImgRepository profileImgRepository;
     StudentRepository studentRepository;
     ClassRepository classRepository;
+    ResponseService responseService;
 
 
 
-    UserService(ClassRepository classRepository, StudentRepository studentRepository,UserInfoRepository userInfoRepository, ProfileImgRepository profileImgRepository){
+    UserService(ResponseService responseService, ClassRepository classRepository, StudentRepository studentRepository, UserInfoRepository userInfoRepository, ProfileImgRepository profileImgRepository){
         this.userInfoRepository = userInfoRepository;
         this.profileImgRepository = profileImgRepository;
         this.studentRepository =studentRepository;
         this.classRepository =classRepository;
+        this.responseService = responseService;
     }
 
 
 
-    public ProfileImgListResponseDto getProfileImgList(){
+    public BanklassResponseEntity getProfileImgList(){
 
-        return ProfileImgListResponseDto.builder()
-                .profileImgList(profileImgRepository.findAll())
-                .build();
-
+        return responseService.successHandler(profileImgRepository.findAll());
 
     }
 
 
-    public UserInfoResponseDto getUserName(Long userId){
+    public BanklassResponseEntity getUserName(Long userId){
 
-        UserInfo user = userInfoRepository.findById(userId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
-        ProfileImg p = profileImgRepository.findById(user.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
+        UserInfo user = userInfoRepository.findById(userId).orElseThrow(
+                ()-> new ServiceException(ErrorCode.NOT_EXIST)
+        );
 
-        return UserInfoResponseDto.builder()
+        ProfileImg p = profileImgRepository.findById(user.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+
+
+        UserInfoResponseDto result = UserInfoResponseDto.builder()
                 .userName(user.getUserName())
                 .profileImg(p.getIconCode())
                 .build();
+
+
+        return responseService.successHandler(result);
+
     }
 
 
-    public UserInfo getUser(Long userId){
 
-        UserInfo u = userInfoRepository.findById(userId).get();
-
-        System.out.println(u.getUserName());
-
-        return u;
-    }
+    public BanklassResponseEntity getStudentJoinedClassList(Long userId) {
 
 
-    public JoinedClassResponseDto getJoinedClassList(Long userId) {
-
-
-        UserInfo u = userInfoRepository.findById(userId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        UserInfo u = userInfoRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         List<Student> studentClassList = studentRepository.findByUserId(u.getId());
 
@@ -86,7 +83,7 @@ public class UserService {
 
 
             //해당 반의 id로 반의 정보를 끌어오기 (1개)
-            Classes c = classRepository.findById(classId).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+            Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
             ClassOnboardInfo cInfo = ClassOnboardInfo.builder()
                     .classId(c.getId())
@@ -102,9 +99,9 @@ public class UserService {
 
         }
 
-        return JoinedClassResponseDto.builder()
-                .classOnboardInfoList(classOnboardInfos)
-                .build();
+        return responseService.successHandler(
+                classOnboardInfos
+        );
 
     }
 

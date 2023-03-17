@@ -1,14 +1,14 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.domain.dto.auth.sms.PhoneNumberCode;
+
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.classes.*;
-import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.entity.Classes;
-import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
 import miraeassetmobile.backend.repository.redis.ClassInvitationCodeRedisRepository;
@@ -17,41 +17,42 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.transaction.Transactional;
 import java.net.URI;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Random;
 
 @Service
 public class ClassService {
 
-    //에러서비스
-    ErrorService errorService;
+
 
 
     //레포
     ClassRepository classRepository;
     UserInfoRepository userInfoRepository;
     ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository;
+    ResponseService responseService;
 
-    ClassService(ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository, UserInfoRepository userInfoRepository,ClassRepository classRepository, ErrorService errorService){
 
+    ClassService(ResponseService responseService,ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository, UserInfoRepository userInfoRepository, ClassRepository classRepository){
+        this.responseService=responseService;
         this.classRepository = classRepository;
-        this.errorService = errorService;
         this.userInfoRepository=userInfoRepository;
         this.classInvitationCodeRedisRepository =classInvitationCodeRedisRepository;
     }
 
 
     //학급 국고 정보 조회
-    public ClassAccountResponseDto getClassAccountInfo(Long classId){
+    public BanklassResponseEntity getClassAccountInfo(Long classId){
 
 
         //학급조회
-        Classes c = classRepository.findById(classId).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+        Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        return (ClassAccountResponseDto.builder()
+        return (
+                responseService.successHandler(
+                ClassAccountResponseDto.builder()
                 .classId(c.getId())
                 .classTitle(c.getTitle())
                 .classCurrency(c.getCurrency())
@@ -60,23 +61,24 @@ public class ClassService {
                 .classGrade(c.getGrade())
                 .classNumber(c.getClassNum())
                 .schoolName(c.getSchoolName())
-                .build());
+                .build())
+        );
 
     }
 
 
     @Transactional
     //신규학급 등록
-    public URI createClass(ClassCreateRequestDto classCreateRequestDto){
+    public BanklassResponseEntity createClass(ClassCreateRequestDto classCreateRequestDto){
 
         LocalDate today = LocalDate.now();
         int year = today.getYear();
 
         //해당 년도에 이 학교/학년/반에서 생성된 학급이 존재하는 경우
-        errorService.isExistClassWithSameInfo(classCreateRequestDto.getSchoolName(), classCreateRequestDto.getGrade(),classCreateRequestDto.getClassNumber(), Integer.toString(year));
+        responseService.isExistClassWithSameInfo(classCreateRequestDto.getSchoolName(), classCreateRequestDto.getGrade(),classCreateRequestDto.getClassNumber(), Integer.toString(year));
 
         //해당 학교에 같은 이름으로 등록된 나라가 있을 경우
-        errorService.isExistClassWithSameName(classCreateRequestDto.getSchoolName(), classCreateRequestDto.getTitle());
+        responseService.isExistClassWithSameName(classCreateRequestDto.getSchoolName(), classCreateRequestDto.getTitle());
 
 
         //새로운 클래스 동록
@@ -101,25 +103,12 @@ public class ClassService {
         classInvitationCodeRedisRepository.save(classCode);
 
 
-        return createUri(c.getId(), UriTypes.CLASS); //등록된 직업에 대해 URI를 같이 반환함
-
-    }
-
-    //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
-    public URI createUri(Long id, UriTypes uriTypes){
-        URI uri = UriComponentsBuilder.newInstance()
-//                .scheme("https")
-//                .host("m-crew.iptime.org")
-//                .port(8001)
-                .scheme("http")
-                .host("localhost")
-                .port(8080)
-                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
-                .build()
-                .toUri(); //UriComponents into URI
-
-        return uri;
-
+        return responseService.successHandler(
+                CreatedUriDto.builder()
+                        .url(responseService.createUri(c.getId(), UriTypes.CLASS))
+                        .status("created")
+                        .build()
+            ); //반 신규 생성
     }
 
 
@@ -144,7 +133,7 @@ public class ClassService {
     }
 
 
-    public ClassInvitationCodeResponseDto getClassInvitationCode(Long classId){
+    public BanklassResponseEntity getClassInvitationCode(Long classId){
 
 
 
@@ -153,11 +142,12 @@ public class ClassService {
 
 
 
-        return ClassInvitationCodeResponseDto.builder()
+        return responseService.successHandler(
+                ClassInvitationCodeResponseDto.builder()
                 .classId(classId)
                 .invitationCode(classInvitationCode.getInvitationCode())
-                .build();
-
+                .build()
+                );
     }
 
 
@@ -186,7 +176,7 @@ public class ClassService {
     }
 
 
-    public ClassValidInvitationResponseDto checkInvitationCode(String invitationCode){
+    public BanklassResponseEntity checkInvitationCode(String invitationCode){
 
 
         ClassInvitationCode classInvitationCode = classInvitationCodeRedisRepository.findByInvitationCode(invitationCode)
@@ -194,19 +184,21 @@ public class ClassService {
 
 
         Classes c = classRepository.findById(Long.parseLong(classInvitationCode.getId()))
-                .orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXIST_CLASS));
+                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST));
 
 
-        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()-> new NotExistException(ErrorCode.NOT_EXSIT_USER));
+        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST));
 
-        return ClassValidInvitationResponseDto.builder()
+        return responseService.successHandler(
+                ClassValidInvitationResponseDto.builder()
                 .classId(c.getId())
                 .title(c.getTitle())
                 .schoolName(c.getSchoolName())
                 .grade(c.getGrade())
                 .classNumber(c.getClassNum())
                 .teacherName(teacher.getUserName())
-                .build();
+                .build()
+        );
 
     }
 

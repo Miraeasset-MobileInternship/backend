@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.JwtCustomException;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,9 +26,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-
-import static miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter.AUTHORIZATION_HEADER;
-import static miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter.BEARER_PREFIX;
 
 // 실제 인증에 대한 부분 중 인증 전 객체를 받아 인증된 객체를 반환하는 역할
 @Slf4j
@@ -92,7 +92,7 @@ public class TokenProvider {
         Claims claims = parseClaims(accessToken);
 
         if (claims.get(AUTHORITIES_KEY) == null){
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            throw new ServiceException(ErrorCode.UNAUTHORIZED_TOKEN);
         }
 
         // 권한 정보 가져옴
@@ -123,19 +123,45 @@ public class TokenProvider {
     // 토큰 정보 검증
     public boolean validateToken(String token) {
 
+        /*
+        error log:
+
+        IllegalArgumentException 은 정상적으로 serviceException이 작동하지만
+        나머지는 breakpoint : null 로 에러였다
+        -> 원인 : 나머지 4개는 RuntimeException(serviceException extends RuntimeException)
+        이 아니었기 때문..
+
+        우리는 ErrorCode를 사용해야하기 때문에 마찬가지로
+        JwtException 을 extend한 class를 하나 설정 한 뒤 해결하였다
+
+        참고로 RuntimeException은 filter, Intercept로 발생한 에러는 잡아내지 못한다
+
+
+        1. JWTCustomException생성
+        2. JWTException이 발생하는 구간 try-catch로 잡기
+        3. catch에서 JwtException이 발생하면 catch내에 response생성 함수로 보내기
+        4. response 생성 함수를 통해 같은 형식으로 내보내기
+
+         */
+
+
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
+            throw new JwtCustomException(e.getMessage(), ErrorCode.INVALID_SIGNATURE);
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
+            throw new JwtCustomException(e.getMessage(),ErrorCode.EXPIRED_TOKEN);
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
+            throw new JwtCustomException(e.getMessage(),ErrorCode.UNSUPPORTED_TOKEN);
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.");
+            throw new ServiceException(ErrorCode.TOKEN_NOT_EXIST);
         }
-        return false;
+//        return false;
     }
 
 
@@ -163,11 +189,11 @@ public class TokenProvider {
 
     // Request Header에서 토큰 정보 가져오기
     public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        String bearerToken = request.getHeader(JwtAuthenticationFilter.AUTHORIZATION_HEADER);
 
 
         if (StringUtils.hasText(bearerToken) &&
-                bearerToken.startsWith(BEARER_PREFIX))
+                bearerToken.startsWith(JwtAuthenticationFilter.BEARER_PREFIX))
             return bearerToken.substring(7); //bearer 제거하고 나머지
         return null;
     }

@@ -1,6 +1,8 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.domain.dto.classes.CurrenClassStudentJobResponseDto;
+
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
@@ -12,41 +14,37 @@ import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.error.exception.NotExistException;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.JobRepository;
 import miraeassetmobile.backend.repository.ProfileImgRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
-
-import net.sf.json.JSONObject;
-import org.json.JSONArray;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @Service
 public class JobService {
 
 
-    private final ErrorService errorService;
     private final JobRepository jobRepository;
     private final StudentRepository studentRepository;
     private final UserInfoRepository userInfoRepository;
     private final ProfileImgRepository profileImgRepository;
+    private final ResponseService responseService;
 
 
-    public JobService(ProfileImgRepository profileImgRepository,UserInfoRepository userInfoRepository, ErrorService errorService, JobRepository jobRepository, StudentRepository studentRepository){
-        this.errorService =errorService;
+    public JobService(ResponseService responseService, ProfileImgRepository profileImgRepository, UserInfoRepository userInfoRepository, JobRepository jobRepository, StudentRepository studentRepository){
         this.jobRepository = jobRepository;
         this.studentRepository = studentRepository;
         this.userInfoRepository = userInfoRepository;
         this.profileImgRepository = profileImgRepository;
+        this.responseService = responseService;
     }
 
 
@@ -54,10 +52,10 @@ public class JobService {
     /*
     공통직업(classId=1로 등록)을 포함한 직업을 page에 따라 10개씩 반환하는 함수
      */
-    public ClassJobListResponseDto getJobListByClass(Long classId){
+    public BanklassResponseEntity getJobListByClass(Long classId){
 
         //존재하는 학급인지
-        errorService.isExistClass(classId);
+        responseService.isExistClass(classId);
 
         if(classId == 1){ //공통직업을 조회한 경우
 
@@ -84,10 +82,11 @@ public class JobService {
 
 
 
-            return ClassJobListResponseDto.builder()
+            return responseService.successHandler(ClassJobListResponseDto.builder()
                     .totalNum(jobLists.size())
                     .jobs(jobLists)
-                    .build();
+                    .build()
+            );
 
 
 
@@ -125,10 +124,11 @@ public class JobService {
 
 
 
-            return ClassJobListResponseDto.builder()
+            return responseService.successHandler(ClassJobListResponseDto.builder()
                     .totalNum(jobLists.size())
                     .jobs(jobLists)
-                    .build();
+                    .build()
+            );
 
 
         }
@@ -137,10 +137,10 @@ public class JobService {
 
 
     //특정 학급의 아이들의 전체 직업과 정보를 넘김
-    public CurrenClassStudentJobResponseDto getAllStudentJobList(Long classId){
+    public BanklassResponseEntity getAllStudentJobList(Long classId){
 
         //존재하는 학급인지
-        errorService.isExistClass(classId);
+        responseService.isExistClass(classId);
 
 
         List<Student> students = studentRepository.findByClassId(classId);
@@ -150,10 +150,10 @@ public class JobService {
         for (Student student : students) {
 
             //존재하지 않는 직업 에러
-            Job job = jobRepository.findById(student.getJobId()).orElseThrow(()->new NotExistException(ErrorCode.NOT_EXIST_JOB));
+            Job job = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
-            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_IMAGE));
+            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
             studentJobs.add(StudentJobDto.builder()
                     .studentId(student.getId())
@@ -166,24 +166,21 @@ public class JobService {
 
         }
 
-        return CurrenClassStudentJobResponseDto.builder()
-                .studentJobList(studentJobs)
-                .build();
+        return responseService.successHandler(studentJobs);
 
     }
 
 
 
     //특정 job의 정보를 조회함
-    public JobDto getJobInfo(Long id){
+    public BanklassResponseEntity getJobInfo(Long id){
 
 
-
-
-        Job job = jobRepository.findById(id).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_JOB));
+        Job job = jobRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         //필요한 것만 dto에 담아서 전달
-        return JobDto.builder().jobId(job.getId())
+        return responseService.successHandler(
+                JobDto.builder().jobId(job.getId())
                 .title(job.getTitle())
                 .monthlySalary(job.getMonthlySalary())
                 .creditLimit(job.getCreditLimit())
@@ -191,90 +188,123 @@ public class JobService {
                 .isWithdrawClass(job.isWithdrawClass())
                 .isWithdrawStudent(job.isWithdrawStudent())
                 .isModifyCredit(job.isModifyCredit())
-                .build();
+                .build()
+        );
 
     }
 
-    public void deleteJob(Long id){
+    @Transactional
+    public BanklassResponseEntity deleteJob(Long id){
 
         //예외처리들
         //존재하는 직업인가
-        errorService.isExistJob(id);
+        responseService.isExistJob(id);
+
         //삭제 가능한 직업인가
-        errorService.unavailableJobDelete(id);
+        responseService.unavailableJobDelete(id);
 
         //삭제
-        jobRepository.deleteById(id);
+        try {
+            jobRepository.deleteById(id);
+
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                            .status("deleted")
+                            .url(responseService.createUri(id, UriTypes.JOB))
+                            .build()
+            );
+
+        }catch (Exception e){
+            throw new ServiceException(ErrorCode.NOT_DELETED);
+        }
 
     }
 
 
    //신규직업등록
-    public URI createJob(JobCreateRequestDto jobCreateRequestDto){
+    public BanklassResponseEntity createJob(JobCreateRequestDto jobCreateRequestDto){
 
         //존재하는 학급인지
-        errorService.isExistClass(jobCreateRequestDto.getClassId());
+        responseService.isExistClass(jobCreateRequestDto.getClassId());
 
         //등록된 직업이 50개 이상이면 등록불가
-        errorService.unavailableJobRegister(jobCreateRequestDto.getClassId());
+        responseService.unavailableJobRegister(jobCreateRequestDto.getClassId());
 
 
         //등록가능한 직업명인지 확인
-        errorService.validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
+        responseService.validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
 
 
         //직업등록
         Job newJob = jobCreateRequestDto.toJob(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle(), jobCreateRequestDto.getDetail(), jobCreateRequestDto.getMonthlySalary(), jobCreateRequestDto.isWithdrawStudent(), jobCreateRequestDto.isWithdrawClass()); //save에서 에러난다
 
 
-        Job j = jobRepository.save(newJob);
+        try {
+
+            Job j = jobRepository.save(newJob);
 
 
-        return createUri(j.getId(), UriTypes.JOB); //등록된 직업에 대해 URI를 같이 반환함
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                            .status("created")
+                            .url(responseService.createUri(j.getId(), UriTypes.JOB))
+                            .build()
+            );
+
+
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE);
+        }
+
 
     }
 
 
-    //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
-    public URI createUri(Long id, UriTypes uriTypes){
-        URI uri = UriComponentsBuilder.newInstance()
-//                .scheme("https")
-//                .host("m-crew.iptime.org")
-//                .port(8001)
-                .scheme("http")
-                .host("localhost")
-                .port(8080)
-                .path("/api/"+ uriTypes.getTypeName() + "/" + id)
-                .build()
-                .toUri(); //UriComponents into URI
-
-        return uri;
-
-    }
 
 
-    public void updateAllStudentJob(List<StudentJobUpdateRequestDto> studentJobList){
+
+    public BanklassResponseEntity updateAllStudentJob(List<StudentJobUpdateRequestDto> studentJobList){
         for (StudentJobUpdateRequestDto studentJob : studentJobList) {
             updateStudentJob(studentJob);
         }
+
+        return responseService.successHandler(
+                CreatedUriDto.builder()
+                        .status("update")
+                        .url(responseService.createUri(0L, UriTypes.STUDENT))
+                        .build()
+        );
+
     }
 
 
-    public URI updateStudentJob(StudentJobUpdateRequestDto studentJob){
+    public BanklassResponseEntity updateStudentJob(StudentJobUpdateRequestDto studentJob){
 
 
         //존재하는 직업인가
-        errorService.isExistJob(studentJob.getJobId());
+        responseService.isExistJob(studentJob.getJobId());
 
 
-        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new NotExistException(ErrorCode.NOT_EXIST_STUDENT));
+        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         //객체의 직업을 변경
         Student updateStudent = student.updateJob(studentJob.getJobId());
 
-        studentRepository.save(updateStudent);
+        try {
 
-        return createUri(updateStudent.getId(), UriTypes.STUDENT);
+            studentRepository.save(updateStudent);
+
+
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                            .status("update")
+                            .url(responseService.createUri(updateStudent.getId(), UriTypes.STUDENT))
+                            .build()
+            );
+
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE);
+        }
 
     }
 

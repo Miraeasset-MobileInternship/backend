@@ -5,6 +5,8 @@ package miraeassetmobile.backend.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
 import miraeassetmobile.backend.service.auth.AuthService;
@@ -65,9 +67,8 @@ public class AuthController {
 
     // coolSMS 구현 로직 연결
     @PostMapping("/sendSMS")
-    public ResponseEntity sendSMS(@RequestParam(value="phone_number") String phoneNumber) throws CoolsmsException {
-        authService.sendMessage(phoneNumber);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BanklassResponseEntity> sendSMS(@RequestParam(value="phone_number") String phoneNumber) throws CoolsmsException {
+        return ResponseEntity.ok(authService.sendMessage(phoneNumber));
     }
 
 

@@ -4,8 +4,6 @@ import miraeassetmobile.backend.domain.entity.Job;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 //pagenation을 위한 import
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;

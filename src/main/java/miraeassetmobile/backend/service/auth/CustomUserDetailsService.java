@@ -1,19 +1,15 @@
 package miraeassetmobile.backend.service.auth;
 
 import lombok.RequiredArgsConstructor;
-
 import miraeassetmobile.backend.domain.entity.UserInfo;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.UserInfoRepository;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Set;
 
 
 /*
@@ -29,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String phoneNum) throws UsernameNotFoundException {
 
         UserInfo isExist = userInfoRepository.findByPhoneNum(phoneNum).orElseThrow( () ->
-                new UsernameNotFoundException("유저를 찾을 수 없습니다. 핸드폰 번호를 다시 확인해주세요."));
+                new ServiceException(ErrorCode.INVALID_PHONENUMBER));
 
 
         return User.builder()

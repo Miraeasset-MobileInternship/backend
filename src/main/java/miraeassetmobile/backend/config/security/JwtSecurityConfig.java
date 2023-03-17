@@ -1,9 +1,9 @@
 package miraeassetmobile.backend.config.security;
 
 import lombok.RequiredArgsConstructor;
+import miraeassetmobile.backend.repository.redis.LogoutAccessTokenRedisRepository;
 import miraeassetmobile.backend.config.security.jwt.JwtAuthenticationFilter;
 import miraeassetmobile.backend.config.security.jwt.TokenProvider;
-import miraeassetmobile.backend.repository.redis.LogoutAccessTokenRedisRepository;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.DefaultSecurityFilterChain;
