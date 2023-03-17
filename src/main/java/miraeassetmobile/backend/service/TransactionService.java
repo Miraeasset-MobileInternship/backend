@@ -706,7 +706,7 @@ public class TransactionService {
 //        }
 
 
-        int lastMoney = t.getStudentMoney();
+        int lastMoney = t.getClassMoney();
 
         //마지막 거래일
         LocalDate lastdate = t.getCreateTimestamp().toLocalDateTime().toLocalDate();
