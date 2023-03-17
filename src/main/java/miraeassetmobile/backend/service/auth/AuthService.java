@@ -358,12 +358,14 @@ public class AuthService {
     public BanklassResponseEntity reissue(HttpServletRequest request, String refreshToken) {
 
         // 1. Refresh token 검증
-        if (!tokenProvider.validateToken(refreshToken)) {
-            throw new ServiceException(ErrorCode.INVALID_TOKEN);
-        }
+        // refreshtoken의 validation을 검증할 필요는 없음
+//        if (!tokenProvider.validateToken(refreshToken)) {
+//            throw new ServiceException(ErrorCode.INVALID_TOKEN);
+//        }
 
         // 2. Request Header 에서 access toke 추출
         String accessToken = tokenProvider.resolveToken(request);
+
 
 
         // 3. Access Token이 만료된 경우 동일 유저의 정보로 새로운 authentication 생성
@@ -373,15 +375,19 @@ public class AuthService {
         // 4. redis에서 userId를(id) 기반으로 Refresh Token 값 가져오기
         RefreshToken storedRefreshToken = refreshTokenRedisRepository.findById(
                         authentication.getName())
-                .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.LOGOUT_USER)); //SERVER ERROR(?)
 
         // 4. Refresh Token 일치 여부 검사 (프론트에서 보유한 refresh토큰과 레디스에 저장해둔 정보가 일치하는가)
         if (!storedRefreshToken.getRefreshToken().equals(refreshToken)) {
-            throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
+            throw new ServiceException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
+
+
 
         // 5. 새로운 토큰 생성
         TokenDto tokenDto = tokenProvider.generateToken(authentication);
+
+
 
 
         //6. redis에 존재하는 refreshToken 삭제
@@ -404,11 +410,11 @@ public class AuthService {
         // 새로운 토큰 정보를 이용해
         return responseService.successHandler(
                 AccessTokenInfo.builder()
-                .grantType(tokenDto.getGrantType())
-                .accessToken(tokenDto.getAccessToken())
-                .refreshToken(tokenDto.getRefreshToken())
-                .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
-                .build()
+                        .grantType(tokenDto.getGrantType())
+                        .accessToken(tokenDto.getAccessToken())
+                        .refreshToken(tokenDto.getRefreshToken())
+                        .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
+                        .build()
         );
 
     }

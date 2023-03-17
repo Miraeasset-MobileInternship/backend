@@ -28,6 +28,8 @@ public enum ErrorCode {
     TOKEN_NOT_EXIST("E005","존재하지 않는 토큰입니다."),
     UNAUTHORIZED_TOKEN("E007","인증되지 않은 토큰입니다."),
     INVALID_TOKEN("E009","유효하지 않은 토큰입니다."),
+    INVALID_REFRESH_TOKEN("E010", "잘못된 refreshToken 입니다."),
+
 
     //존재하지 않는 리소스
     NOT_EXIST("E401", "존재하지 않는 리소스에 대한 접근입니다."),
@@ -127,6 +129,7 @@ public enum ErrorCode {
     private final String status;
 
     private final String detail;
+
 
 
 
