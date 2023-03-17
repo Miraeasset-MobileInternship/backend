@@ -1,4 +1,4 @@
-package miraeassetmobile.backend.domain.dto.api;
+package miraeassetmobile.backend.domain.dto.api.dataGoKr;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
