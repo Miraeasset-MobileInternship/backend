@@ -121,7 +121,8 @@ public enum ErrorCode {
     //common error
     SERVER_ERROR("E500", "예상치 못한 에러가 발생했습니다."),
     MESSAGE_SERVER_ERROR("E501", "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
-
+    EXTERNAL_SERVER_ERROR("E500", "주식 시세 정보 서버에 에러가 있습니다. 잠시후 다시 시도해주세요. \n 문제가 계속 될 경우 관리자에게 문의해주세요."),
+    EXTERNAL_SERVER_NO_RESULT_ERROR("E500", "종목이 존재하지 않아 정보를 불러올 수 없습니다. \n 관리자에게 문의해주세요."),
 
     ;
 

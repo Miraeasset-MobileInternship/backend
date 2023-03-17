@@ -1,39 +1,96 @@
-//package miraeassetmobile.backend.v1.controller;
-//
-//import io.swagger.v3.oas.annotations.Operation;
-//import miraeassetmobile.backend.v1.domain.dto.stocks.TotalStockInfoResponseDto;
-//import miraeassetmobile.backend.v1.service.StockService;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//@RequestMapping("/api/stock")
-//@RestController
-//public class StockController {
-//
-//
-//    StockService stockService;
-//
-//
-//    StockController(StockService stockService){
-//        this.stockService=stockService;
-//    }
-//
-//
+package miraeassetmobile.backend.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+
+import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
+import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
+import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
+import miraeassetmobile.backend.service.StockService;
+import miraeassetmobile.backend.service.YhFinanceApiService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RequestMapping("/api/stock")
+@RestController
+public class StockController {
+
+
+
+    StockService stockService;
+    YhFinanceApiService yhFinanceApiService;
+
+
+    StockController(StockService stockService, YhFinanceApiService yhFinanceApiService){
+        this.stockService=stockService;
+        this.yhFinanceApiService = yhFinanceApiService;
+    }
+
+
 //    @GetMapping("/total-info")
 //    @Operation(description = "내 주식관련 총 집합 정보, 학생 - 내 주식페이지 상단 카드부분(평가금액, 매수금액 등)")
 //    public ResponseEntity<TotalStockInfoResponseDto> getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
 //        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
 //    }
+
+
+
+    //인기종목 Top N개
+//    @GetMapping("/trending")
+//    @Operation(description = "인기 종목 리스트")
+//    public ResponseEntity getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
+//        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
+//
+
+
+//    @GetMapping("/student/{student_id}")
+//    @Operation(description = "보유 주식 종목별 정보, 학생 - 내 주식페이지 하단 보유 주식리스트 부분")
+//    public ResponseEntity<List<StudentStockInfoResponseDto>> getStudentAccountInfo(@PathVariable(value = "student_id") Long studentId){
+//        return ResponseEntity.ok(stockService.getStudentStockList(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
+
+
+
+//    @GetMapping("/get/trending")
+//    @Operation(description = "야후 파이낸스 테스트용")
+//    public ResponseEntity<TrendingByRegion> trending(){
+//
+//        return yhFinanceApiService.getTrendingByRegion();
+//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
+
+    @GetMapping("/get/trending")
+    public ResponseEntity<BanklassResponseEntity> getFinanceQuote(){
+        return ResponseEntity.ok(stockService.getTodayTrending());
+    }
+
+
+//    @GetMapping("/get/realtime")
+//    @Operation(description = "야후 파이낸스 테스트용")
+//    public void realtimeprice(@RequestParam String symbol) throws IOException {
+//
+//        yahooFinanceApiCallService.getRealtimePrice(symbol);
+//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
 //
 //
+//    @GetMapping("/get/chart")
+//    @Operation(description = "야후 파이낸스 테스트용")
+//    public void realtimeprice(@RequestParam String period, @RequestParam String symbol) throws IOException {
 //
-////    @GetMapping("/student/{student_id}")
-////    @Operation(description = "보유 주식 종목별 정보, 학생 - 내 주식페이지 하단 보유 주식리스트 부분")
-////    public ResponseEntity<List<StudentStockInfoResponseDto>> getStudentAccountInfo(@PathVariable(value = "student_id") Long studentId){
-////        return ResponseEntity.ok(stockService.getStudentStockList(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-////    }
+//        yahooFinanceApiCallService.getChart(period,symbol);
+//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
 //
 //
+//    @GetMapping("/get/autocomplete")
+//    @Operation(description = "야후 파이낸스 테스트용")
+//    public void realtimeprice(@RequestParam String region, @RequestParam String lang, @RequestParam String query) throws IOException {
 //
-//
-//}
+//        yahooFinanceApiCallService.getAutocomplete(region, lang, query);
+//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
+
+
+}

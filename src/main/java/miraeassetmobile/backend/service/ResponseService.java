@@ -211,4 +211,14 @@ public class ResponseService {
     }
 
 
+    public void errorFromExternalServerNoResult(){ //외부 서버 에러 -> 결과가 존재하지 않음(조회 코드가 틀려서 결과가 없음)
+        throw new ServiceException(ErrorCode.EXTERNAL_SERVER_NO_RESULT_ERROR);
+
+    }
+
+
+    public void errorFromExternalServer(){ //외부 서버 에러(공통)
+        throw new ServiceException(ErrorCode.EXTERNAL_SERVER_ERROR);
+    }
+
 }
