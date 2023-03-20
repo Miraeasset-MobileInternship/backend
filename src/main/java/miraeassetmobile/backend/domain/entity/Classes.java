@@ -44,7 +44,7 @@ public class Classes extends BaseTimeEntity {
     private String currency;
 
     @NotNull
-    private int money;
+    private int money = 80000;
 
     public Classes updateMoney(int money){
         this.money = money;

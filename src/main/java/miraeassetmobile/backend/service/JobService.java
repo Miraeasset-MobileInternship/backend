@@ -234,9 +234,11 @@ public class JobService {
         //등록가능한 직업명인지 확인
         responseService.validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
 
-
+        //**Request Dto에서 boolean형 인 것은 .get이 아니라 .is 로 불려와진다 따라서 Entity는 괜찮은데 Request에서는 isWithdrawClass로 이름지으면 안되고 is 를뺴야함
         //직업등록
         Job newJob = jobCreateRequestDto.toJob(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle(), jobCreateRequestDto.getDetail(), jobCreateRequestDto.getMonthlySalary(), jobCreateRequestDto.isWithdrawStudent(), jobCreateRequestDto.isWithdrawClass()); //save에서 에러난다
+
+
 
 
         try {
