@@ -336,4 +336,78 @@ public class StockService {
     }
 
 
+    public long calculateTime(String pubDate) throws ParseException {
+
+        //1. LocalDateTime으로 type변경
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        LocalDateTime pubDateTime = LocalDateTime.parse(pubDate, formatter);
+
+
+        //2. 시간 변경
+        /*
+        실제로 넘어오는 시간이 +0 timezone기준인데,
+        한국 타임존(+9)으로 자동으로 설정되므로 -9시간 빼줘야함
+         */
+        LocalDateTime krPubDateTime = pubDateTime.minusHours(9);
+
+
+        //2. 현 시각을 구함
+        LocalDateTime today = LocalDateTime.now();
+
+
+        //3. 현시각 - (기사가 올라간 시각) -> 초단위
+        Duration duration = Duration.between(krPubDateTime, today);
+
+
+        long sec = duration.getSeconds();
+
+
+        return sec;
+    }
+
+
+
+    // 초를 ㅇㅇ분 전/ ㅇㅇ시간 전 / ㅇㅇ 일 전 : 형태로 변경
+    public String changeTime(long second){
+
+        //분
+        long min = second/60;
+
+        if(min>=60){ // 1시간을 넘어가는 범위 -> 시간 단위로 보여줘야함
+
+            long hour = second/3600;
+
+
+            if(hour>=24){ //하루를 넘어가는 범위 -> 일 단위로 보여야함
+
+                long day = second/(24*60*60);
+
+                return day +"일 전";
+
+            }
+
+            return hour +"시간 전";
+
+        }
+
+        return min+"분 전";
+
+
+
+
+    }
+
+
+
+
+
+    public long test(String date) throws ParseException {
+
+        System.out.println("start");
+
+        return calculateTime(date);
+
+    }
+
+
 }
