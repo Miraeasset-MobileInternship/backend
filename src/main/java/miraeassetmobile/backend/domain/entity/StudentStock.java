@@ -22,8 +22,8 @@ public class StudentStock extends BaseTimeEntity{
     private Long studentId;
 
     @NotNull
-    @Column(name = "stock_isin_code")
-    private String stockCode;
+    @Column(name = "stock_symbol")
+    private String stockSymbol;
 
     @NotNull
     @Column(name = "blended_price")

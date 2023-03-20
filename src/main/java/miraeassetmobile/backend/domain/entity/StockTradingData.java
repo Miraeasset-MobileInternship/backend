@@ -21,8 +21,8 @@ public class StockTradingData extends BaseTimeEntity{
     private Long studentId;
 
     @NotNull
-    @Column(name = "stock_isin_code")
-    private Long stockCode;
+    @Column(name = "stock_symbol")
+    private String stockSymbol;
 
 
     @NotNull
@@ -33,7 +33,7 @@ public class StockTradingData extends BaseTimeEntity{
 
     @NotNull
     @Column(name = "is_buying")
-    private boolean isBuying;
+    private boolean buying;
 
 
 

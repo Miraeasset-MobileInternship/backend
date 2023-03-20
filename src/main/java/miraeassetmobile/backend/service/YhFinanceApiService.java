@@ -8,6 +8,8 @@ import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.YahooFinanceUtils;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -109,6 +111,7 @@ public class YhFinanceApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
+            responseService.errorFromExternalServerNoResult();
         }
 
         return new FinanceQuote();
@@ -201,6 +204,7 @@ public class YhFinanceApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
+            responseService.errorFromExternalServerNoResult();
         }
 
         return new TrendingByRegion();

@@ -27,11 +27,11 @@ public class StockController {
     }
 
 
-//    @GetMapping("/total-info")
-//    @Operation(description = "내 주식관련 총 집합 정보, 학생 - 내 주식페이지 상단 카드부분(평가금액, 매수금액 등)")
-//    public ResponseEntity<TotalStockInfoResponseDto> getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
-//        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
+    @GetMapping("/total-info")
+    @Operation(description = "내 주식관련 총 집합 정보, 학생 - 내 주식페이지 상단 카드부분(평가금액, 매수금액 등)")
+    public ResponseEntity<TotalStockInfoResponseDto> getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
+        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
 
 
 
