@@ -1,6 +1,7 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.AutoComplete;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
@@ -20,24 +21,35 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 @Service
 public class StockService {
 
     YhFinanceApiService yhFinanceApiService;
     ResponseService responseService;
+    YhFinanceRapidApiService yhFinanceRapidApiService;
     StudentRepository studentRepository;
     ClassRepository classRepository;
     StudentStockRepository studentStockRepository;
 
-    StockService(YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
+    StockService(YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
         this.yhFinanceApiService = yhFinanceApiService;
         this.responseService = responseService;
         this.studentRepository =studentRepository;
         this.classRepository = classRepository;
         this.studentStockRepository = studentStockRepository;
+        this.yhFinanceRapidApiService = yhFinanceRapidApiService;
     }
 
 
@@ -334,6 +346,40 @@ public class StockService {
         return responseService.successHandler(result);
 
     }
+
+
+
+    public BanklassResponseEntity getMarketNews(String lang) throws ParseException {
+
+
+        List<MarketNews> newsList = yhFinanceRapidApiService.getMarketNews();
+
+        List<MarketNewsResponseDto> result = new ArrayList<>();
+
+        for (MarketNews n :newsList) {
+
+            String date = changeTime(calculateTime(n.getPubDate()));
+
+            result.add(
+
+                    MarketNewsResponseDto.builder()
+                            .title(n.getTitle())
+                            .link(n.getLink())
+                            .source(n.getSource())
+                            .date(date)
+                            .build()
+
+            );
+
+
+        }
+
+        return responseService.successHandler(result);
+
+
+
+    }
+
 
 
     public long calculateTime(String pubDate) throws ParseException {

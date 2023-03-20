@@ -66,6 +66,11 @@ public class StockController {
     }
 
 
+    @GetMapping("/news/market")
+    @Operation(description = "경제 뉴스 전체")
+    public ResponseEntity<BanklassResponseEntity> getMarketNews(@RequestParam(defaultValue = "ko") String lang) throws ParseException {
+        return ResponseEntity.ok(stockService.getMarketNews(lang)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
 
 //    @GetMapping("/student/{student_id}")
 //    @Operation(description = "보유 주식 종목별 정보, 학생 - 내 주식페이지 하단 보유 주식리스트 부분")
