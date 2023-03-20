@@ -8,8 +8,11 @@ import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
 import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
 import miraeassetmobile.backend.service.StockService;
 import miraeassetmobile.backend.service.YhFinanceApiService;
+import miraeassetmobile.backend.service.YhFinanceRapidApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.ParseException;
 
 @RequestMapping("/api/stock")
 @RestController
@@ -19,11 +22,13 @@ public class StockController {
 
     StockService stockService;
     YhFinanceApiService yhFinanceApiService;
+    YhFinanceRapidApiService yhFinanceRapidApiService;
 
 
-    StockController(StockService stockService, YhFinanceApiService yhFinanceApiService){
+    StockController(YhFinanceRapidApiService yhFinanceRapidApiService, StockService stockService, YhFinanceApiService yhFinanceApiService){
         this.stockService=stockService;
         this.yhFinanceApiService = yhFinanceApiService;
+        this.yhFinanceRapidApiService = yhFinanceRapidApiService;
     }
 
 
