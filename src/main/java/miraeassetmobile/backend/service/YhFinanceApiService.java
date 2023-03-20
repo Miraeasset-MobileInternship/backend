@@ -245,7 +245,7 @@ public class YhFinanceApiService {
             rd.close();
             conn.disconnect();
 
-            
+
 
             //string to JSON
             JSONObject jsonObject = new JSONObject(sb.toString());

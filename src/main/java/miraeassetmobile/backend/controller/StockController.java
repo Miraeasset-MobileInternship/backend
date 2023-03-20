@@ -53,7 +53,13 @@ public class StockController {
 //    public ResponseEntity getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
 //        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
 //    }
-//
+
+    @GetMapping("/search-stocks")
+    @Operation(description = "자동완성 검색")
+    public ResponseEntity<BanklassResponseEntity> getSearchAutoComplete(@RequestParam(value = "query") String query){
+        return ResponseEntity.ok(stockService.getSearchAutoComplete(query)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
+
 
 
 //    @GetMapping("/student/{student_id}")

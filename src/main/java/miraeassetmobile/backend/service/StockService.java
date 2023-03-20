@@ -1,6 +1,7 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.api.yahooFinance.AutoComplete;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
@@ -295,6 +296,42 @@ public class StockService {
                         .stockInfoList(ownStockInfos)
                         .build()
         );
+
+    }
+
+
+
+    public BanklassResponseEntity getSearchAutoComplete(String query){
+
+
+        List<AutoComplete> autoComplete = yhFinanceApiService.getAutoComplete(query);
+
+
+        List<AutoCompleteResponseDto> result = new ArrayList<>();
+
+        for (AutoComplete a :autoComplete) {
+
+            FinanceQuote f = yhFinanceApiService.getFinanceQuote(a.getSymbol());
+
+            boolean open = f.getMarketState().equals("REGULAR");
+
+            TagInfo tagInfo = TagInfo.builder()
+                    .type(f.getTypeDisp())
+                    .market(f.getFullExchangeName())
+                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+                    .isOpen(open)
+                    .build();
+
+
+            result.add(AutoCompleteResponseDto.builder()
+                    .id(a.getSymbol())
+                    .stockTitle(f.getShortName())
+                    .tagInfo(tagInfo)
+                    .build());
+
+        }
+
+        return responseService.successHandler(result);
 
     }
 
