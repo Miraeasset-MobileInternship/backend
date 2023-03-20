@@ -59,7 +59,16 @@ public class StockService {
             String change = String.format("%.2f",f.getRegularMarketChange());
             String changePercent = String.format("%.2f",f.getRegularMarketChangePercent());
 
-            boolean open = f.getMarketState().equals("REGULAR") ? true : false;
+            boolean open = f.getMarketState().equals("REGULAR");
+
+
+            TagInfo tagInfo = TagInfo.builder()
+                    .type(f.getTypeDisp())
+                    .market(f.getFullExchangeName())
+                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+                    .isOpen(open)
+                    .build();
+
 
             trendList.add(TrendStockDto.builder()
                     .id(f.getSymbol())
@@ -67,10 +76,7 @@ public class StockService {
                     .price(price)
                     .change(change)
                     .changePercent(changePercent)
-                    .type(f.getTypeDisp())
-                    .market(f.getFullExchangeName())
-                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
-                    .isOpen(open)
+                    .tagInfo(tagInfo)
                     .build()
             );
 
