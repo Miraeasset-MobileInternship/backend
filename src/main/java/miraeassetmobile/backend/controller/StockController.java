@@ -39,6 +39,12 @@ public class StockController {
     }
 
 
+    @GetMapping("/get/my-stock/{student_id}")
+    public ResponseEntity<BanklassResponseEntity> getOwnedStockList(@PathVariable(value = "student_id") Long studentId,
+                                                                    @RequestParam(defaultValue = "0") int page){
+        return ResponseEntity.ok(stockService.getOwnedStockList(studentId,page));
+    }
+
 
 
     //인기종목 Top N개

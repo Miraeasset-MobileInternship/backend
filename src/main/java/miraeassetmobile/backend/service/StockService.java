@@ -4,9 +4,7 @@ import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
-import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
-import miraeassetmobile.backend.domain.dto.stocks.TrendStockDto;
-import miraeassetmobile.backend.domain.dto.stocks.TrendingStockListDto;
+import miraeassetmobile.backend.domain.dto.stocks.*;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.StudentStock;
@@ -15,6 +13,10 @@ import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.StudentStockRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -193,6 +195,108 @@ public class StockService {
     }
 
 
+
+
+    public BanklassResponseEntity getOwnedStockList(Long studentId, int page){
+
+        Student s = studentRepository.findById(studentId).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
+        Classes c = classRepository.findById(s.getClassId()).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
+
+
+        int totalData = studentStockRepository.countByStudentId(studentId);
+
+        if(totalData == 0){
+            return responseService.successHandler(
+                    OwnStockInfoResponseDTo.builder()
+                            .totalData(0)
+                            .currentPage(0)
+                            .maxPage(0)
+                            .classCurrency(c.getCurrency())
+                            .stockInfoList(new ArrayList<>())
+                            .build()
+            );
+        }
+
+        int pageSize = 10;
+
+        int maxPage = (int) Math.ceil(totalData/(double)pageSize) -1; //요청가능한 마지막 페이지
+
+        Pageable pageable = PageRequest.of(page,pageSize);
+
+        //보유한 종목 리스트
+        Page<StudentStock> ss = studentStockRepository.findByStudentId(studentId, pageable);
+
+        List<OwnStockInfo> ownStockInfos = new ArrayList<>();
+
+        for (StudentStock stock: ss) {
+
+            //해당 주식 심볼로 검색
+            FinanceQuote f = yhFinanceApiService.getFinanceQuote(stock.getStockSymbol());
+
+            //현재가 (미소전환)
+            double crPrice = f.getRegularMarketPrice() * 10 ; //현재 가격 * 10(미소단위 변환)
+            String price = String.format("%.2f",crPrice);
+
+
+            //평균구매단가 (1개 기준)
+            double blPrice = stock.getBlendedPrice().doubleValue();
+            String blendedPrice = String.format("%.2f", blPrice);
+
+
+
+            //평가손익 = 현재금액(현재가) - 매수금액(내가 지불한 금액)
+            // 미소단위로 변환된 현재가 - 미소단위로 db에 저장되어 있는 평균구매단가 = 평가손익
+            double mProfitLoss = crPrice - blPrice;
+            String marketProfitLoss = String.format("%.2f", mProfitLoss * stock.getAmount());// 보유수량 곱해줘야함 !
+
+            //수익률 = (손익)/(투자원금=매수금액) * 100
+            double y = mProfitLoss/blPrice  * 100;
+            String yield = String.format("%.2f", y);
+
+
+
+            //태그 작성
+            boolean open = f.getMarketState().equals("REGULAR");
+
+            TagInfo tagInfo = TagInfo.builder()
+                    .type(f.getTypeDisp())
+                    .market(f.getFullExchangeName())
+                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+                    .isOpen(open)
+                    .build();
+
+
+            ownStockInfos.add(
+
+                    OwnStockInfo.builder()
+                            .id(stock.getStockSymbol()) // symbol
+                            .stockTitle(f.getShortName())
+                            .price(price)
+                            .count(stock.getAmount()) // 보유수량
+                            .blendedPrice(blendedPrice) // 평균구매단가
+                            .marketProfitLoss(marketProfitLoss)
+                            .yield(yield)
+                            .tagInfo(tagInfo)
+                            .build()
+
+            );
+
+        }
+
+
+
+
+        return responseService.successHandler(
+                OwnStockInfoResponseDTo.builder()
+                        .totalData(totalData)
+                        .currentPage(page)
+                        .maxPage(maxPage)
+                        .classCurrency(c.getCurrency())
+                        .stockInfoList(ownStockInfos)
+                        .build()
+        );
+
+    }
 
 
 }
