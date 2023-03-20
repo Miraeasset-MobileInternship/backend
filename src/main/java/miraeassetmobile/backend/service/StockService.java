@@ -90,7 +90,7 @@ public class StockService {
 
 
 
-    public TotalStockInfoResponseDto getTotalStockStatus(Long studentId){
+    public BanklassResponseEntity getTotalStockStatus(Long studentId){
 
         Student s = studentRepository.findById(studentId).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
         Classes c = classRepository.findById(s.getClassId()).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
@@ -172,7 +172,8 @@ public class StockService {
 
 
 
-        return TotalStockInfoResponseDto.builder()
+        return responseService.successHandler(
+                TotalStockInfoResponseDto.builder()
                 .studentId(studentId)
                 .money(money)
                 .classCurrency(c.getCurrency())
@@ -180,7 +181,8 @@ public class StockService {
                 .totalBlendedPrice(blendedPrices)
                 .totalMarketProfitLoss(marketProfitLosses)
                 .totalYield(yieldValues)
-                .build();
+                .build()
+        );
 
     }
 
