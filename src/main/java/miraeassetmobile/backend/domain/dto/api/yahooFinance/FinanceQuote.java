@@ -33,6 +33,8 @@ public class FinanceQuote {
 
     Long dividendDate;
 
+    String exchangeTransferDate;
+
     Long earningsTimestamp;
 
     Long earningsTimestampEnd;
@@ -141,6 +143,15 @@ public class FinanceQuote {
 
     String prevName;
     String nameChangeDate;
+
+
+    String prevExchange;
+
+    double trailingThreeMonthNavReturns;
+
+    double ytdReturn;
+
+    double trailingThreeMonthReturns;
 
 }
 
