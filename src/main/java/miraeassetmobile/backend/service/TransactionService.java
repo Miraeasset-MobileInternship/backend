@@ -140,9 +140,12 @@ public class TransactionService {
             boolean isDeposit = t.getFrom().equals("class"); //돈의 출처가 학생이면 출금
 
 
+            TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
+
             StudentTransactionDataDto transaction = StudentTransactionDataDto.builder()
                     .transactionId(t.getId())
-                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
+                    .category(category.getTitle())
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
@@ -211,10 +214,14 @@ public class TransactionService {
             StudentJobDto managerDto = (StudentJobDto) getStudentJobDto(t.getManagerId(), t.getManagerJobId()).getResult();
             StudentJobDto studentDto = (StudentJobDto) getStudentJobDto(t.getStudentId(), t.getStudentJobId()).getResult();
 
+            TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
+
+
             ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
                     .transactionId(t.getId())
                     .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
-                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
+                    .category(category.getTitle())
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
@@ -294,6 +301,8 @@ public class TransactionService {
         //0원 인 경우 불가능
         responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
 
+        //카테고리 확인
+        responseService.wrongTransactionCategoryForTransfer(transferMoneyRequestDto.getCategoryId());
 
                 /*
         1. 학생의 계좌의 잔고를 확인함
@@ -358,6 +367,8 @@ public class TransactionService {
         //0원 인 경우 불가능
         responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
 
+        //카테고리 확인
+        responseService.wrongTransactionCategoryForPay(transferMoneyRequestDto.getCategoryId());
 
         /*
         1. 국고의 잔고를 확인함

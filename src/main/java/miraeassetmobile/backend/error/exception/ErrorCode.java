@@ -33,6 +33,9 @@ public enum ErrorCode {
 
     //존재하지 않는 리소스
     NOT_EXIST("E401", "존재하지 않는 리소스에 대한 접근입니다."),
+
+    NOT_EXIST_CATEGORY("E401", "존재하지 않는 카테고리를 선택하셨습니다."),
+
     TRANSACTION_DATA_NOT_EXIST("E402", "이전 거래내역이 존재하지 않습니다."),
     LOGOUT_USER("E006", "이미 로그아웃된 유저의 token정보 입니다."),
 
@@ -50,7 +53,8 @@ public enum ErrorCode {
 
     //
     UNAVAILABLE_ACTION_DELETE_JOB("E501", "삭제 불가능한 필수 직업입니다."),
-
+    UNAVAILABLE_ACTION_TRANSFER_TAG("E501", "이체하기에서 사용할 수 없는 태그입니다."),
+    UNAVAILABLE_ACTION_PAY_TAG("E501", "지급하기에서 사용할 수 없는 태그입니다."),
 
 
     //출금

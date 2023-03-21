@@ -4,10 +4,7 @@ import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.StatusResponse;
 import miraeassetmobile.backend.error.exception.ErrorCode;
-import miraeassetmobile.backend.repository.ClassRepository;
-import miraeassetmobile.backend.repository.JobRepository;
-import miraeassetmobile.backend.repository.StudentRepository;
-import miraeassetmobile.backend.repository.UserInfoRepository;
+import miraeassetmobile.backend.repository.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import miraeassetmobile.backend.error.exception.ServiceException;
@@ -23,13 +20,15 @@ public class ResponseService {
     JobRepository jobRepository;
     StudentRepository studentRepository;
     UserInfoRepository userInfoRepository;
+    TransactionCategoryRepository transactionCategoryRepository;
 
 
-    public ResponseService(UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+    public ResponseService(TransactionCategoryRepository transactionCategoryRepository,UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
         this.userInfoRepository = userInfoRepository;
         this.classRepository =classRepository;
         this.jobRepository =jobRepository;
         this.studentRepository =studentRepository;
+        this.transactionCategoryRepository = transactionCategoryRepository;
     }
 
 
@@ -227,6 +226,19 @@ public class ResponseService {
 
     public void errorFromExternalServer(){ //외부 서버 에러(공통)
         throw new ServiceException(ErrorCode.EXTERNAL_SERVER_ERROR);
+    }
+
+
+    public void wrongTransactionCategoryForTransfer(Long categoryId){
+        if(!transactionCategoryRepository.existsByTransferTrueAndId(categoryId)){
+            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_TAG);
+        }
+    }
+
+    public void wrongTransactionCategoryForPay(Long categoryId){
+        if(!transactionCategoryRepository.existsByPayTrueAndId(categoryId)){
+            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_PAY_TAG);
+        }
     }
 
 }
