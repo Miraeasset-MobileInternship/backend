@@ -23,12 +23,14 @@ public class StockController {
     StockService stockService;
     YhFinanceApiService yhFinanceApiService;
     YhFinanceRapidApiService yhFinanceRapidApiService;
+    NaverTranslatorApiService naverTranslatorApiService;
 
 
-    StockController(YhFinanceRapidApiService yhFinanceRapidApiService, StockService stockService, YhFinanceApiService yhFinanceApiService){
+    StockController(NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, StockService stockService, YhFinanceApiService yhFinanceApiService){
         this.stockService=stockService;
         this.yhFinanceApiService = yhFinanceApiService;
         this.yhFinanceRapidApiService = yhFinanceRapidApiService;
+        this.naverTranslatorApiService=naverTranslatorApiService;
     }
 
 

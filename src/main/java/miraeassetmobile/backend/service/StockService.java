@@ -15,23 +15,20 @@ import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.ClassRepository;
 import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.StudentStockRepository;
+import miraeassetmobile.backend.service.api.NaverTranslatorApiService;
+import miraeassetmobile.backend.service.api.YhFinanceApiService;
+import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 @Service
 public class StockService {
@@ -39,17 +36,19 @@ public class StockService {
     YhFinanceApiService yhFinanceApiService;
     ResponseService responseService;
     YhFinanceRapidApiService yhFinanceRapidApiService;
+    NaverTranslatorApiService naverTranslatorApiService;
     StudentRepository studentRepository;
     ClassRepository classRepository;
     StudentStockRepository studentStockRepository;
 
-    StockService(YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
+    StockService(NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
         this.yhFinanceApiService = yhFinanceApiService;
         this.responseService = responseService;
         this.studentRepository =studentRepository;
         this.classRepository = classRepository;
         this.studentStockRepository = studentStockRepository;
         this.yhFinanceRapidApiService = yhFinanceRapidApiService;
+        this.naverTranslatorApiService= naverTranslatorApiService;
     }
 
 
