@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String phoneNum) throws UsernameNotFoundException {
 
         UserInfo isExist = userInfoRepository.findByPhoneNum(phoneNum).orElseThrow( () ->
-                new ServiceException(ErrorCode.INVALID_PHONENUMBER));
+                new ServiceException(ErrorCode.INVALID_PHONE_NUMBER));
 
 
         return User.builder()
