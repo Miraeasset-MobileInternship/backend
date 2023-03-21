@@ -355,20 +355,45 @@ public class StockService {
 
         List<MarketNewsResponseDto> result = new ArrayList<>();
 
-        for (MarketNews n :newsList) {
+        if(lang.equals("ko")) {
 
-            String date = changeTime(calculateTime(n.getPubDate()));
+            for (MarketNews n : newsList) {
 
-            result.add(
+                String date = changeTime(calculateTime(n.getPubDate()),"ko");
 
-                    MarketNewsResponseDto.builder()
-                            .title(n.getTitle())
-                            .link(n.getLink())
-                            .source(n.getSource())
-                            .date(date)
-                            .build()
+                result.add(
 
-            );
+                        MarketNewsResponseDto.builder()
+                                .title(naverTranslatorApiService.translateToKo(n.getTitle()))
+                                .link(n.getLink())
+                                .source(n.getSource())
+                                .date(date)
+                                .build()
+
+                );
+
+
+            }
+
+        }else{ //영어
+
+            for (MarketNews n : newsList) {
+
+                String date = changeTime(calculateTime(n.getPubDate()),"en");
+
+                result.add(
+
+                        MarketNewsResponseDto.builder()
+                                .title(n.getTitle())
+                                .link(n.getLink())
+                                .source(n.getSource())
+                                .date(date)
+                                .build()
+
+                );
+
+
+            }
 
 
         }
@@ -413,7 +438,13 @@ public class StockService {
 
 
     // 초를 ㅇㅇ분 전/ ㅇㅇ시간 전 / ㅇㅇ 일 전 : 형태로 변경
-    public String changeTime(long second){
+    public String changeTime(long second, String lang){
+
+        String mins = lang.equals("ko")? "분 전" : "minutes ago";
+        String hours = lang.equals("ko")? "시간 전" : "hours ago";
+        String days = lang.equals("ko")? "일 전" : "days ago";
+
+
 
         //분
         long min = second/60;
@@ -427,15 +458,15 @@ public class StockService {
 
                 long day = second/(24*60*60);
 
-                return day +"일 전";
+                return day + days;
 
             }
 
-            return hour +"시간 전";
+            return hour + hours;
 
         }
 
-        return min+"분 전";
+        return min+ mins;
 
 
 

@@ -70,7 +70,7 @@ public class StockController {
 
     @GetMapping("/news/market")
     @Operation(description = "경제 뉴스 전체")
-    public ResponseEntity<BanklassResponseEntity> getMarketNews(@RequestParam(defaultValue = "ko") String lang) throws ParseException {
+    public ResponseEntity<BanklassResponseEntity> getMarketNews(@RequestParam(defaultValue = "en") String lang) throws ParseException {
         return ResponseEntity.ok(stockService.getMarketNews(lang)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
 
