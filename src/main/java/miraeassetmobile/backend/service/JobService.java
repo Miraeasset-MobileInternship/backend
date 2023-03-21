@@ -150,10 +150,10 @@ public class JobService {
         for (Student student : students) {
 
             //존재하지 않는 직업 에러
-            Job job = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            Job job = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
 
-            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
-            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
+            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
 
             studentJobs.add(StudentJobDto.builder()
                     .studentId(student.getId())
@@ -176,7 +176,7 @@ public class JobService {
     public BanklassResponseEntity getJobInfo(Long id){
 
 
-        Job job = jobRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job job = jobRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
 
         //필요한 것만 dto에 담아서 전달
         return responseService.successHandler(
@@ -287,7 +287,7 @@ public class JobService {
         responseService.isExistJob(studentJob.getJobId());
 
 
-        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
 
         //객체의 직업을 변경
         Student updateStudent = student.updateJob(studentJob.getJobId());

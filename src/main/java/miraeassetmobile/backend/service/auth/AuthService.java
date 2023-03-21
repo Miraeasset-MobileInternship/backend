@@ -248,7 +248,7 @@ public class AuthService {
                 .build();
 
 
-        UserInfo u = userInfoRepository.findById(tokenDto.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo u = userInfoRepository.findById(tokenDto.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
 
         List<ClassOnboardInfo> classOnboardInfos = new ArrayList<>();
@@ -284,7 +284,7 @@ public class AuthService {
 
 
                 //해당 반의 id로 반의 정보를 끌어오기 (1개)
-                Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+                Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
                 ClassOnboardInfo cInfo = ClassOnboardInfo.builder()
                         .classId(c.getId())
@@ -302,7 +302,7 @@ public class AuthService {
         }
 
 
-        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
 
 
 
@@ -521,7 +521,7 @@ public class AuthService {
 
         // redis에서 번호를 이용해 가져오기
         PhoneNumberCode phoneNumberCode = phoneNumberCodeRedisRepository.findById(phoneNumber)
-                .orElseThrow(() -> new ServiceException(ErrorCode.UNVALID_CODE));
+                .orElseThrow(() -> new ServiceException(ErrorCode.INVALID_CODE));
 
         // code 일치 여부 검사 (프론트에서 보유한 refresh토큰과 레디스에 저장해둔 정보가 일치하는가)
         if (!phoneNumberCode.getCode().equals(code)) {

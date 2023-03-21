@@ -46,9 +46,9 @@ public class ClassService {
 
 
         //학급조회
-        Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
-        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
         return (
                 responseService.successHandler(
@@ -180,14 +180,14 @@ public class ClassService {
 
 
         ClassInvitationCode classInvitationCode = classInvitationCodeRedisRepository.findByInvitationCode(invitationCode)
-                .orElseThrow(() -> new RuntimeException("만료되었거나 존재하지 않는 코드입니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.INCORRECT_CODE)); //올바르지 않거나 만료된 인증번호
 
 
         Classes c = classRepository.findById(Long.parseLong(classInvitationCode.getId()))
-                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST));
+                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
 
-        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo teacher = userInfoRepository.findById(c.getTeacherId()).orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
         return responseService.successHandler(
                 ClassValidInvitationResponseDto.builder()

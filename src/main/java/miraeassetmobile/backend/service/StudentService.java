@@ -47,11 +47,11 @@ public class StudentService {
     public BanklassResponseEntity getStudentAccountInfo(Long id){
 
         //존재하는 학생 아닌지 검사
-        Student student = studentRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
 
-        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
-        UserInfo teacher = userInfoRepository.findById(studentClass.getTeacherId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo teacher = userInfoRepository.findById(studentClass.getTeacherId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
 
         StudentAccountResponseDto result = StudentAccountResponseDto.builder()
@@ -72,15 +72,15 @@ public class StudentService {
 
     public BanklassResponseEntity getStudentJobInfo(Long studentId) {
 
-        Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
 
-        Job studentJob = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job studentJob = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
 
-        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Classes studentClass = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
-        UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
-        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
 
         String classInfo = studentClass.getGrade() + "학년 " + studentClass.getClassNum() + "반";
 
@@ -115,7 +115,7 @@ public class StudentService {
 
         for (Student s: studentList) {
 
-            UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
             result.add(StudentTransferSelectorDto.builder()
                     .studentId(s.getId())
@@ -130,9 +130,9 @@ public class StudentService {
 
     public BanklassResponseEntity getStudentSalary(Long studentId){
 
-        Student s = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student s = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
 
-        Job j = jobRepository.findById(s.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job j = jobRepository.findById(s.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
 
         return
                 responseService.successHandler(

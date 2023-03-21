@@ -92,13 +92,13 @@ public class ResponseService {
 
     public void isExistClass(Long classId){
         if(!classRepository.existsById(classId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_CLASS);
         }
     }
 
     public void isExistUser(Long userId){
         if(!userInfoRepository.existsById(userId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_USER);
         }
     }
 
@@ -124,7 +124,7 @@ public class ResponseService {
     public void isExistJob(Long jobId){
 
         if(!jobRepository.existsById(jobId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_JOB);
         }
     }
 
@@ -152,7 +152,7 @@ public class ResponseService {
     public void isExistStudent(Long studentId){
 
         if(!studentRepository.existsById(studentId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_STUDENT);
         }
     }
 
