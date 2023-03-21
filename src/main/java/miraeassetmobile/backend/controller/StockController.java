@@ -38,13 +38,13 @@ public class StockController {
         return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
 
-    @GetMapping("/get/trending")
+    @GetMapping("/trending")
     public ResponseEntity<BanklassResponseEntity> getFinanceQuote(){
         return ResponseEntity.ok(stockService.getTodayTrending());
     }
 
 
-    @GetMapping("/get/my-stock/{student_id}")
+    @GetMapping("/{student_id}")
     public ResponseEntity<BanklassResponseEntity> getOwnedStockList(@PathVariable(value = "student_id") Long studentId,
                                                                     @RequestParam(defaultValue = "0") int page){
         return ResponseEntity.ok(stockService.getOwnedStockList(studentId,page));
