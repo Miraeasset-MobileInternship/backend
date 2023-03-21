@@ -291,6 +291,10 @@ public class TransactionService {
 
     public BanklassResponseEntity transferMoney(TransferMoneyRequestDto transferMoneyRequestDto){
 
+        //0원 인 경우 불가능
+        responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
+
+
                 /*
         1. 학생의 계좌의 잔고를 확인함
             -> 부족하면 에러 발생시켜야함
@@ -349,6 +353,11 @@ public class TransactionService {
 
 
     public BanklassResponseEntity payMoney(TransferMoneyRequestDto transferMoneyRequestDto){
+
+
+        //0원 인 경우 불가능
+        responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
+
 
         /*
         1. 국고의 잔고를 확인함

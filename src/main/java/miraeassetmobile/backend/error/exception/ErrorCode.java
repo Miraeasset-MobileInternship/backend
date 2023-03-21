@@ -60,6 +60,8 @@ public enum ErrorCode {
     UNAVAILABLE_ACTION_JOB_PAY("E702", "국고를 출금할 수 있는 권한이 없는 직업입니다."),
 
 
+    UNAVAILABLE_ACTION_TRANSFER_ZERO("E703", "0원을 이체/지급할 수 없습니다."),
+
 
 //    //로그인 (인증/인가 관련에러)
 //    FORBIDDEN_USER(HttpStatus.FORBIDDEN, "서비스를 사용할 수 없는 사용자입니다."),//403
