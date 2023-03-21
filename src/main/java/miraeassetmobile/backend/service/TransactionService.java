@@ -211,10 +211,14 @@ public class TransactionService {
             StudentJobDto managerDto = (StudentJobDto) getStudentJobDto(t.getManagerId(), t.getManagerJobId()).getResult();
             StudentJobDto studentDto = (StudentJobDto) getStudentJobDto(t.getStudentId(), t.getStudentJobId()).getResult();
 
+            TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+
+
             ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
                     .transactionId(t.getId())
                     .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
-                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
+                    .category(category.getTitle())
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())

@@ -6,8 +6,13 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.auth.AccessTokenInfo;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.SignInResponseDto;
 import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
 import miraeassetmobile.backend.service.auth.AuthService;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
@@ -32,14 +37,21 @@ public class AuthController {
 
 
     @PostMapping("/start-signin")
-    @Operation(description = "시작하기/로그인 - 가입진행된 유저일 경우(바로 로그인됨), 가입안된 유저의 경우(303 : 가입진행창으로 넘어가게)")
+//    @Operation(description = "시작하기/로그인 - 가입진행된 유저일 경우(바로 로그인됨), 가입안된 유저의 경우(303 : 가입진행창으로 넘어가게)")
+    @Operation(summary = "로그인, 시작하기", description = "로그인기능",
+            responses = {
+            @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SignInResponseDto.class))),
+    })
     public ResponseEntity getStartWithSignIn(@RequestBody @Valid SignInRequestDto signInRequestDto){
         return ResponseEntity.ok(authService.getStart(signInRequestDto));
     }
 
 
     @PostMapping("/start-signup")
-    @Operation(description = "회원가입 및 자동로그인")
+    @Operation(summary = "회원가입 및 자동로그인", description = "",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SignInResponseDto.class))),
+            })
     public ResponseEntity getStartWithSignUp(@RequestBody @Valid SignUpRequestDto signUpRequestDto){
         return ResponseEntity.ok(authService.startWithSignUp(signUpRequestDto));
 
@@ -47,7 +59,10 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    @Operation(description = "로그아웃")
+    @Operation(summary = "회원가입 및 자동로그인", description = "",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success - no return"),
+            })
     public ResponseEntity logout(HttpServletRequest request){
         authService.logout(request);
         return ResponseEntity.ok().build();
@@ -55,7 +70,11 @@ public class AuthController {
 
 
     @PostMapping(value = "/reissue")
-    @Operation(description = "accessToken이 만료되어 401 에러를 받은 경우, 보유한 리프레스 토큰으로 갱신 요청")
+//    @Operation(description = "accessToken이 만료되어 401 에러를 받은 경우, 보유한 리프레스 토큰으로 갱신 요청")
+    @Operation(summary = "accessToken 재발급", description = "",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = AccessTokenInfo.class))),
+            })
     public ResponseEntity reissue(HttpServletRequest request,
                                             @RequestHeader String refreshToken) {
         return ResponseEntity.ok(authService.reissue(request, refreshToken));
@@ -67,6 +86,10 @@ public class AuthController {
 
     // coolSMS 구현 로직 연결
     @PostMapping("/sendSMS")
+    @Operation(summary = "핸드폰 문자인증번호 받기", description = "",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success - 의미 없는 body"),
+            })
     public ResponseEntity<BanklassResponseEntity> sendSMS(@RequestParam(value="phone_number") String phoneNumber) throws CoolsmsException {
         return ResponseEntity.ok(authService.sendMessage(phoneNumber));
     }
