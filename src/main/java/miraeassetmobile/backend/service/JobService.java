@@ -255,7 +255,7 @@ public class JobService {
 
 
         }catch(Exception e){
-            throw new ServiceException(ErrorCode.NOT_SAVE);
+            throw new ServiceException(ErrorCode.NOT_SAVE_JOB);
         }
 
 
@@ -305,7 +305,7 @@ public class JobService {
             );
 
         }catch(Exception e){
-            throw new ServiceException(ErrorCode.NOT_SAVE);
+            throw new ServiceException(ErrorCode.NOT_UPDATED);
         }
 
     }

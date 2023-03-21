@@ -173,7 +173,7 @@ public class StudentService {
 
         }catch (Exception e){
             //저장하는 과정에서 에러가 발생했을 경우
-            throw new ServiceException(ErrorCode.NOT_SAVE);
+            throw new ServiceException(ErrorCode.NOT_SAVE_JOIN_CLASS);
         }
 
 

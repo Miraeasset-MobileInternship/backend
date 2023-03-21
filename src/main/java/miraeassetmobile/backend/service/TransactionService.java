@@ -325,28 +325,33 @@ public class TransactionService {
 
         //4.transfer_data table에 데이터 추가
 
+        try {
 
-        TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
-                .money(transferMoneyRequestDto.getMoney())
-                .studentMoney(studentMoney)
-                .classMoney(classMoney)
-                .managerId(manager.getId())
-                .managerJobId(manager.getJobId())
-                .studentId(student.getId())
-                .studentJobId(student.getJobId())
-                .classId(student.getClassId())
-                .categoryId(transferMoneyRequestDto.getCategoryId())
-                .detail(transferMoneyRequestDto.getDetail())
-                .from(STUDENT.getTypeName()) //이체하기 (학생 잔고에서 뽑아오는 것) FROM 학생
-                .build());
+            TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
+                    .money(transferMoneyRequestDto.getMoney())
+                    .studentMoney(studentMoney)
+                    .classMoney(classMoney)
+                    .managerId(manager.getId())
+                    .managerJobId(manager.getJobId())
+                    .studentId(student.getId())
+                    .studentJobId(student.getJobId())
+                    .classId(student.getClassId())
+                    .categoryId(transferMoneyRequestDto.getCategoryId())
+                    .detail(transferMoneyRequestDto.getDetail())
+                    .from(STUDENT.getTypeName()) //이체하기 (학생 잔고에서 뽑아오는 것) FROM 학생
+                    .build());
 
 
-        return responseService.successHandler(
-                CreatedUriDto.builder()
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
                         .status("created")
                         .url( responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
                         .build()
-        );
+            );
+
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_TRANSFER);
+        }
 
     }
 
@@ -385,27 +390,33 @@ public class TransactionService {
         //4.transfer_data table에 데이터 추가
 
 
-        TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
-                .money(transferMoneyRequestDto.getMoney())
-                .studentMoney(studentMoney)
-                .classMoney(classMoney)
-                .managerId(manager.getId())
-                .managerJobId(manager.getJobId()) //현재 가지고 있는 직업이 저장
-                .studentId(student.getId())
-                .studentJobId(student.getJobId())
-                .classId(student.getClassId())
-                .categoryId(transferMoneyRequestDto.getCategoryId())
-                .detail(transferMoneyRequestDto.getDetail())
-                .from(CLASS.getTypeName()) //지급하기 (국고 잔고에서 뽑아오는 것) FROM class
-                .build());
+        try {
+
+            TransactionData transactionData = transactionDataRepository.save(TransactionData.builder()
+                    .money(transferMoneyRequestDto.getMoney())
+                    .studentMoney(studentMoney)
+                    .classMoney(classMoney)
+                    .managerId(manager.getId())
+                    .managerJobId(manager.getJobId()) //현재 가지고 있는 직업이 저장
+                    .studentId(student.getId())
+                    .studentJobId(student.getJobId())
+                    .classId(student.getClassId())
+                    .categoryId(transferMoneyRequestDto.getCategoryId())
+                    .detail(transferMoneyRequestDto.getDetail())
+                    .from(CLASS.getTypeName()) //지급하기 (국고 잔고에서 뽑아오는 것) FROM class
+                    .build());
 
 
-        return responseService.successHandler(
-                CreatedUriDto.builder()
-                        .status("created")
-                        .url(responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
-                        .build()
-        );
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                            .status("created")
+                            .url(responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
+                            .build()
+            );
+
+        }catch (Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_PAY);
+        }
 
     }
 
@@ -420,9 +431,15 @@ public class TransactionService {
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() - transferMoney); //보유금액 - 출금금액
 
-        studentRepository.save(updateStudent);
+        try {
 
-        return updateStudent.getMoney();
+            studentRepository.save(updateStudent);
+
+            return updateStudent.getMoney();
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_TRANSFER);
+        }
+
     }
 
     public int updateTransferClassMoney(Long classId, int transferMoney){
@@ -433,10 +450,14 @@ public class TransactionService {
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() + transferMoney); //보유금액 + 출금금액
 
-        classRepository.save(updateClass);
+        try {
+            classRepository.save(updateClass);
 
-        return updateClass.getMoney();
+            return updateClass.getMoney();
 
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_TRANSFER);
+        }
     }
 
 
@@ -449,10 +470,14 @@ public class TransactionService {
         //객체의 돈을 변경하여 새로운 객체를 생성
         Classes updateClass = studentClass.updateMoney(studentClass.getMoney() - transferMoney); //보유금액 - 출금금액 (돈사용)
 
-        classRepository.save(updateClass);
+        try {
+            classRepository.save(updateClass);
 
-        return updateClass.getMoney();
+            return updateClass.getMoney();
 
+        }catch (Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_PAY);
+        }
     }
 
     public int updatePayStudentMoney(Long studentId, int transferMoney){
@@ -463,9 +488,14 @@ public class TransactionService {
         //객체의 돈을 변경하여 새로운 객체를 생성
         Student updateStudent = student.updateMoney(student.getMoney() + transferMoney); //보유금액 + 출금금액
 
-        studentRepository.save(updateStudent);
+        try {
+            studentRepository.save(updateStudent);
 
-        return updateStudent.getMoney();
+            return updateStudent.getMoney();
+
+        }catch (Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_PAY);
+        }
     }
 
     //학생계좌에서 상세보기를 조회한 경우

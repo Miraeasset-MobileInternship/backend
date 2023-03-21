@@ -80,13 +80,13 @@ public class ClassService {
         //해당 학교에 같은 이름으로 등록된 나라가 있을 경우
         responseService.isExistClassWithSameName(classCreateRequestDto.getSchoolName(), classCreateRequestDto.getTitle());
 
+        try {
 
-        //새로운 클래스 동록
-        Classes newClass = classCreateRequestDto.toClass(classCreateRequestDto.getTeacher_id(), classCreateRequestDto.getTitle(), classCreateRequestDto.getGrade(), classCreateRequestDto.getClassNumber(), classCreateRequestDto.getCurrency(), classCreateRequestDto.getSchoolName()); //save에서 에러난다
+            //새로운 클래스 동록
+            Classes newClass = classCreateRequestDto.toClass(classCreateRequestDto.getTeacher_id(), classCreateRequestDto.getTitle(), classCreateRequestDto.getGrade(), classCreateRequestDto.getClassNumber(), classCreateRequestDto.getCurrency(), classCreateRequestDto.getSchoolName()); //save에서 에러난다
 
 
-        Classes c = classRepository.save(newClass);
-
+            Classes c = classRepository.save(newClass);
 
 
         //초대 코드 생성
@@ -109,6 +109,10 @@ public class ClassService {
                         .status("created")
                         .build()
             ); //반 신규 생성
+
+        }catch(Exception e){ //저장 과정에서 에러난 경우
+            throw new ServiceException(ErrorCode.NOT_SAVE_CLASS);
+        }
     }
 
 
@@ -161,18 +165,24 @@ public class ClassService {
 
         long expiration = 60 * 60 * 24 * 7; //유효기간 일주일
 
+        try {
 
-        ClassInvitationCode code = ClassInvitationCode.builder()
-                .id(classId.toString()) //새로 생성된 클래스
-                .invitationCode(createInvitationCode())
-                .expiration(expiration)
-                .build();
+            ClassInvitationCode code = ClassInvitationCode.builder()
+                    .id(classId.toString()) //새로 생성된 클래스
+                    .invitationCode(createInvitationCode())
+                    .expiration(expiration)
+                    .build();
 
-        //redis에 유효기간 일주일로 저장
-        classInvitationCodeRedisRepository.save(code);
+            //redis에 유효기간 일주일로 저장
+            classInvitationCodeRedisRepository.save(code);
 
 
-        return code;
+            return code;
+
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_CODE);
+        }
+
     }
 
 
