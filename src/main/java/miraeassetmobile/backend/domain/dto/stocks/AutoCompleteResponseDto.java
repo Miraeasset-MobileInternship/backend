@@ -9,7 +9,7 @@ import lombok.Getter;
 public class AutoCompleteResponseDto {
 
 
-    String id; //symbol
+    String stockId; //symbol
 
     String stockTitle;//주식이름
 

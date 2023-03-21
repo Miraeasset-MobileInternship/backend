@@ -85,7 +85,7 @@ public class StockService {
 
 
             trendList.add(TrendStockDto.builder()
-                    .id(f.getSymbol())
+                    .stockId(f.getSymbol())
                     .stockTitle(f.getShortName())
                     .price(price)
                     .change(change)
@@ -281,7 +281,7 @@ public class StockService {
             ownStockInfos.add(
 
                     OwnStockInfo.builder()
-                            .id(stock.getStockSymbol()) // symbol
+                            .stockId(stock.getStockSymbol()) // symbol
                             .stockTitle(f.getShortName())
                             .price(price)
                             .count(stock.getAmount()) // 보유수량
@@ -335,7 +335,7 @@ public class StockService {
 
 
             result.add(AutoCompleteResponseDto.builder()
-                    .id(a.getSymbol())
+                    .stockId(a.getSymbol())
                     .stockTitle(f.getShortName())
                     .tagInfo(tagInfo)
                     .build());

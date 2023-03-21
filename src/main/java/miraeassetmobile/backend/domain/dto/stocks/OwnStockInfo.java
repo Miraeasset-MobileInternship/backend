@@ -7,7 +7,7 @@ import lombok.Getter;
 @Builder
 public class OwnStockInfo {
 
-    String id;//symbol
+    String stockId;//symbol
 
     //displayName
     String stockTitle; //display name (종목명)

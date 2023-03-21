@@ -8,7 +8,7 @@ import lombok.Getter;
 public class TrendStockDto {
 
     //symbol
-    String id; // ID값 같은것 (검색 할때 필수적으로 필요)
+    String stockId; // ID값 같은것 (검색 할때 필수적으로 필요)
 
     //displayName
     String stockTitle; //display name (종목명)
