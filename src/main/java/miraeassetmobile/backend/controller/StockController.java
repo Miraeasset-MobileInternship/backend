@@ -3,12 +3,12 @@ package miraeassetmobile.backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
-import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
-import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
-import miraeassetmobile.backend.domain.dto.stocks.TotalStockInfoResponseDto;
+
 import miraeassetmobile.backend.service.StockService;
-import miraeassetmobile.backend.service.YhFinanceApiService;
-import miraeassetmobile.backend.service.YhFinanceRapidApiService;
+
+import miraeassetmobile.backend.service.api.NaverTranslatorApiService;
+import miraeassetmobile.backend.service.api.YhFinanceApiService;
+import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
