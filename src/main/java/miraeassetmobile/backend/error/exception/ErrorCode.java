@@ -48,6 +48,7 @@ public enum ErrorCode {
     NOT_EXIST_TRANSACTION_DATA("E407", "거래내역이 존재하지 않습니다."),
     NOT_EXIST_STOCK_TRADING_DATA("E408", "존재하지 않는 주식거래에 대한 접근이 포함되어 있습니다."),
     NOT_EXIST_IMAGE("E409", "존재하지 않는 이미지입니다."),
+    NOT_EXIST_CATEGORY("E410", "존재하지 않는 카테고리입니다."),
 
 
 
@@ -78,6 +79,34 @@ public enum ErrorCode {
     UNAVAILABLE_ACTION_PAY_MONEY("E703", "국고가 부족하여 돈을 이체할 수 없습니다."),
     UNAVAILABLE_ACTION_JOB_TRANSFER("E704", "학생 잔고를 이체할 수 있는 권한이 없는 직업입니다."),
     UNAVAILABLE_ACTION_JOB_PAY("E705", "국고를 출금할 수 있는 권한이 없는 직업입니다."),
+
+    UNAVAILABLE_ACTION_TRANSFER_TAG("E706", "이체하기 기능에서 사용할 수 없는 태그입니다."),
+    UNAVAILABLE_ACTION_PAY_TAG("E707", "지급하기 기능에서 사용할 수 없는 태그입니다."),
+    UNAVAILABLE_ACTION_TRANSFER_ZERO("E708", "0원을 이체/지급할 수 없습니다."),
+
+
+
+
+    //common error (서버에러 5xx)
+    SERVER_ERROR("E500", "예상치 못한 서버 에러가 발생했습니다."),
+    MESSAGE_SERVER_ERROR("E501", "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
+    API_SEVER_ERROR_NAVER("E502", "영문 번역과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
+    API_SEVER_ERROR_YHFINANCE("E503", "주식 시세정보를 가져오는 과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
+    API_SEVER_ERROR_RAPID_YHFINANCE("E504", "기사를 가져오는 과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
+
+    ;
+
+
+    private final String status;
+
+    private final String detail;
+
+
+
+
+
+}
+
 
 
 
@@ -136,25 +165,3 @@ public enum ErrorCode {
 //    EXTERNAL_SERVER_ERROR("E500", "주식 시세 정보 서버에 에러가 있습니다. 잠시후 다시 시도해주세요. \n 문제가 계속 될 경우 관리자에게 문의해주세요."),
 //    EXTERNAL_SERVER_NO_RESULT_ERROR("E500", "종목이 존재하지 않아 정보를 불러올 수 없습니다. \n 관리자에게 문의해주세요."),
 //
-
-
-    //common error (서버에러 5xx)
-    SERVER_ERROR("E500", "예상치 못한 에러가 발생했습니다."),
-    MESSAGE_SERVER_ERROR("E501", "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
-
-    API_SEVER_ERROR_NAVER("E502", "영문 번역과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
-    API_SEVER_ERROR_YHFINANCE("E503", "주식 시세정보를 가져오는 과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
-    API_SEVER_ERROR_RAPID_YHFINANCE("E504", "기사를 가져오는 과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
-
-    ;
-
-
-    private final String status;
-
-    private final String detail;
-
-
-
-
-
-}
