@@ -46,6 +46,8 @@ public class UserController {
     @Operation(summary = "이름,프로필 사진 조회", description = "userId를 이용해 이름, 프로필 사진을 가져오는 API",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = UserInfoResponseDto.class))),
+                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+                    @ApiResponse(responseCode = "E409", description = "존재하지 않는 프로필 이미지", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getUserName(@PathVariable(value = "user_id") Long userId){
         return ResponseEntity.ok(userService.getUserName(userId));
@@ -57,6 +59,8 @@ public class UserController {
     @Operation(summary = "속한 학급 조회", description = "속해 있는 모든 학급 리스트를 반환 - 학생용",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ClassOnboardInfo.class)))),
+                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getJoinedClass(@PathVariable(value = "user_id") Long userId){
         return ResponseEntity.ok(userService.getStudentJoinedClassList(userId));

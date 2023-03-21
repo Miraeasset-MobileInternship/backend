@@ -37,6 +37,9 @@ public class TransactionController {
     @Operation(summary = "학생 거래 내역 조회", description = "해당 학생의 계좌 거래 내역을 조회(10개, 최신순, 입금(type=deposit),출금(type=withdraw) 구분), 학생 - 홈 화면 거래 내역",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = StudentTransactionResponseDto.class))),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
+                    @ApiResponse(responseCode = "E410", description = "존재하지 않는 카테고리" ,content = @Content),
+
             })
     public ResponseEntity<BanklassResponseEntity> getStudentTransactionData(@PathVariable(value = "student_id") Long studentId,
                                                                             @RequestParam(defaultValue = "all") String type,
@@ -51,6 +54,8 @@ public class TransactionController {
     @Operation(summary = "국고 거래 내역 조회", description = "해당 학급(국고)의 계좌 거래 내역을 조회(10개, 최신순, 입금(type=deposit),출금(type=withdraw) 구분)",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = ClassTransactionResponseDto.class))),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+                    @ApiResponse(responseCode = "E410", description = "존재하지 않는 카테고리", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getClassTransactionData(@PathVariable(value = "class_id") Long classId,
                                                                                @RequestParam(defaultValue = "all") String type,
@@ -66,6 +71,7 @@ public class TransactionController {
     @Operation(summary = "이체/지급 태그 조회(selector)", description = "출금/입금 카테고리 내역을 조회(SELECTOR), 학생 - 업무수행 - 특수업무 수행 중 출입금 카테고리SELECTOR",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TransactionCategoryDto.class)))),
+                    @ApiResponse(responseCode = "E411", description = "존재하지 않는 카테고리 타입에 대한 요청", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getCategoryList(@RequestParam String type){
         return ResponseEntity.ok(transactionService.getCategoryList(type));
@@ -80,6 +86,12 @@ public class TransactionController {
     @Operation(summary = "이체하기", description = "이체기능 : 학생계좌에서 국고로 이체되는 기능, 학생 - 업무수행 - 특수업무 수행 중 학생 계좌 출금",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success - created", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E708", description = "0원 거래 요청 시 에러", content = @Content ),
+                    @ApiResponse(responseCode = "E706", description = "이체하기에서 사용 불가능한 태그 사용시 에러", content = @Content ),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생(매니저/거래 학생)", content = @Content ),
+                    @ApiResponse(responseCode = "E704", description = "이체하기 권한이 없는 직업을 가진 매니저인 경우", content = @Content ),
+                    @ApiResponse(responseCode = "E702", description = "학생 잔고 부족", content = @Content ),
+                    @ApiResponse(responseCode = "E805", description = "거래 내역 DB저장 시 발생한 에러", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> transferMoneyFromStudent(@RequestBody @Valid TransferMoneyRequestDto transferMoneyRequestDto){
 
@@ -117,6 +129,12 @@ public class TransactionController {
     @Operation(summary = "지급하기", description = "지급기능 : 국고에서 학생계좌로 이체되는 기능, 학생 - 업무수행 - 특수업무 수행 중 국고 출금",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success - created", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E708", description = "0원 거래 요청 시 에러", content = @Content ),
+                    @ApiResponse(responseCode = "E707", description = "지급하기에서 사용 불가능한 태그 사용시 에러", content = @Content ),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생(매니저/거래 학생)", content = @Content ),
+                    @ApiResponse(responseCode = "E705", description = "지급하기 권한이 없는 직업을 가진 매니저인 경우", content = @Content ),
+                    @ApiResponse(responseCode = "E703", description = "국고 잔고 부족", content = @Content ),
+                    @ApiResponse(responseCode = "E806", description = "거래 내역 DB저장 시 발생한 에러", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> payMoneyFromClass(@RequestBody @Valid TransferMoneyRequestDto transferMoneyRequestDto){
 
@@ -150,6 +168,11 @@ public class TransactionController {
     @Operation(summary = "학생 - 거래내역 상세보기", description = "거래 상세보기 - 학생계좌 기준",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = TransactionDetailResponseDto.class))),
+                    @ApiResponse(responseCode = "E407", description = "유효/존재하지 않는 transaction_id", content = @Content ),
+                    @ApiResponse(responseCode = "E404", description = "유효/존재하지 않는 학급" , content = @Content),
+                    @ApiResponse(responseCode = "E410", description = "유효/존재하지 않는 카테고리", content = @Content ),
+                    @ApiResponse(responseCode = "E402", description = "유효/존재하지 학생(매니저/거래 학생)", content = @Content ),
+                    @ApiResponse(responseCode = "E405", description = "유효/존재하지 직업(매니저/거래 학생의 직업)", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getStudentTransactionDetail(@PathVariable(value = "transaction_id") Long transactionId){
         return ResponseEntity.ok(transactionService.getStudentTransactionDetail(transactionId));
@@ -160,6 +183,11 @@ public class TransactionController {
     @Operation(summary = "국고 - 거래내역 상세보기", description = "거래 상세보기 - 국고계좌 기준",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = TransactionDetailResponseDto.class))),
+                    @ApiResponse(responseCode = "E407", description = "유효/존재하지 않는 transaction_id", content = @Content ),
+                    @ApiResponse(responseCode = "E404", description = "유효/존재하지 않는 학급", content = @Content ),
+                    @ApiResponse(responseCode = "E410", description = "유효/존재하지 않는 카테고리", content = @Content ),
+                    @ApiResponse(responseCode = "E402", description = "유효/존재하지 학생(매니저/거래 학생)", content = @Content ),
+                    @ApiResponse(responseCode = "E405", description = "유효/존재하지 직업(매니저/거래 학생의 직업)", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getClassTransactionDetail(@PathVariable(value = "transaction_id") Long transactionId){
         return ResponseEntity.ok(transactionService.getClassTransactionDetail(transactionId));

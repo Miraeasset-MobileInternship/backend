@@ -44,6 +44,7 @@ public class JobController {
     @Operation(summary = "직업 상세정보 조회", description = "해당 직업의 상세 정보를 조회, 선생님 - 직업 수정 화면",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = JobDto.class))),
+                    @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getJobInfo(@PathVariable(value = "job_id") Long jobId){
         return ResponseEntity.ok(jobService.getJobInfo(jobId));
@@ -57,6 +58,9 @@ public class JobController {
     @Operation(summary = "직업 삭제", description = "해당 id의 직업을 삭제, 선생님 - 직업 삭제 기능",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success - status:deleted", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
+                    @ApiResponse(responseCode = "E701", description = "삭제 불가능한 필수 직업", content = @Content ),
+                    @ApiResponse(responseCode = "E820", description = "삭제과정에서 DB에서 발생한 에러", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> deleteJob(@PathVariable(value = "job_id") Long jobId){
         return ResponseEntity.ok(jobService.deleteJob(jobId));
@@ -68,6 +72,10 @@ public class JobController {
     @Operation(summary = "직업 생성", description = "새로운 직업을 생성, 선생님 - 직업 생성 화면",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success - status:created", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+                    @ApiResponse(responseCode = "E602", description = "해당 학급에 이미 존재하는 직업명", content = @Content ),
+                    @ApiResponse(responseCode = "E603", description = "학급에 직업 50개 이상 등록 불가 에러", content = @Content ),
+                    @ApiResponse(responseCode = "E804", description = "생성 과정에서 DB에서 발생한 에러", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> createJob(@RequestBody @Valid JobCreateRequestDto jobInfo){
 
@@ -86,6 +94,9 @@ public class JobController {
     @Operation(summary = "학급 전체 직업 변경", description = "아이들의 현 직업을 변경(단체), 선생님 - 아이들 직업 부여/수정(전체)",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success - status:update", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E830", description = "정보 업데이트 과정에서 DB에서 발생한 에러", content = @Content ),
+                    @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> updateJobStudentAll(@RequestBody @Valid List<StudentJobUpdateRequestDto> jobList){
         return ResponseEntity.ok(jobService.updateAllStudentJob(jobList));
@@ -97,6 +108,9 @@ public class JobController {
     @Operation(summary = "학생 직업 변경", description = "아이들의 현 직업을 변경(개인), 선생님 - 아이들 직업 수정/부여(개인)",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success - status:update", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content ),
+                    @ApiResponse(responseCode = "E830", description = "정보 업데이트 과정에서 DB에서 발생한 에러", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> updateJobStudent(@RequestBody @Valid StudentJobUpdateRequestDto studentJobUpdateRequestDto){
         return ResponseEntity.ok(jobService.updateStudentJob(studentJobUpdateRequestDto)); //id를 같이 반환하기

@@ -204,13 +204,17 @@ public class AuthService {
                 .build();
 
 
+        try {
 
-        // 5. redis에 토큰 저장
-        refreshTokenRedisRepository.save(refreshToken);
+            // 5. redis에 토큰 저장
+            refreshTokenRedisRepository.save(refreshToken);
 
 
-        return tokenDto;
+            return tokenDto;
 
+        }catch (Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_LOGIN);
+        }
     }
 
 
@@ -222,11 +226,14 @@ public class AuthService {
         /*
         save가 안됩니다 -> 근데 id return은 잘되는데 데베에는 없다 -> Transaction annotation 걸어놔서 그런거였음
          */
+        try {
+            //유저 가입
+            UserInfo newUser = signUpRequestDto.toUser(signUpRequestDto.getPhoneNum(), signUpRequestDto.getUserName(), signUpRequestDto.getUserRole(), signUpRequestDto.getProfileImgId());
+            UserInfo u = userInfoRepository.save(newUser);
 
-        //유저 가입
-        UserInfo newUser = signUpRequestDto.toUser(signUpRequestDto.getPhoneNum(), signUpRequestDto.getUserName(), signUpRequestDto.getUserRole(), signUpRequestDto.getProfileImgId());
-        UserInfo u = userInfoRepository.save(newUser);
-
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_SIGNUP);
+        }
 
 //        return createUri(u.getId(), UriTypes.USER );
 
@@ -334,22 +341,26 @@ public class AuthService {
         //logout token의 TTL은 access token의 남은 기간동안 유지되어야 함
         long remainAccessTokenExpiration = tokenProvider.getRemainExpiration(accessToken);
 
+        try {
 
-        //redis에 존재하는 refreshToken 삭제
-        refreshTokenRedisRepository.deleteById(userId.toString());
-
-
-        //logout token를 redis에 저장 (이후 로그아웃된 유저의 AccessToken으로 접근 방지)
-        logoutAccessTokenRedisRepository.save(
-                LogoutAccessToken.of(accessToken, userId, remainAccessTokenExpiration));
+            //redis에 존재하는 refreshToken 삭제
+            refreshTokenRedisRepository.deleteById(userId.toString());
 
 
-        HashMap<String,String> result = new HashMap<String,String>();
-        result.put("message","로그아웃이 정상적으로 수행되었습니다.");
+            //logout token를 redis에 저장 (이후 로그아웃된 유저의 AccessToken으로 접근 방지)
+            logoutAccessTokenRedisRepository.save(
+                    LogoutAccessToken.of(accessToken, userId, remainAccessTokenExpiration));
 
-        return responseService.successHandler(
-                result
-        );
+
+            HashMap<String, String> result = new HashMap<String, String>();
+            result.put("message", "로그아웃이 정상적으로 수행되었습니다.");
+
+            return responseService.successHandler(
+                    result
+            );
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.LOGOUT_ERROR);
+        }
 
     }
 
@@ -388,34 +399,37 @@ public class AuthService {
         TokenDto tokenDto = tokenProvider.generateToken(authentication);
 
 
+        try {
+
+            //6. redis에 존재하는 refreshToken 삭제
+            refreshTokenRedisRepository.deleteById(authentication.getName());
 
 
-        //6. redis에 존재하는 refreshToken 삭제
-        refreshTokenRedisRepository.deleteById(authentication.getName());
+            //7. 새로운 refresh토큰으로 다시저장
+            RefreshToken updatedRefreshToken = RefreshToken.builder()
+                    .id(authentication.getName()) //어느 유저의 리프레시 토큰인가
+                    .refreshToken(tokenDto.getRefreshToken())//새로 생성된 리프래시 토큰
+                    .expiration(tokenProvider.getRefreshTokenRemainExpiration())//만료시간
+                    .build();
 
 
-        //7. 새로운 refresh토큰으로 다시저장
-        RefreshToken updatedRefreshToken = RefreshToken.builder()
-                .id(authentication.getName()) //어느 유저의 리프레시 토큰인가
-                .refreshToken(tokenDto.getRefreshToken())//새로 생성된 리프래시 토큰
-                .expiration(tokenProvider.getRefreshTokenRemainExpiration())//만료시간
-                .build();
+            // 5. redis에 토큰 저장
+            refreshTokenRedisRepository.save(updatedRefreshToken);
 
 
+            // 새로운 토큰 정보를 이용해
+            return responseService.successHandler(
+                    AccessTokenInfo.builder()
+                            .grantType(tokenDto.getGrantType())
+                            .accessToken(tokenDto.getAccessToken())
+                            .refreshToken(tokenDto.getRefreshToken())
+                            .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
+                            .build()
+            );
 
-        // 5. redis에 토큰 저장
-        refreshTokenRedisRepository.save(updatedRefreshToken);
-
-
-        // 새로운 토큰 정보를 이용해
-        return responseService.successHandler(
-                AccessTokenInfo.builder()
-                        .grantType(tokenDto.getGrantType())
-                        .accessToken(tokenDto.getAccessToken())
-                        .refreshToken(tokenDto.getRefreshToken())
-                        .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
-                        .build()
-        );
+        }catch (Exception e){
+            throw new ServiceException(ErrorCode.TOKEN_REISSUE_ERROR);
+        }
 
     }
 
@@ -444,14 +458,18 @@ public class AuthService {
 
         String code = createCode();
 
+        try {
 
-        //redis에 3분 유효기간으로 저장
-        phoneNumberCodeRedisRepository.save(PhoneNumberCode.builder()
-                .id(toNumber)
-                .code(code)
-                .expiration(smsAuthUtil.getExpiration())
-                .build());
+            //redis에 3분 유효기간으로 저장
+            phoneNumberCodeRedisRepository.save(PhoneNumberCode.builder()
+                    .id(toNumber)
+                    .code(code)
+                    .expiration(smsAuthUtil.getExpiration())
+                    .build());
 
+        }catch(Exception e){
+            throw new ServiceException(ErrorCode.NOT_SAVE_CODE);
+        }
 
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("to", toNumber);

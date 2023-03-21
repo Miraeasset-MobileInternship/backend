@@ -12,18 +12,18 @@ public enum ErrorCode {
 
 
 
-    //핸드폰 인증
-    INVALID_CODE("E407", "올바르지 않은 인증번호 입니다."),
-    INCORRECT_CODE("E408", "올바르지 않거나 만료된 인증번호입니다. 다시 시도해주세요."),
+    //인증관련
+    INVALID_CODE("E101", "올바르지 않은 인증번호 입니다."),
+    INCORRECT_CODE("E102", "올바르지 않거나 만료된 인증번호입니다. 다시 시도해주세요."),
 
 
 
     //로그인, 로그아웃 관련
-    FORBIDDEN_USER("E403", "권한이 없는 사용자 입니다."),
-    UNAUTHORIZED_USER("E401", "인증되지 않은 사용자 입니다."),
-    INVALID_PHONE_NUMBER("E402","유저를 찾을 수 없습니다. 핸드폰 번호를 다시 확인해주세요."),
-    ALREADY_EXIST_USER("E405", "이미 가입된 핸드폰 번호 입니다."),
-    SIGN_UP_REQUIRED("E406", "가입이 되지 않은 유저입니다. 회원정보를 입력해주세요"),
+    FORBIDDEN_USER("E303", "권한이 없는 사용자 입니다."),
+    UNAUTHORIZED_USER("E301", "인증되지 않은 사용자 입니다."),
+    INVALID_PHONE_NUMBER("E302","유저를 찾을 수 없습니다. 핸드폰 번호를 다시 확인해주세요."),
+    ALREADY_EXIST_USER("E305", "이미 가입된 핸드폰 번호 입니다."),
+    SIGN_UP_REQUIRED("E306", "가입이 되지 않은 유저입니다. 회원정보를 입력해주세요"),
 
 
 
@@ -49,7 +49,7 @@ public enum ErrorCode {
     NOT_EXIST_STOCK_TRADING_DATA("E408", "존재하지 않는 주식거래에 대한 접근이 포함되어 있습니다."),
     NOT_EXIST_IMAGE("E409", "존재하지 않는 이미지입니다."),
     NOT_EXIST_CATEGORY("E410", "존재하지 않는 카테고리입니다."),
-
+    NOT_EXIST_CATEGORY_TYPE("E411", "존재하지 않는 카테고리 타입(transfer/pay)에 대한 요청 입니다."),
 
 
 
@@ -61,9 +61,15 @@ public enum ErrorCode {
     NOT_SAVE_PAY("E806", "지급 과정에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요."),
     NOT_SAVE_CODE("E807", "인증 코드를 생성하는 과정에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요."),
     NOT_SAVE_JOIN_CLASS("E808", "학생을 학급에 가입시키는 과정에서 에러가 발생하였습니다. 잠시후 다시 시도해주세요."),
+
+    NOT_SAVE_LOGIN("E809", "로그인 도중 서버에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요."),
+    NOT_SAVE_SIGNUP("E810", "회원가입 과정에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요."),
+
     NOT_DELETED("E820", "정보를 삭제하는 과정에서 에러가 발생했습니다."),
     NOT_UPDATED("E830", "정보를 수정하는 과정에서 에러가 발생했습니다."),
 
+    LOGOUT_ERROR("E840", "로그아웃 과정에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요."),
+    TOKEN_REISSUE_ERROR("E850", "재인증 과정에서 에러가 발생하였습니다. 다시 로그인을 시도해주세요."),
 
 
     // 중복 등록

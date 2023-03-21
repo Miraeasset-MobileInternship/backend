@@ -139,10 +139,12 @@ public class TransactionService {
 
             boolean isDeposit = t.getFrom().equals("class"); //돈의 출처가 학생이면 출금
 
+            TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
 
             StudentTransactionDataDto transaction = StudentTransactionDataDto.builder()
                     .transactionId(t.getId())
-                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
+                    .category(category.getTitle())
                     .detail(t.getDetail())
                     .isDeposit(isDeposit)
                     .transactionMoney(t.getMoney())
@@ -268,8 +270,10 @@ public class TransactionService {
 
         if(type.equals("transfer")){
             categories = transactionCategoryRepository.findByTransferTrue();
-        }else{//pay
+        }else if(type.equals("pay")){//pay
             categories = transactionCategoryRepository.findByPayTrue();
+        }else{
+            throw new ServiceException(ErrorCode.NOT_EXIST_CATEGORY_TYPE);
         }
 
 
@@ -302,6 +306,11 @@ public class TransactionService {
         3. 국고 계좌에 돈을 추가함(plus)
         4. transfer_data table에 데이터를 추가함
          */
+
+        //0원 인 경우 불가능
+        responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
+
+        responseService.wrongTransactionCategoryForTransfer(transferMoneyRequestDto.getCategoryId());
 
 
         Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
@@ -366,6 +375,10 @@ public class TransactionService {
         3. 학생 계좌에 돈을 추가함(plus)
         4. transfer_data table에 데이터를 추가함
          */
+
+
+        responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
+        responseService.wrongTransactionCategoryForPay(transferMoneyRequestDto.getCategoryId());
 
         Student manager = studentRepository.findById(transferMoneyRequestDto.getManagerId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
         Student student = studentRepository.findById(transferMoneyRequestDto.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
@@ -513,7 +526,7 @@ public class TransactionService {
 
 
         //거래 카테고리
-        TransactionCategory tc = transactionCategoryRepository.findById(t.getCategoryId()).get();
+        TransactionCategory tc = transactionCategoryRepository.findById(t.getCategoryId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
 
 
         //매니저 정보 찾아내기
@@ -585,7 +598,7 @@ public class TransactionService {
 
 
         //거래 카테고리
-        TransactionCategory tc = transactionCategoryRepository.findById(t.getCategoryId()).get();
+        TransactionCategory tc = transactionCategoryRepository.findById(t.getCategoryId()).orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
 
 
         //매니저 정보 찾아내기
