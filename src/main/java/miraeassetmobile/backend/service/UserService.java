@@ -49,10 +49,10 @@ public class UserService {
     public BanklassResponseEntity getUserName(Long userId){
 
         UserInfo user = userInfoRepository.findById(userId).orElseThrow(
-                ()-> new ServiceException(ErrorCode.NOT_EXIST)
+                ()-> new ServiceException(ErrorCode.NOT_EXIST_USER)
         );
 
-        ProfileImg p = profileImgRepository.findById(user.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        ProfileImg p = profileImgRepository.findById(user.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
 
 
         UserInfoResponseDto result = UserInfoResponseDto.builder()
@@ -70,7 +70,7 @@ public class UserService {
     public BanklassResponseEntity getStudentJoinedClassList(Long userId) {
 
 
-        UserInfo u = userInfoRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo u = userInfoRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
 
         List<Student> studentClassList = studentRepository.findByUserId(u.getId());
 
@@ -83,7 +83,7 @@ public class UserService {
 
 
             //해당 반의 id로 반의 정보를 끌어오기 (1개)
-            Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            Classes c = classRepository.findById(classId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
             ClassOnboardInfo cInfo = ClassOnboardInfo.builder()
                     .classId(c.getId())
