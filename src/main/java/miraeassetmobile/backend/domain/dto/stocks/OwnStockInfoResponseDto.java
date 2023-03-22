@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Builder
-public class OwnStockInfoResponseDTo {
+public class OwnStockInfoResponseDto {
 
     int currentPage;
 

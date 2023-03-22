@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -69,9 +70,9 @@ public class StockService {
 
             FinanceQuote f = yhFinanceApiService.getFinanceQuote(symbolCode);
 
-            String price = String.format("%.2f",f.getRegularMarketPrice());
-            String change = String.format("%.2f",f.getRegularMarketChange());
-            String changePercent = String.format("%.2f",f.getRegularMarketChangePercent());
+            String price = String.format("%.1f",f.getRegularMarketPrice()); // 미소로 변환
+            String change = String.format("%.1f",f.getRegularMarketChange());
+            String changePercent = String.format("%.1f",f.getRegularMarketChangePercent());
 
             boolean open = f.getMarketState().equals("REGULAR");
 
@@ -147,7 +148,7 @@ public class StockService {
 
             FinanceQuote financeQuote = yhFinanceApiService.getFinanceQuote(symbol);
 
-            double price = financeQuote.getRegularMarketPrice() * 10 ; //현재 가격 * 10(미소단위 변환)
+            String price = String.format("%.1f",financeQuote.getRegularMarketPrice()) ; //현재 가격
 
             // 보유 주식의 현 가격
 //            double price = Double.parseDouble(stockApiResponseDto.getItems().get(0).getClpr()) * 10;  // 미소 단위로 변환 (1달러 = 10미소 = 1000원)
@@ -155,7 +156,7 @@ public class StockService {
 
             // 결과가 string으로 api 에서 return되기 때문에 변경 해주어야함
             // 100 미소 == 10000원
-            marketValue += price * ss.getAmount(); //가지고 있는 수량만큼 곱해줌
+            marketValue += Double.parseDouble(price) * ss.getAmount(); //가지고 있는 수량만큼 곱해줌
 
 
         }
@@ -219,7 +220,7 @@ public class StockService {
 
         if(totalData == 0){
             return responseService.successHandler(
-                    OwnStockInfoResponseDTo.builder()
+                    OwnStockInfoResponseDto.builder()
                             .totalData(0)
                             .currentPage(0)
                             .maxPage(0)
@@ -246,24 +247,24 @@ public class StockService {
             FinanceQuote f = yhFinanceApiService.getFinanceQuote(stock.getStockSymbol());
 
             //현재가 (미소전환)
-            double crPrice = f.getRegularMarketPrice() * 10 ; //현재 가격 * 10(미소단위 변환)
-            String price = String.format("%.2f",crPrice);
+            double crPrice = f.getRegularMarketPrice(); //
+            String price = String.format("%.1f",crPrice);
 
 
             //평균구매단가 (1개 기준)
             double blPrice = stock.getBlendedPrice().doubleValue();
-            String blendedPrice = String.format("%.2f", blPrice);
+            String blendedPrice = String.format("%.1f", blPrice);
 
 
 
             //평가손익 = 현재금액(현재가) - 매수금액(내가 지불한 금액)
             // 미소단위로 변환된 현재가 - 미소단위로 db에 저장되어 있는 평균구매단가 = 평가손익
             double mProfitLoss = crPrice - blPrice;
-            String marketProfitLoss = String.format("%.2f", mProfitLoss * stock.getAmount());// 보유수량 곱해줘야함 !
+            String marketProfitLoss = String.format("%.1f", mProfitLoss * stock.getAmount());// 보유수량 곱해줘야함 !
 
             //수익률 = (손익)/(투자원금=매수금액) * 100
             double y = mProfitLoss/blPrice  * 100;
-            String yield = String.format("%.2f", y);
+            String yield = String.format("%.1f", y);
 
 
 
@@ -299,7 +300,7 @@ public class StockService {
 
 
         return responseService.successHandler(
-                OwnStockInfoResponseDTo.builder()
+                OwnStockInfoResponseDto.builder()
                         .totalData(totalData)
                         .currentPage(page)
                         .maxPage(maxPage)

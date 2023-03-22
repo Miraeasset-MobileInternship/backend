@@ -1,4 +1,4 @@
-package com.m.test.domain.dto.classes;
+package miraeassetmobile.backend.domain.dto.classes;
 
 
 import lombok.Builder;
