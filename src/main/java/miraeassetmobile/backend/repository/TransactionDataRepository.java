@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public interface TransactionDataRepository extends JpaRepository<TransactionData,Long> {
@@ -13,11 +14,14 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
     Page<TransactionData> findByStudentId(Long studentId, Pageable page);
 
     Page<TransactionData> findByStudentIdAndFrom(Long studentId, String from, Pageable page); //출금 입금 따로 조회할경우
+    Page<TransactionData> findByStudentIdAndFromIn(Long studentId, Collection From, Pageable page); //출금 입금 따로 조회할경우
 
 
     Page<TransactionData> findByClassId(Long classId, Pageable page);
+    Page<TransactionData> findByClassIdAndCategoryIdNot(Long classId,Long categoryId, Pageable page);
 
     Page<TransactionData> findByClassIdAndFrom(Long classId, String from, Pageable page); //출금 입금 따로 조회할경우
+    Page<TransactionData> findByClassIdAndFromAndCategoryIdNot(Long classId, String from, Long categoryId,Pageable page); //출금 입금 따로 조회할경우
 
 
     //최상단 거래를 조회(가장 최신의 거래)
@@ -31,11 +35,13 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
 
     int countByStudentId(Long studentId);
 
-    int countByStudentIdAndAndFrom(Long studentId, String from);
-
+    int countByStudentIdAndFrom(Long studentId, String from);
+    int countByStudentIdAndFromIn(Long studentId, Collection From); //
 
     int countByClassId(Long classId);
+    int countByClassIdAndAndCategoryIdNot(Long classId, Long categoryId);
 
     int countByClassIdAndAndFrom(Long classId, String from);
+    int countByClassIdAndAndFromAndCategoryIdNot(Long classId, String from, Long categoryId);
 
 }
