@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import miraeassetmobile.backend.domain.dto.api.naver.NaverApiServiceUtils;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.service.ResponseService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -64,7 +66,7 @@ public class NaverTranslatorApiService {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             } else {
                 rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                responseService.errorFromExternalServer();
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_NAVER);
             }
             StringBuffer sb = new StringBuffer();
             String line;
@@ -93,10 +95,9 @@ public class NaverTranslatorApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            responseService.errorFromExternalServerNoResult();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_NAVER);
         }
 
-        return "";
 
     }
 

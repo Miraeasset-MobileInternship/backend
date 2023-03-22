@@ -61,7 +61,7 @@ public class YhFinanceApiService {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             } else {
                 rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                responseService.errorFromExternalServer();
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
             }
             StringBuffer sb = new StringBuffer();
             String line;
@@ -80,7 +80,7 @@ public class YhFinanceApiService {
 
             if(financeObject.get("error") == null){
                 //에러로 온 것이 null이 아닌 경우 서버에서 온 데이터 에러가 있음
-                responseService.errorFromExternalServer();
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
             }
 
             // 실 데이터 부분 추출
@@ -109,10 +109,8 @@ public class YhFinanceApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            responseService.errorFromExternalServerNoResult();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
         }
-
-        return new FinanceQuote();
 
     }
 
@@ -139,7 +137,7 @@ public class YhFinanceApiService {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             } else {
                 rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                responseService.errorFromExternalServer();
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
             }
             StringBuffer sb = new StringBuffer();
             String line;
@@ -158,7 +156,7 @@ public class YhFinanceApiService {
 
             if(financeObject.get("error") == null){
                 //에러
-                responseService.errorFromExternalServer();
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
             }
 
             JSONArray trendingByRegion = financeObject.getJSONArray("result");
@@ -202,10 +200,9 @@ public class YhFinanceApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            responseService.errorFromExternalServerNoResult();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
         }
 
-        return new TrendingByRegion();
 
     }
 
@@ -236,7 +233,7 @@ public class YhFinanceApiService {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             } else {
                 rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                responseService.errorFromExternalServer();
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
             }
             StringBuffer sb = new StringBuffer();
             String line;
@@ -287,10 +284,9 @@ public class YhFinanceApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            responseService.errorFromExternalServerNoResult();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
         }
 
-        return new ArrayList<>();
 
     }
 

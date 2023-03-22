@@ -10,6 +10,8 @@ import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.YhFinanceRapidApiUtils;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.AutoComplete;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.service.ResponseService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -89,10 +91,8 @@ public class YhFinanceRapidApiService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            responseService.errorFromExternalServerNoResult();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_RAPID_YHFINANCE);
         }
-
-        return new ArrayList<>();
 
 
 

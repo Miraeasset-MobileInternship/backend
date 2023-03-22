@@ -39,6 +39,19 @@ public enum ErrorCode {
     TRANSACTION_DATA_NOT_EXIST("E402", "이전 거래내역이 존재하지 않습니다."),
     LOGOUT_USER("E006", "이미 로그아웃된 유저의 token정보 입니다."),
 
+    //존재하지 않는 리소스에 대한 접근 (4XX)
+
+    NOT_EXIST_STUDENT("E402", "존재하지 않는 학생입니다."),
+    NOT_EXIST_USER("E403", "존재하지 않는 유저입니다."),
+    NOT_EXIST_CLASS("E404", "존재하지 않는 학급입니다."),
+    NOT_EXIST_JOB("E405", "존재하지 않는 직업입니다."),
+    NOT_EXIST_STOCK_DATA("E406", "존재하지 않는 주식정보에 대한 접근이 포함되어 있습니다."),
+    NOT_EXIST_TRANSACTION_DATA("E407", "거래내역이 존재하지 않습니다."),
+    NOT_EXIST_STOCK_TRADING_DATA("E408", "존재하지 않는 주식거래에 대한 접근이 포함되어 있습니다."),
+    NOT_EXIST_IMAGE("E409", "존재하지 않는 이미지입니다."),
+
+    NOT_EXIST_CATEGORY_TYPE("E411", "존재하지 않는 카테고리 타입(transfer/pay)에 대한 요청 입니다."),
+
 
     //저장 에러
     NOT_SAVE("E802", "새로운 객체를 생성하는 과정에서 에러가 발생했습니다."),
@@ -65,6 +78,12 @@ public enum ErrorCode {
 
 
     UNAVAILABLE_ACTION_TRANSFER_ZERO("E703", "0원을 이체/지급할 수 없습니다."),
+
+
+
+    //주식
+    NOT_OWNED_STOCK("E901", "보유하지 않은 주식 종목입니다."),
+    NOT_ENOUGH_MONEY_BUYING("E902", "주문가능한 금액이 부족합니다."),
 
 
 //    //로그인 (인증/인가 관련에러)
@@ -125,10 +144,13 @@ public enum ErrorCode {
 
 
     //common error
-    SERVER_ERROR("E500", "예상치 못한 에러가 발생했습니다."),
+
+    //common error (서버에러 5xx)
+    SERVER_ERROR("E500", "예상치 못한 서버 에러가 발생했습니다."),
     MESSAGE_SERVER_ERROR("E501", "문자 전송 과정에서 에러가 발생하였습니다. 핸드폰번호를 다시한번 확인해주시고, 오류가 계속되면 관리자에게 문의해주세요."),
-    EXTERNAL_SERVER_ERROR("E500", "주식 시세 정보 서버에 에러가 있습니다. 잠시후 다시 시도해주세요. \n 문제가 계속 될 경우 관리자에게 문의해주세요."),
-    EXTERNAL_SERVER_NO_RESULT_ERROR("E500", "종목이 존재하지 않아 정보를 불러올 수 없습니다. \n 관리자에게 문의해주세요."),
+    API_SEVER_ERROR_NAVER("E502", "영문 번역과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
+    API_SEVER_ERROR_YHFINANCE("E503", "주식 시세정보를 가져오는 과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
+    API_SEVER_ERROR_RAPID_YHFINANCE("E504", "기사를 가져오는 과정에서 외부 서버 에러가 발생하였습니다. 오류가 계속되면 관리자에게 문의해주세요."),
 
     ;
 
