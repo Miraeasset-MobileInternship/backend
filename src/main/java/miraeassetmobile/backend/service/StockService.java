@@ -318,31 +318,31 @@ public class StockService {
         List<AutoComplete> autoComplete = yhFinanceApiService.getAutoComplete(query);
 
 
-        List<AutoCompleteResponseDto> result = new ArrayList<>();
+//        List<AutoCompleteResponseDto> result = new ArrayList<>();
 
-        for (AutoComplete a :autoComplete) {
+//        for (AutoComplete a :autoComplete) {
+//
+//            FinanceQuote f = yhFinanceApiService.getFinanceQuote(a.getSymbol());
+//
+//            boolean open = f.getMarketState().equals("REGULAR");
+//
+//            TagInfo tagInfo = TagInfo.builder()
+//                    .type(f.getTypeDisp())
+//                    .market(f.getFullExchangeName())
+//                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+//                    .isOpen(open)
+//                    .build();
+//
+//
+//            result.add(AutoCompleteResponseDto.builder()
+//                    .stockId(a.getSymbol())
+//                    .stockTitle(f.getShortName())
+//                    .tagInfo(tagInfo)
+//                    .build());
+//
+//        }
 
-            FinanceQuote f = yhFinanceApiService.getFinanceQuote(a.getSymbol());
-
-            boolean open = f.getMarketState().equals("REGULAR");
-
-            TagInfo tagInfo = TagInfo.builder()
-                    .type(f.getTypeDisp())
-                    .market(f.getFullExchangeName())
-                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
-                    .isOpen(open)
-                    .build();
-
-
-            result.add(AutoCompleteResponseDto.builder()
-                    .stockId(a.getSymbol())
-                    .stockTitle(f.getShortName())
-                    .tagInfo(tagInfo)
-                    .build());
-
-        }
-
-        return responseService.successHandler(result);
+        return responseService.successHandler(autoComplete);
 
     }
 

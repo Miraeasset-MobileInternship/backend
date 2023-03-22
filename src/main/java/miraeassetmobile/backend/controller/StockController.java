@@ -90,12 +90,13 @@ public class StockController {
 //    @Operation(description = "자동완성 검색")
     @Operation(summary = "자동완성 검색 기능", description = "자동완성 검색 기능",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AutoCompleteResponseDto.class)))),
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AutoComplete.class)))),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getSearchAutoComplete(@RequestParam(value = "query") String query){
         return ResponseEntity.ok(stockService.getSearchAutoComplete(query)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
+
 
 
     @GetMapping("/news/market")
