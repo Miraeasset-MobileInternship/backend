@@ -23,7 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -475,6 +474,99 @@ public class StockService {
     }
 
 
+
+    public BanklassResponseEntity checkBeforeSelling(String symbol, Long studentId){
+
+        //존재하지 않는 학생
+        Student s = studentRepository.findById(studentId).orElseThrow(()->new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+        Classes c = classRepository.findById(s.getClassId()).orElseThrow(()->new ServiceException(ErrorCode.NOT_EXIST_CLASS));
+
+        //조회
+        StudentStock ss = studentStockRepository.findByStudentIdAndStockSymbol(studentId,symbol)
+                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_OWNED_STOCK)); //사용자가 보유하지 않은 주식이 여기서 체크되기 때문에 맨 위에 체크가 필요 없을 것 같음
+
+
+        FinanceQuote f = yhFinanceApiService.getFinanceQuote(ss.getStockSymbol());
+
+        String marketPrice = String.format("%.1f", f.getRegularMarketPrice());
+
+        int price = (int) Math.floor(Double.parseDouble(marketPrice)); // marketPrice를 내림해서 int로
+
+        return responseService.successHandler(
+
+                CheckForSellingStockResponseDto.builder()
+                        .stockId(ss.getStockSymbol())
+                        .stockTitle(f.getShortName())
+                        .marketPrice(marketPrice)
+                        .price(price)
+                        .availableAmount(ss.getAmount())
+                        .currency(c.getCurrency())
+                        .build()
+
+        );
+
+    }
+
+
+
+//    public BanklassResponseEntity checkPriceByStockId(String stockSymbol){
+//
+//        //종목 조회
+//        FinanceQuote stockInfo = yhFinanceApiService.getFinanceQuote(stockSymbol);
+//
+//        String price = String.format("%.2f",stockInfo.getRegularMarketPrice()); // 가격 미소로 변환 후 2자리까지
+//
+//
+//
+//
+//    }
+
+
+
+//    @Transactional
+//    public BanklassResponseEntity buyStock(StockBuyingRequestDto stockBuyingRequestDto){
+//
+//        //존재하는 학생인가
+//        Student student = studentRepository.findById(stockBuyingRequestDto.getStudentId())
+//                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+//
+//        //종목 조회
+//        FinanceQuote stockInfo = yhFinanceApiService.getFinanceQuote(stockBuyingRequestDto.getStockId());
+//
+//       /*
+//        여기소수점 어떻게 하기로 했는지 까먹음..;
+//
+//        아마 살때는 : 내림
+//        팔때는 : 올림..
+//
+//         */
+//
+//        //미소 단위로 변환 + 소수점 처리(내림)
+//        int price = (int) Math.floor(stockInfo.getRegularMarketPrice()); //미소 단위로 변환
+//
+//
+//        //주문 금액이 부족한지 체크
+//        responseService.notEnoughMoneyForBuyingStock(stockBuyingRequestDto.getStudentId(), price * stockBuyingRequestDto.getAmount());
+//
+//
+//
+//        //거래가 가능함
+//
+//        /*
+//        **국고와는 관계가 없다.
+//
+//        0. 학생잔고에서 돈 빼기 money update
+//        1. student_stock 테이블에 보유 수량 저장하기
+//        2. stock_trading_data 테이블에 거래 내역 저장하기
+//        3. transaction_data 테이블에 거래 내역 저장하기
+//            * manager정보 -1로 처리
+//            * 태그 주식으로 지정하기
+//
+//         */
+//
+//
+//
+//    }
 
 
 

@@ -113,16 +113,33 @@ public class StockController {
 
 
 
-    @GetMapping("/check-amount")
-    @Operation(summary = "매도 수량 체크", description = "매도할 수 있는 주식의 수량 체크",
+    @GetMapping("/check-selling")
+    @Operation(summary = "매도 수량 및 가격 체크", description = "매도할 수 있는 주식의 수량 체크 및 현재가 체크",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SellingStockAmountResponseDto.class))),
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = CheckForSellingStockResponseDto.class))),
                     @ApiResponse(responseCode = "E901", description = "학생이 보유하지 않은 주식종목을 조회한 경우", content = @Content),
                     @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getSellAmount(@RequestParam String stockId, @RequestParam Long studentId) {
-        return ResponseEntity.ok(stockService.checkSellAmount(stockId,studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+        return ResponseEntity.ok(stockService.checkBeforeSelling(stockId,studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
+
+
+//    @PostMapping("/sell")
+//    @Operation(summary = "매도 수량 및 가격 체크", description = "매도할 수 있는 주식의 수량 체크 및 현재가 체크",
+//            responses = {
+//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = CheckForSellingStockResponseDto.class))),
+//                    @ApiResponse(responseCode = "E901", description = "학생이 보유하지 않은 주식종목을 조회한 경우", content = @Content),
+//                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
+//                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
+//                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+//            })
+//    public ResponseEntity<BanklassResponseEntity> getSellAmount(@RequestParam String stockId, @RequestParam Long studentId) {
+//        return ResponseEntity.ok(stockService.checkBeforeSelling(stockId,studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+//    }
+
 
 
 //    @GetMapping("/check-price")
