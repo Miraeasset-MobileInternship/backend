@@ -2,9 +2,13 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 
 import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
+import miraeassetmobile.backend.domain.dto.classes.ClassCurrencyResponseDto;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
@@ -103,6 +107,16 @@ public class ClassController {
         return ResponseEntity.ok(classService.checkInvitationCode(invitationCode));
     }
 
+
+    @GetMapping("/{class_id}/currency")
+    @Operation(summary = "학급 화폐 단위 전송", description = "",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = ClassCurrencyResponseDto.class))),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+            })
+    public ResponseEntity<BanklassResponseEntity> getClassCurrency(@PathVariable(value = "class_id") Long classId){
+        return ResponseEntity.ok(classService.getClassCurrency(classId));
+    }
 
 
 }
