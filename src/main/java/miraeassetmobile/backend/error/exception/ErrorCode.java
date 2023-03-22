@@ -83,8 +83,10 @@ public enum ErrorCode {
 
     //주식
     NOT_OWNED_STOCK("E901", "보유하지 않은 주식 종목입니다."),
-    NOT_ENOUGH_MONEY_BUYING("E902", "주문가능한 금액이 부족합니다."),
+    NOT_ENOUGH_SHARES("E902","판매하려는 수량이 보유하고 있는 수량보다 많습니다."),
+    NOT_ENOUGH_MONEY_BUYING("E903", "주문가능한 금액이 부족합니다."),
 
+    TRADING_STOCK("E950", "주식 체결과정에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요"),
 
 //    //로그인 (인증/인가 관련에러)
 //    FORBIDDEN_USER(HttpStatus.FORBIDDEN, "서비스를 사용할 수 없는 사용자입니다."),//403

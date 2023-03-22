@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 
+import miraeassetmobile.backend.domain.dto.CreatedUriDto;
+import miraeassetmobile.backend.domain.dto.api.yahooFinance.AutoComplete;
 import miraeassetmobile.backend.domain.dto.stocks.*;
 import miraeassetmobile.backend.service.StockService;
 
@@ -17,6 +19,7 @@ import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.text.ParseException;
 
 @RequestMapping("/api/stock")
@@ -128,18 +131,19 @@ public class StockController {
     }
 
 
-//    @PostMapping("/sell")
-//    @Operation(summary = "매도 수량 및 가격 체크", description = "매도할 수 있는 주식의 수량 체크 및 현재가 체크",
-//            responses = {
-//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = CheckForSellingStockResponseDto.class))),
-//                    @ApiResponse(responseCode = "E901", description = "학생이 보유하지 않은 주식종목을 조회한 경우", content = @Content),
-//                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
-//                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
-//                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
-//            })
-//    public ResponseEntity<BanklassResponseEntity> getSellAmount(@RequestParam String stockId, @RequestParam Long studentId) {
-//        return ResponseEntity.ok(stockService.checkBeforeSelling(stockId,studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
+    @PostMapping("/sell")
+    @Operation(summary = "매도 기능", description = "매도할 수 있는 주식의 수량 체크 및 현재가 체크",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E901", description = "학생이 보유하지 않은 주식종목을 조회한 경우", content = @Content),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+                    @ApiResponse(responseCode = "E902", description = "보유보다 더 많은 수량을 판매하려고 하는 경우", content = @Content),
+                    @ApiResponse(responseCode = "E950", description = "데이터 저장 과정등에서 DB에서 발생한 에러 - 매도 통합 에러", content = @Content),
+            })
+    public ResponseEntity<BanklassResponseEntity> getSell(@RequestBody @Valid StockSellingRequestDto stockSellingRequestDto) {
+        return ResponseEntity.ok(stockService.sellshares(stockSellingRequestDto)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
 
 
 

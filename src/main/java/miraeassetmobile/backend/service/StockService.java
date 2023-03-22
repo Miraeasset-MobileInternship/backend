@@ -1,20 +1,19 @@
 package miraeassetmobile.backend.service;
 
+import lombok.extern.slf4j.Slf4j;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
+import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.AutoComplete;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
 import miraeassetmobile.backend.domain.dto.stocks.*;
-import miraeassetmobile.backend.domain.entity.Classes;
-import miraeassetmobile.backend.domain.entity.Student;
-import miraeassetmobile.backend.domain.entity.StudentStock;
+import miraeassetmobile.backend.domain.entity.*;
+import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.ServiceException;
-import miraeassetmobile.backend.repository.ClassRepository;
-import miraeassetmobile.backend.repository.StudentRepository;
-import miraeassetmobile.backend.repository.StudentStockRepository;
+import miraeassetmobile.backend.repository.*;
 import miraeassetmobile.backend.service.api.NaverTranslatorApiService;
 import miraeassetmobile.backend.service.api.YhFinanceApiService;
 import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
@@ -23,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -30,7 +30,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.CLASS;
+import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.SELL;
+import static org.hibernate.internal.CoreLogging.logger;
+
 @Service
+@Slf4j
 public class StockService {
 
     YhFinanceApiService yhFinanceApiService;
@@ -40,8 +45,11 @@ public class StockService {
     StudentRepository studentRepository;
     ClassRepository classRepository;
     StudentStockRepository studentStockRepository;
+    StockTradingDataRepository stockTradingDataRepository;
+    TransactionCategoryRepository transactionCategoryRepository;
+    TransactionDataRepository transactionDataRepository;
 
-    StockService(NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
+    StockService(TransactionDataRepository transactionDataRepository, TransactionCategoryRepository transactionCategoryRepository, StockTradingDataRepository stockTradingDataRepository, NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
         this.yhFinanceApiService = yhFinanceApiService;
         this.responseService = responseService;
         this.studentRepository =studentRepository;
@@ -49,6 +57,9 @@ public class StockService {
         this.studentStockRepository = studentStockRepository;
         this.yhFinanceRapidApiService = yhFinanceRapidApiService;
         this.naverTranslatorApiService= naverTranslatorApiService;
+        this.stockTradingDataRepository = stockTradingDataRepository;
+        this.transactionDataRepository = transactionDataRepository;
+        this.transactionCategoryRepository = transactionCategoryRepository;
     }
 
 
@@ -509,6 +520,120 @@ public class StockService {
 
 
 
+    @Transactional
+    public BanklassResponseEntity sellshares(StockSellingRequestDto stockSellingRequestDto){
+
+        //데이터 꺼내두기
+        String stockSymbol = stockSellingRequestDto.getStockId();
+        int price = stockSellingRequestDto.getPrice();
+        Long studentId = stockSellingRequestDto.getStudentId();
+        int sellingAmount = stockSellingRequestDto.getAmount();
+
+
+
+
+        //존재하는 학생인가
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+
+        //보유한 종목이 맞는가
+        StudentStock ss = studentStockRepository.findByStudentIdAndStockSymbol(studentId, stockSymbol)
+                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_OWNED_STOCK));
+
+        //유효한 종목인가 (Finance api로)
+        FinanceQuote stockInfo = yhFinanceApiService.getFinanceQuote(stockSymbol);
+
+
+
+
+        //거래가 가능함
+
+
+            //
+//        /*
+//        **국고와는 관계가 없다.
+//
+//        0. 학생잔고에 돈 추가하기 money update
+//        1. student_stock 테이블에 보유 수량 체크하고 0개면 삭제하기
+//        2. stock_trading_data 테이블에 거래 내역 저장하기
+//        3. transaction_data 테이블에 거래 내역 저장하기
+//            * manager정보 -1로 처리
+//            * 태그 주식으로 지정하기
+//
+//         */
+
+            //0. 학생잔고에 돈 추가하기
+            //" 판매금액 * 보유수량 "
+            int updatedStudentMoney = updateSellingStudentMoney(studentId, price * sellingAmount);
+
+
+            //1. student stock table에서 보유수량 변경
+            /*
+
+            1. 판매하려고 하는 수량이 보유수량보다 많은지 확인
+            2. 판매하려는 수량만큼 감소시킴
+            3. 만약 0개 이하인 경우 테이블에서 삭제함
+
+             */
+            updateAmountOfShares(ss, sellingAmount);
+
+
+            //2. stock trading table에 추가하기
+            try {
+                StockTradingData stockTradingData = stockSellingRequestDto.toStockTradingData(studentId, stockSymbol, sellingAmount, price);
+
+                stockTradingDataRepository.save(stockTradingData);
+            }catch (Exception e){
+                log.error("Exception : "+"Stock Trading Data Table에 넣는 과정에서 생긴 에러");
+                throw new ServiceException(ErrorCode.TRADING_STOCK);
+            }
+
+
+
+
+            //3. transaction_data 테이블에 거래 내역저장하기
+
+
+            String detailMessage = stockInfo.getDisplayName()+" "+sellingAmount+"주 매도";
+
+            Long categoryId = 8L;
+
+            try {
+                TransactionData transactionData = transactionDataRepository.save(
+
+                        TransactionData.builder()
+                                .money(price * sellingAmount) // 구매가격 * 구매수량
+                                .studentMoney(updatedStudentMoney) //거래 후 남은 학생 잔고
+                                .classMoney(-1)//관계없음
+                                .managerId(-1L)//존재하지 않음
+                                .managerJobId(-1L) //존재하지 않음
+                                .studentId(studentId)//본인
+                                .studentJobId(student.getJobId())//본인직업
+                                .classId(student.getClassId())//학생 소속 반
+                                .categoryId(categoryId) //number 8 : 투자
+                                .detail(detailMessage)//매도 매수
+                                .from(SELL.getTypeName()) //class 학급잔고에서 나온 돈은 아니지만 학생계좌로 돈이 들어가는 것 이므로..
+                                .build()
+
+                );
+
+                return responseService.successHandler(
+                        CreatedUriDto.builder()
+                                .status("created")
+                                .url(responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
+                                .build()
+                );
+
+
+            }catch(Exception e){
+                log.error("Exception : "+"Transaction data table에 넣는 과정에서 생긴 에러");
+                throw new ServiceException(ErrorCode.TRADING_STOCK);
+            }
+
+
+
+    }
+
 //    public BanklassResponseEntity checkPriceByStockId(String stockSymbol){
 //
 //        //종목 조회
@@ -556,7 +681,8 @@ public class StockService {
 //        **국고와는 관계가 없다.
 //
 //        0. 학생잔고에서 돈 빼기 money update
-//        1. student_stock 테이블에 보유 수량 저장하기
+//        1. student_stock 테이블에 보유 수량 저장하기 (존재하지 않으면 새로 생성)
+//                * 평균구매단가 수정해야함!!
 //        2. stock_trading_data 테이블에 거래 내역 저장하기
 //        3. transaction_data 테이블에 거래 내역 저장하기
 //            * manager정보 -1로 처리
@@ -569,14 +695,77 @@ public class StockService {
 //    }
 
 
+    @Transactional
+    public int updateSellingStudentMoney(Long studentId, int money){
 
-    public long test(String date) throws ParseException {
+        try {
 
-        System.out.println("start");
+            Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
 
-        return calculateTime(date);
+            //객체의 돈을 변경하여 새로운 객체를 생성
+            Student updateStudent = student.updateMoney(student.getMoney() + money); //보유하고 있는 금액 + 매도한 금액
+
+            studentRepository.save(updateStudent);
+
+            return updateStudent.getMoney();
+
+        }catch(Exception e){
+            log.error("Exception : "+"Student money 업데이트 과정에서 생긴 에러");
+            throw new ServiceException(ErrorCode.TRADING_STOCK);
+        }
+    }
+
+    @Transactional
+    public int updateBuyingStudentMoney(Long studentId, int money) {
+
+        try {
+            Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+
+            //객체의 돈을 변경하여 새로운 객체를 생성
+            Student updateStudent = student.updateMoney(student.getMoney() - money); //보유금액 - 매수금액
+
+            studentRepository.save(updateStudent);
+
+            return updateStudent.getMoney();
+
+        }catch (Exception e){
+            log.error("Exception : "+"Student money 업데이트 과정에서 생긴 에러");
+            throw new ServiceException(ErrorCode.TRADING_STOCK);
+        }
+    }
+
+    //판매해서 보유 테이블을 수정
+    @Transactional
+    public void updateAmountOfShares(StudentStock stockStock, int sellingAmount) {
+
+
+        //팔려고하는 수량이 보유 수량보다 적은게 확실한가
+        if(sellingAmount > stockStock.getAmount()){
+            // 판매시도 수량 > 보유 수량 인 경우 에러
+            throw new ServiceException(ErrorCode.NOT_ENOUGH_SHARES);
+        }
+
+
+        try {
+            //객체의 보유수량을 변경하여 새로운 객체를 생성
+            StudentStock updatedStudentStock = stockStock.updateAmount(stockStock.getAmount() - sellingAmount);
+
+            //만약에 보유 수량이 0개 이하면 해당 row삭제
+            if (updatedStudentStock.getAmount() <= 0) {
+                studentStockRepository.deleteById(updatedStudentStock.getId());
+            } else {        //아니면 그냥 업데이트만
+                studentStockRepository.save(updatedStudentStock);
+            }
+        }catch(Exception e){
+            log.error("Exception : "+"Student stock table을 수정하는 과정에서 에러");
+            throw new ServiceException(ErrorCode.TRADING_STOCK);
+        }
+
 
     }
+
+
+
 
 
 }

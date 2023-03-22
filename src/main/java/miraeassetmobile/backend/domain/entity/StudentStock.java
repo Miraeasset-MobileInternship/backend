@@ -33,4 +33,18 @@ public class StudentStock extends BaseTimeEntity{
     private int amount;
 
 
+
+    public StudentStock updateAmount(int amount){
+        this.amount = amount;
+
+        return this;
+    }
+
+
+    public StudentStock updateBlendedPrice(BigDecimal blendedPrice){
+        this.blendedPrice = blendedPrice;
+
+        return this;
+    }
+
 }
