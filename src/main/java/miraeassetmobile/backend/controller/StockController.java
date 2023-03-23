@@ -93,7 +93,7 @@ public class StockController {
 //    @Operation(description = "자동완성 검색")
     @Operation(summary = "자동완성 검색 기능", description = "자동완성 검색 기능",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AutoComplete.class)))),
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = AutoCompleteResponseDto.class))),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getSearchAutoComplete(@RequestParam(value = "query") String query){
@@ -101,12 +101,11 @@ public class StockController {
     }
 
 
-
     @GetMapping("/news/market")
 //    @Operation(description = "경제 뉴스 전체")
     @Operation(summary = "경제 뉴스 전체", description = "경제 뉴스 전체",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MarketNewsResponseDto.class)))),
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = MarketNewsResponseDto.class))),
                     @ApiResponse(responseCode = "E504", description = "경제 뉴스 API 서버에서 발생한 에러", content = @Content),
                     @ApiResponse(responseCode = "E502", description = "번역 과정에서 naver api에서 발생한 에러", content = @Content),
                     @ApiResponse(responseCode = "E50X", description = "parseException 업데이트 예정", content = @Content),
@@ -126,7 +125,7 @@ public class StockController {
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
-    public ResponseEntity<BanklassResponseEntity> getSellAmount(@RequestParam String stockId, @RequestParam Long studentId) {
+    public ResponseEntity<BanklassResponseEntity> checkBeforeSelling(@RequestParam String stockId, @RequestParam Long studentId) {
         return ResponseEntity.ok(stockService.checkBeforeSelling(stockId,studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
 

@@ -1,24 +1,16 @@
 package miraeassetmobile.backend.domain.dto.stocks;
-
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Builder
 @Getter
 public class MarketNewsResponseDto {
 
-    String link;
 
-    String title;
+    int totalData;
 
-    String date;
-
-
-//    String time;
-
-
-    String source;
-
-
+    List<MarketNewsDto> marketNewsList;
 
 }

@@ -323,40 +323,53 @@ public class StockService {
 
 
 
-    public BanklassResponseEntity getSearchAutoComplete(String query){
+//    public BanklassResponseEntity getSearchAutoComplete(String query){
+//
+//
+//        List<AutoComplete> autoComplete = yhFinanceApiService.getAutoComplete(query);
+//
+//
+////        List<AutoCompleteResponseDto> result = new ArrayList<>();
+//
+////        for (AutoComplete a :autoComplete) {
+////
+////            FinanceQuote f = yhFinanceApiService.getFinanceQuote(a.getSymbol());
+////
+////            boolean open = f.getMarketState().equals("REGULAR");
+////
+////            TagInfo tagInfo = TagInfo.builder()
+////                    .type(f.getTypeDisp())
+////                    .market(f.getFullExchangeName())
+////                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+////                    .isOpen(open)
+////                    .build();
+////
+////
+////            result.add(AutoCompleteResponseDto.builder()
+////                    .stockId(a.getSymbol())
+////                    .stockTitle(f.getShortName())
+////                    .tagInfo(tagInfo)
+////                    .build());
+////
+////        }
+//
+//        return responseService.successHandler(autoComplete);
+//
+//    }
 
+
+    public BanklassResponseEntity getSearchAutoComplete(String query){
 
         List<AutoComplete> autoComplete = yhFinanceApiService.getAutoComplete(query);
 
-
-//        List<AutoCompleteResponseDto> result = new ArrayList<>();
-
-//        for (AutoComplete a :autoComplete) {
-//
-//            FinanceQuote f = yhFinanceApiService.getFinanceQuote(a.getSymbol());
-//
-//            boolean open = f.getMarketState().equals("REGULAR");
-//
-//            TagInfo tagInfo = TagInfo.builder()
-//                    .type(f.getTypeDisp())
-//                    .market(f.getFullExchangeName())
-//                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
-//                    .isOpen(open)
-//                    .build();
-//
-//
-//            result.add(AutoCompleteResponseDto.builder()
-//                    .stockId(a.getSymbol())
-//                    .stockTitle(f.getShortName())
-//                    .tagInfo(tagInfo)
-//                    .build());
-//
-//        }
-
-        return responseService.successHandler(autoComplete);
+        return responseService.successHandler(
+                AutoCompleteResponseDto.builder()
+                        .totalData(autoComplete.size())
+                        .autoCompleteList(autoComplete)
+                        .build()
+        );
 
     }
-
 
 
     public BanklassResponseEntity getMarketNews(String lang) throws ParseException {
@@ -364,7 +377,9 @@ public class StockService {
 
         List<MarketNews> newsList = yhFinanceRapidApiService.getMarketNews();
 
-        List<MarketNewsResponseDto> result = new ArrayList<>();
+        Collections.sort(newsList, new ListComparator()); //결과값 최신순으로 정렬
+
+        List<MarketNewsDto> result = new ArrayList<>();
 
         if(lang.equals("ko")) {
 
@@ -374,7 +389,7 @@ public class StockService {
 
                 result.add(
 
-                        MarketNewsResponseDto.builder()
+                        MarketNewsDto.builder()
                                 .title(naverTranslatorApiService.translateToKo(n.getTitle()))
                                 .link(n.getLink())
                                 .source(n.getSource())
@@ -394,7 +409,7 @@ public class StockService {
 
                 result.add(
 
-                        MarketNewsResponseDto.builder()
+                        MarketNewsDto.builder()
                                 .title(n.getTitle())
                                 .link(n.getLink())
                                 .source(n.getSource())
@@ -409,7 +424,12 @@ public class StockService {
 
         }
 
-        return responseService.successHandler(result);
+        return responseService.successHandler(
+                MarketNewsResponseDto.builder()
+                        .totalData(result.size())
+                        .marketNewsList(result)
+                        .build()
+        );
 
 
 

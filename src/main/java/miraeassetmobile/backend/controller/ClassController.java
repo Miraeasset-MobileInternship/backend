@@ -9,6 +9,7 @@ import miraeassetmobile.backend.domain.BanklassResponseEntity;
 
 import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.classes.ClassCurrencyResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
@@ -48,7 +49,14 @@ public class ClassController {
 
     //반아이들 전체의 직업조회
     @GetMapping("/{class_id}/student/job/all")
-    @Operation(description = "해당 학급의 아이들과 아이들이 가진 직업 현황을 조회, 선생님 - 직업변경 페이지 / 학생 - 친구들의 직업")
+    @Operation(summary = "아이들의 직업 현황", description = "해당 학급의 아이들과 아이들이 가진 직업 현황을 조회, 선생님 - 직업변경 페이지 / 학생 - 친구들의 직업",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success",  content = @Content(schema = @Schema(implementation = StudentJobListResponseDto.class))),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+                    @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
+                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+                    @ApiResponse(responseCode = "E409", description = "존재하지 않는 프로필 이미지", content = @Content ),
+            })
     public ResponseEntity<BanklassResponseEntity> studentJobListByClass(@PathVariable(value = "class_id")Long classId){
         return ResponseEntity.ok(jobService.getAllStudentJobList(classId));
     }
