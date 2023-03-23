@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.domain.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,8 +22,8 @@ public class StockTradingData extends BaseTimeEntity{
     private Long studentId;
 
     @NotNull
-    @Column(name = "stock_isin_code")
-    private Long stockCode;
+    @Column(name = "stock_symbol")
+    private String stockSymbol;
 
 
     @NotNull
@@ -33,9 +34,18 @@ public class StockTradingData extends BaseTimeEntity{
 
     @NotNull
     @Column(name = "is_buying")
-    private boolean isBuying;
+    private boolean buying;
 
 
+
+    @Builder
+    public StockTradingData(Long studentId, String stockSymbol, int amount, int price, boolean buying){
+        this.studentId = studentId;
+        this.stockSymbol = stockSymbol;
+        this.amount = amount;
+        this.price = price;
+        this.buying = buying;
+    }
 
 
 }

@@ -21,6 +21,7 @@ public interface TransactionCategoryRepository extends JpaRepository<Transaction
 
     List<TransactionCategory> findByPayTrue();
 
+
     boolean existsByTransferTrueAndId(Long id);
 
 

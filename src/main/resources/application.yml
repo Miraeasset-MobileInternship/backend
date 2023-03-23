@@ -1,24 +1,36 @@
 api:
-  key: "시세정보 조회 api - key"
-  url: https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService
+  data-go-kr:
+    key: {key}
+    url: {url}
+  yahoo-finance:
+    key: {key}
+    yh-url: {url}
+    sa-url: {url}
+  rapid-api-yahoo-finance:
+    key: {key}
+    host: {host}
+    url: {url}
+  naver-translator:
+    client-id: {client_id}
+    client-secret: {client_secret}
+    url: {url}
 
 jwt:
-  key: "jwt 암호화 key : https://8gwifi.org/jwsgen.jsp 직접 생성가능(Shared secret) "
+  key: {key}
 
 coolsms:
-  api-key: "api key"
-  api-secret: "secret key"
-  from-number: "from number"
+  api-key: {key}
+  api-secret: {secret}
+  from-number: {phone_number}
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://{url}:{port}/{dbname}?serverTimezone=Asia/Seoul
-    username: "userName"
-    password: "password"
-
+    url: jdbc:mysql://{host}:{port}/{schema}?serverTimezone=Asia/Seoul
+    username: {username}
+    password: {password}
   redis:
-    host: {url}
-    port: {port(default:6379)}
+    host: {host}
+    port: {port}
   cache:
     type: redis

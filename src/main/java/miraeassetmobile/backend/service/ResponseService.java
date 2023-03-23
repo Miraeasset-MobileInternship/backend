@@ -22,13 +22,18 @@ public class ResponseService {
     UserInfoRepository userInfoRepository;
     TransactionCategoryRepository transactionCategoryRepository;
 
+    StudentStockRepository studentStockRepository;
 
-    public ResponseService(TransactionCategoryRepository transactionCategoryRepository,UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+
+    public ResponseService(StudentStockRepository studentStockRepository, TransactionCategoryRepository transactionCategoryRepository,UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+
         this.userInfoRepository = userInfoRepository;
         this.classRepository =classRepository;
         this.jobRepository =jobRepository;
         this.studentRepository =studentRepository;
         this.transactionCategoryRepository = transactionCategoryRepository;
+        this.studentStockRepository = studentStockRepository;
+
     }
 
 
@@ -172,6 +177,14 @@ public class ResponseService {
     }
 
 
+    // 0원 이하로 거래 불가
+    public void unavailableTransferOrPayZero(int transferMoney){
+        if(transferMoney <= 0){ //0원이하 불가능
+            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_ZERO); //0원 이하로 거래 불가
+        }
+    }
+
+
     //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
     public void unavailableJobTransfer(Long jobId){
         if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
@@ -217,6 +230,7 @@ public class ResponseService {
         }
     }
 
+
     public void wrongTransactionCategoryForTransfer(Long categoryId){
         if(!transactionCategoryRepository.existsByTransferTrueAndId(categoryId)){
             throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_TAG);
@@ -229,5 +243,23 @@ public class ResponseService {
         }
     }
 
+
+    //사용자가 보유하지 않은 주식
+    public void notOwnStockByUser(Long studentId, String stockSymbol){
+        if(!studentStockRepository.existsByStockSymbolAndStudentId(stockSymbol,studentId)){
+            throw new ServiceException(ErrorCode.NOT_OWNED_STOCK);
+        }
+
+
+    }
+
+
+    public void notEnoughMoneyForBuyingStock(Long studentId, int price){
+
+        if(studentRepository.findById(studentId).get().getMoney() < price){
+            throw new ServiceException(ErrorCode.NOT_ENOUGH_MONEY_BUYING);
+        }
+
+    }
 
 }

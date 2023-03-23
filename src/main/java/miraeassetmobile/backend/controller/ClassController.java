@@ -2,6 +2,7 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,12 +13,15 @@ import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.auth.AccessTokenInfo;
 import miraeassetmobile.backend.domain.dto.classes.ClassAccountResponseDto;
 import miraeassetmobile.backend.domain.dto.classes.ClassCreateRequestDto;
+import miraeassetmobile.backend.domain.dto.classes.ClassCurrencyResponseDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.classes.ClassInvitationCodeResponseDto;
 import miraeassetmobile.backend.domain.dto.classes.ClassValidInvitationResponseDto;
 import miraeassetmobile.backend.domain.dto.jobs.ClassJobListResponseDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorDto;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
+
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
@@ -65,7 +69,8 @@ public class ClassController {
     @GetMapping("/{class_id}/student/job/all")
     @Operation(summary = "아이들의 직업 현황", description = "해당 학급의 아이들과 아이들이 가진 직업 현황을 조회, 선생님 - 직업변경 페이지 / 학생 - 친구들의 직업",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success",  content = @Content(array = @ArraySchema(schema = @Schema(implementation = StudentJobDto.class)))),
+                    @ApiResponse(responseCode = "E000", description = "Success",  content = @Content(schema = @Schema(implementation = StudentJobListResponseDto.class))),
+
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
                     @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
                     @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
@@ -165,6 +170,16 @@ public class ClassController {
         return ResponseEntity.ok(classService.checkInvitationCode(invitationCode));
     }
 
+
+    @GetMapping("/{class_id}/currency")
+    @Operation(summary = "학급 화폐 단위 전송", description = "",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = ClassCurrencyResponseDto.class))),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+            })
+    public ResponseEntity<BanklassResponseEntity> getClassCurrency(@PathVariable(value = "class_id") Long classId){
+        return ResponseEntity.ok(classService.getClassCurrency(classId));
+    }
 
 
 }

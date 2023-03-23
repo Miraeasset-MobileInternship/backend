@@ -213,5 +213,18 @@ public class ClassService {
     }
 
 
+    public BanklassResponseEntity getClassCurrency(Long classId){
+
+
+        Classes c = classRepository.findById(classId).orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
+
+        return responseService.successHandler(
+                ClassCurrencyResponseDto.builder()
+                        .classId(classId)
+                        .currency(c.getCurrency())
+                        .build()
+        );
+
+    }
 
 }

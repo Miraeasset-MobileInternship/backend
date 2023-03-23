@@ -9,7 +9,7 @@ public class TotalStockInfoResponseDto {
 
     Long studentId;
 
-    int money;
+    String money;
 
     String classCurrency; //학급 화폐단위
 
@@ -22,5 +22,6 @@ public class TotalStockInfoResponseDto {
 
     String totalYield; //수익률 (2자리수 끊어서 보내기)
 
+    int yieldStatus; // 1: + / 0: 0 / -1 : -
 
 }
