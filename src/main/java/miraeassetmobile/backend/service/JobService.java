@@ -150,10 +150,10 @@ public class JobService {
         for (Student student : students) {
 
             //존재하지 않는 직업 에러
-            Job job = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            Job job = jobRepository.findById(student.getJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
 
-            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
-            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+            UserInfo u = userInfoRepository.findById(student.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
+            ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
 
             studentJobs.add(StudentJobDto.builder()
                     .studentId(student.getId())
@@ -176,7 +176,7 @@ public class JobService {
     public BanklassResponseEntity getJobInfo(Long id){
 
 
-        Job job = jobRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job job = jobRepository.findById(id).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
 
         //필요한 것만 dto에 담아서 전달
         return responseService.successHandler(
@@ -234,9 +234,11 @@ public class JobService {
         //등록가능한 직업명인지 확인
         responseService.validateJobNameInClass(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle());
 
-
+        //**Request Dto에서 boolean형 인 것은 .get이 아니라 .is 로 불려와진다 따라서 Entity는 괜찮은데 Request에서는 isWithdrawClass로 이름지으면 안되고 is 를뺴야함
         //직업등록
         Job newJob = jobCreateRequestDto.toJob(jobCreateRequestDto.getClassId(), jobCreateRequestDto.getJobTitle(), jobCreateRequestDto.getDetail(), jobCreateRequestDto.getMonthlySalary(), jobCreateRequestDto.isWithdrawStudent(), jobCreateRequestDto.isWithdrawClass()); //save에서 에러난다
+
+
 
 
         try {
@@ -253,7 +255,7 @@ public class JobService {
 
 
         }catch(Exception e){
-            throw new ServiceException(ErrorCode.NOT_SAVE);
+            throw new ServiceException(ErrorCode.NOT_SAVE_JOB);
         }
 
 
@@ -285,7 +287,7 @@ public class JobService {
         responseService.isExistJob(studentJob.getJobId());
 
 
-        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Student student = studentRepository.findById(studentJob.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
 
         //객체의 직업을 변경
         Student updateStudent = student.updateJob(studentJob.getJobId());
@@ -303,7 +305,7 @@ public class JobService {
             );
 
         }catch(Exception e){
-            throw new ServiceException(ErrorCode.NOT_SAVE);
+            throw new ServiceException(ErrorCode.NOT_UPDATED);
         }
 
     }

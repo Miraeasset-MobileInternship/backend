@@ -18,20 +18,20 @@ public class JobCreateRequestDto {
     private int monthlySalary;
 
 
-    private boolean isWithdrawStudent;
+    private boolean withdrawStudent;
 
-    private boolean isWithdrawClass;
+    private boolean withdrawClass;
 
 
 
-    public Job toJob(Long classId, String jobTitle, String detail, int monthlySalary, boolean isWithdrawStudent, boolean isWithdrawClass){
+    public Job toJob(Long classId, String jobTitle, String detail, int monthlySalary, boolean withdrawStudent, boolean withdrawClass){
         return Job.builder()
                 .classId(classId)
                 .title(jobTitle)
                 .monthlySalary(monthlySalary)
                 .detail(detail)
-                .isWithdrawClass(isWithdrawClass)
-                .isWithdrawStudent(isWithdrawStudent)
+                .isWithdrawStudent(withdrawStudent)
+                .isWithdrawClass(withdrawClass)
                 .build();
     }
 

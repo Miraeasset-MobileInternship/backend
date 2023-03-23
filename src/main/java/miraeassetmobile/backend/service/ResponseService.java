@@ -21,16 +21,19 @@ public class ResponseService {
     StudentRepository studentRepository;
     UserInfoRepository userInfoRepository;
     TransactionCategoryRepository transactionCategoryRepository;
+
     StudentStockRepository studentStockRepository;
 
 
     public ResponseService(StudentStockRepository studentStockRepository, TransactionCategoryRepository transactionCategoryRepository,UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
+
         this.userInfoRepository = userInfoRepository;
         this.classRepository =classRepository;
         this.jobRepository =jobRepository;
         this.studentRepository =studentRepository;
         this.transactionCategoryRepository = transactionCategoryRepository;
         this.studentStockRepository = studentStockRepository;
+
     }
 
 
@@ -93,13 +96,13 @@ public class ResponseService {
 
     public void isExistClass(Long classId){
         if(!classRepository.existsById(classId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_CLASS);
         }
     }
 
     public void isExistUser(Long userId){
         if(!userInfoRepository.existsById(userId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_USER);
         }
     }
 
@@ -125,7 +128,7 @@ public class ResponseService {
     public void isExistJob(Long jobId){
 
         if(!jobRepository.existsById(jobId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_JOB);
         }
     }
 
@@ -153,7 +156,7 @@ public class ResponseService {
     public void isExistStudent(Long studentId){
 
         if(!studentRepository.existsById(studentId)){
-            throw new ServiceException(ErrorCode.NOT_EXIST);
+            throw new ServiceException(ErrorCode.NOT_EXIST_STUDENT);
         }
     }
 
@@ -220,15 +223,12 @@ public class ResponseService {
     }
 
 
-//    public void errorFromExternalServerNoResult(){ //외부 서버 에러 -> 결과가 존재하지 않음(조회 코드가 틀려서 결과가 없음)
-//        throw new ServiceException(ErrorCode.EXTERNAL_SERVER_NO_RESULT_ERROR);
-//
-//    }
-
-
-//    public void errorFromExternalServer(){ //외부 서버 에러(공통)
-//        throw new ServiceException(ErrorCode.EXTERNAL_SERVER_ERROR);
-//    }
+    // 0원 이하로 거래 불가
+    public void unavailableTransferOrPayZero(int transferMoney){
+        if(transferMoney <= 0){ //0원이하 불가능
+            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_ZERO); //0원 이하로 거래 불가
+        }
+    }
 
 
     public void wrongTransactionCategoryForTransfer(Long categoryId){
@@ -242,6 +242,7 @@ public class ResponseService {
             throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_PAY_TAG);
         }
     }
+
 
     //사용자가 보유하지 않은 주식
     public void notOwnStockByUser(Long studentId, String stockSymbol){

@@ -26,4 +26,5 @@ public interface TransactionCategoryRepository extends JpaRepository<Transaction
 
 
     boolean existsByPayTrueAndId(Long id);
+
 }

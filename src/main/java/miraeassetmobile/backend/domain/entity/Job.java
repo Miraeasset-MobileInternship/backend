@@ -44,12 +44,12 @@ public class Job extends BaseTimeEntity {
 
     @NotNull
     @Column(name="is_withdraw_student")
-    private boolean isWithdrawStudent = false;
+    private boolean isWithdrawStudent;
 
 
     @NotNull
     @Column(name="is_withdraw_class")
-    private boolean isWithdrawClass = false;
+    private boolean isWithdrawClass;
 
 
     @NotNull
@@ -70,15 +70,13 @@ public class Job extends BaseTimeEntity {
 
 
     @Builder
-    public Job(Long classId, String title, int monthlySalary, String detail, int creditLimit, boolean isWithdrawStudent, boolean isWithdrawClass, boolean isModifyCredit){
+    public Job(Long classId, String title, int monthlySalary, String detail, boolean isWithdrawStudent, boolean isWithdrawClass){
         this.classId= classId;
         this.title=title;
         this.monthlySalary=monthlySalary;
         this.detail=detail;
-        this.creditLimit=creditLimit;
-        this.isWithdrawStudent =isWithdrawStudent;
-        this.isWithdrawClass=isWithdrawClass;
-        this.isModifyCredit=isModifyCredit;
+        this.isWithdrawStudent = isWithdrawStudent;
+        this.isWithdrawClass = isWithdrawClass;
     }
 
 
