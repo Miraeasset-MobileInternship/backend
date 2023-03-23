@@ -24,6 +24,7 @@ public class TrendStockDto {
     //regularMarketChangePercent
     String changePercent; // 변동 퍼센트
 
+    int changeStatus;
 
     //typeDisp
     TagInfo tagInfo;

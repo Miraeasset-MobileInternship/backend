@@ -20,12 +20,12 @@ public class OwnStockInfo {
 
     String blendedPrice; // 평균구매단가
 
-
+    String marketPrice;// 평가금액
     String marketProfitLoss; //평가손익
 
     String yield; //수익률 (2자리수 끊어서 보내기)
 
-
+    int yieldStatus; // 1: + / 0: 0 / -1 : -
 
     //typeDisp
     TagInfo tagInfo;

@@ -82,9 +82,23 @@ public class StockService {
 
             FinanceQuote f = yhFinanceApiService.getFinanceQuote(symbolCode);
 
-            String price = String.format("%.1f",f.getRegularMarketPrice()); // 미소로 변환
-            String change = String.format("%.1f",f.getRegularMarketChange());
+            String price = String.format("%.2f",f.getRegularMarketPrice());
+            String change = String.format("%.2f",f.getRegularMarketChange());
             String changePercent = String.format("%.1f",f.getRegularMarketChangePercent());
+
+            int changeStatus = -1;
+
+            if(f.getRegularMarketChange()>=0){
+
+                change = "+" + change;
+                changePercent = "+" + changePercent;
+                changeStatus = 1;
+
+                if(f.getRegularMarketChange() == 0){
+                    changeStatus = 0;
+                }
+
+            }
 
             boolean open = f.getMarketState().equals("REGULAR");
 
@@ -103,6 +117,7 @@ public class StockService {
                     .price(price)
                     .change(change)
                     .changePercent(changePercent)
+                    .changeStatus(changeStatus)
                     .tagInfo(tagInfo)
                     .build()
             );
@@ -134,7 +149,7 @@ public class StockService {
 
 
         //보유금액 (단위 이름 붙여서)
-        int money = s.getMoney();
+        double money = (double)s.getMoney();
 
 
 
@@ -160,7 +175,7 @@ public class StockService {
 
             FinanceQuote financeQuote = yhFinanceApiService.getFinanceQuote(symbol);
 
-            String price = String.format("%.1f",financeQuote.getRegularMarketPrice()) ; //현재 가격
+            String price = String.format("%.2f",financeQuote.getRegularMarketPrice()) ; //현재 가격
 
             // 보유 주식의 현 가격
 //            double price = Double.parseDouble(stockApiResponseDto.getItems().get(0).getClpr()) * 10;  // 미소 단위로 변환 (1달러 = 10미소 = 1000원)
@@ -197,23 +212,39 @@ public class StockService {
 
 
 
-        //전부 두자리수 까지만 (반올림)
-        String yieldValues = Double.isNaN(yield)? "0.00" : String.format("%.2f",yield); //Nan인 경우 0.00으로
-        String marketValues = String.format("%.2f",marketValue);
-        String blendedPrices = String.format("%.2f",blendedPrice);
-        String marketProfitLosses = String.format("%.2f",marketProfitLoss);
+        //자릿수 변경
+
+        String moneyString = String.format("%.2f", money); //보유금액(2자리)
+        String marketValueString = String.format("%.2f", marketValue); //평가금액(2자리)
+        String blendedPriceString = String.format("%.2f", blendedPrice); //매수금액(2자리)
+
+
+        String marketProfitLossString = String.format("%.2f", marketProfitLoss); //평가손익 2자리
+        String yieldString = String.format("%.1f",yield);
+
+        int yieldStatus = -1; // 기본은 마이너스
+
+        if(yield >= 0){
+            yieldString = "+" + yieldString;
+            marketProfitLossString = "+" + marketProfitLossString;
+            yieldStatus = 1;
+
+            if(yield==0) yieldStatus = 0;
+
+        }
 
 
 
         return responseService.successHandler(
                 TotalStockInfoResponseDto.builder()
                 .studentId(studentId)
-                .money(money)
+                .money(moneyString) //2자리
                 .classCurrency(c.getCurrency())
-                .totalMarketValue(marketValues)
-                .totalBlendedPrice(blendedPrices)
-                .totalMarketProfitLoss(marketProfitLosses)
-                .totalYield(yieldValues)
+                .totalMarketValue(marketValueString)
+                .totalBlendedPrice(blendedPriceString) //2자리
+                .totalMarketProfitLoss(marketProfitLossString)
+                .totalYield(yieldString)  //1자리
+                .yieldStatus(yieldStatus)
                 .build()
         );
 
@@ -258,25 +289,40 @@ public class StockService {
             //해당 주식 심볼로 검색
             FinanceQuote f = yhFinanceApiService.getFinanceQuote(stock.getStockSymbol());
 
-            //현재가 (미소전환)
+            //현재가
             double crPrice = f.getRegularMarketPrice(); //
-            String price = String.format("%.1f",crPrice);
+            String price = String.format("%.2f",crPrice);
 
 
             //평균구매단가 (1개 기준)
             double blPrice = stock.getBlendedPrice().doubleValue();
-            String blendedPrice = String.format("%.1f", blPrice);
+            String blendedPrice = String.format("%.2f", blPrice);
 
+
+            //평가금액
+            double mkPrice = f.getRegularMarketPrice() * stock.getAmount(); //시장가 * 보유수량
+            String marketPrice = String.format("%.2f", mkPrice);
 
 
             //평가손익 = 현재금액(현재가) - 매수금액(내가 지불한 금액)
             // 미소단위로 변환된 현재가 - 미소단위로 db에 저장되어 있는 평균구매단가 = 평가손익
             double mProfitLoss = crPrice - blPrice;
-            String marketProfitLoss = String.format("%.1f", mProfitLoss * stock.getAmount());// 보유수량 곱해줘야함 !
+            String marketProfitLoss = String.format("%.2f", mProfitLoss * stock.getAmount());// 보유수량 곱해줘야함 !
 
             //수익률 = (손익)/(투자원금=매수금액) * 100
             double y = mProfitLoss/blPrice  * 100;
             String yield = String.format("%.1f", y);
+
+
+            int yieldStatus = -1; // 기본은 마이너스
+
+            if(y>=0){
+                yield = "+" + yield;
+                marketProfitLoss = "+" + marketProfitLoss;
+                yieldStatus = 1;
+
+                if(y==0) yieldStatus = 0;
+            }
 
 
 
@@ -296,12 +342,14 @@ public class StockService {
                     OwnStockInfo.builder()
                             .stockId(stock.getStockSymbol()) // symbol
                             .stockTitle(f.getShortName())
-                            .price(price)
+                            .price(price) //현재가 (2자리수)
                             .count(stock.getAmount()) // 보유수량
-                            .blendedPrice(blendedPrice) // 평균구매단가
-                            .marketProfitLoss(marketProfitLoss.equals("-0.0")? "0.0":marketProfitLoss)
-                            .yield(yield.equals("-0.0")? "0.0": yield)
+                            .blendedPrice(blendedPrice) // 평균구매단가(2자리)
+                            .marketProfitLoss(marketProfitLoss) //평가손익(2자리 / +-)
+                            .yield(yield) //수익률(1자리 / +-)
+                            .marketPrice(marketPrice) //평가금액(2자리)
                             .tagInfo(tagInfo)
+                            .yieldStatus(yieldStatus)
                             .build()
 
             );
@@ -521,7 +569,7 @@ public class StockService {
 
         FinanceQuote f = yhFinanceApiService.getFinanceQuote(ss.getStockSymbol());
 
-        String marketPrice = String.format("%.1f", f.getRegularMarketPrice());
+        String marketPrice = String.format("%.2f", f.getRegularMarketPrice());
 
         int price = (int) Math.floor(Double.parseDouble(marketPrice)); // marketPrice를 내림 int로 // 팔떄는 싸게
 
@@ -927,7 +975,7 @@ public class StockService {
 
         FinanceQuote f = yhFinanceApiService.getFinanceQuote(stockSymbol);
 
-        String marketPrice = String.format("%.1f", f.getRegularMarketPrice());
+        String marketPrice = String.format("%.2f", f.getRegularMarketPrice());
 
         int price = (int) Math.ceil(Double.parseDouble(marketPrice)); // marketPrice를 올림 int로 // 살때는 비싸게
 
