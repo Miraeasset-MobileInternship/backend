@@ -95,6 +95,7 @@ public enum ErrorCode {
     UNAVAILABLE_ACTION_TRANSFER_TAG("E706", "이체하기 기능에서 사용할 수 없는 태그입니다."),
     UNAVAILABLE_ACTION_PAY_TAG("E707", "지급하기 기능에서 사용할 수 없는 태그입니다."),
     UNAVAILABLE_ACTION_TRANSFER_ZERO("E708", "0원을 이체/지급할 수 없습니다."),
+    UNAVAILABLE_ACTION_NOT_INCLUDED_STUDENT("E709", "해당 학급에 학생이 아닙니다."),
 
 
     //주식

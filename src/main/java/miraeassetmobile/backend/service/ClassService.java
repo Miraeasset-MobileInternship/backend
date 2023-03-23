@@ -4,12 +4,15 @@ package miraeassetmobile.backend.service;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.classes.*;
+import miraeassetmobile.backend.domain.dto.users.ClassEnterStudentResponseDto;
 import miraeassetmobile.backend.domain.entity.Classes;
+import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.domain.entity.UserInfo;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.ClassRepository;
+import miraeassetmobile.backend.repository.StudentRepository;
 import miraeassetmobile.backend.repository.UserInfoRepository;
 import miraeassetmobile.backend.repository.redis.ClassInvitationCodeRedisRepository;
 import org.springframework.stereotype.Service;
@@ -29,15 +32,17 @@ public class ClassService {
     //레포
     ClassRepository classRepository;
     UserInfoRepository userInfoRepository;
+    StudentRepository studentRepository;
     ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository;
     ResponseService responseService;
 
 
-    ClassService(ResponseService responseService,ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository, UserInfoRepository userInfoRepository, ClassRepository classRepository){
+    ClassService(StudentRepository studentRepository, ResponseService responseService,ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository, UserInfoRepository userInfoRepository, ClassRepository classRepository){
         this.responseService=responseService;
         this.classRepository = classRepository;
         this.userInfoRepository=userInfoRepository;
         this.classInvitationCodeRedisRepository =classInvitationCodeRedisRepository;
+        this.studentRepository = studentRepository;
     }
 
 
@@ -224,6 +229,31 @@ public class ClassService {
                         .currency(c.getCurrency())
                         .build()
         );
+
+    }
+
+
+
+    public BanklassResponseEntity getInfoToEnterClass(Long classId, Long userId){
+
+
+        responseService.isExistClass(classId);
+        responseService.isExistUser(userId);
+
+        Student student = studentRepository.findByClassIdAndUserId(classId,userId)
+                .orElseThrow(()-> new ServiceException(ErrorCode.UNAVAILABLE_ACTION_NOT_INCLUDED_STUDENT));//속한 학생이 아닌 경우
+
+
+        return responseService.successHandler(
+
+                ClassEnterStudentResponseDto.builder()
+                        .studentId(student.getId())
+                        .classId(student.getClassId())
+                        .build()
+
+        );
+
+
 
     }
 

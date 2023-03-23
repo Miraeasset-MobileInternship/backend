@@ -22,6 +22,7 @@ import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
 import miraeassetmobile.backend.domain.dto.students.StudentTransferSelectorDto;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 
+import miraeassetmobile.backend.domain.dto.users.ClassEnterStudentResponseDto;
 import miraeassetmobile.backend.service.ClassService;
 import miraeassetmobile.backend.service.JobService;
 import miraeassetmobile.backend.service.StudentService;
@@ -181,5 +182,19 @@ public class ClassController {
         return ResponseEntity.ok(classService.getClassCurrency(classId));
     }
 
+
+
+    @GetMapping("/enter-class/{class_id}")
+    @Operation(summary = "학생 - 학급에 입장", description = "특정 유저가 학급에 입장하는 경우 해당 학급에서 사용할 studentId를 반환하는 api",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = ClassEnterStudentResponseDto.class))),
+                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+                    @ApiResponse(responseCode = "E709", description = "해당 유저가 해당 학급에 학생이 아닌 경우", content = @Content ),
+            })
+    public ResponseEntity<BanklassResponseEntity> enterClass(@PathVariable(value = "class_id") Long classId,
+                                                             @RequestParam(value = "user_id") Long userId){
+        return ResponseEntity.ok(classService.getInfoToEnterClass(classId,userId));
+    }
 
 }
