@@ -521,7 +521,7 @@ public class StockService {
 
         String marketPrice = String.format("%.1f", f.getRegularMarketPrice());
 
-        int price = (int) Math.floor(Double.parseDouble(marketPrice)); // marketPrice를 내림해서 int로
+        int price = (int) Math.floor(Double.parseDouble(marketPrice)); // marketPrice를 내림 int로 // 팔떄는 싸게
 
         return responseService.successHandler(
 
