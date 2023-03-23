@@ -42,8 +42,9 @@ public class TransactionService {
 
     ResponseService responseService;
 
+    ProfileImgRepository profileImgRepository;
 
-    TransactionService(ResponseService responseService,UserInfoRepository userInfoRepository,  JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+    TransactionService(ProfileImgRepository profileImgRepository,ResponseService responseService,UserInfoRepository userInfoRepository,  JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
@@ -51,6 +52,7 @@ public class TransactionService {
         this.jobRepository = jobRepository;
         this.userInfoRepository = userInfoRepository;
         this.responseService = responseService;
+        this.profileImgRepository = profileImgRepository;
     }
 
 
@@ -230,60 +232,64 @@ public class TransactionService {
 
 
 
-                boolean isDeposit = t.getFrom().equals("student"); //돈의 출처가 "학급(국고)"이면 출금
+            boolean isDeposit = t.getFrom().equals("student"); //돈의 출처가 "학급(국고)"이면 출금
 
 
-                //**주의**
-                // JobId를 t에서 가져와야 해당 거래 당시의 직업으로 출력 가능( 학생에서 가져오면 변경된 직업으로 나옴)
-                StudentJobDto managerDto = (StudentJobDto) getStudentJobDto(t.getManagerId(), t.getManagerJobId()).getResult();
-                StudentJobDto studentDto = (StudentJobDto) getStudentJobDto(t.getStudentId(), t.getStudentJobId()).getResult();
+            //**주의**
+            // JobId를 t에서 가져와야 해당 거래 당시의 직업으로 출력 가능( 학생에서 가져오면 변경된 직업으로 나옴)
+            StudentJobDto managerDto = getStudentJobDto(t.getManagerId(), t.getManagerJobId());
+            StudentJobDto studentDto = getStudentJobDto(t.getStudentId(), t.getStudentJobId());
 
 
-                TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
-                        .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
+            TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
 
-                ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
-                        .transactionId(t.getId())
-                        .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
-                        .category(category.getTitle())
-                        .detail(t.getDetail())
-                        .isDeposit(isDeposit)
-                        .transactionMoney(t.getMoney())
-                        .manager(managerDto)
-                        .student(studentDto)
-                        .build();
+            ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
+                    .transactionId(t.getId())
+                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
+                    .category(category.getTitle())
+                    .detail(t.getDetail())
+                    .isDeposit(isDeposit)
+                    .transactionMoney(t.getMoney())
+                    .manager(managerDto)
+                    .student(studentDto)
+                    .build();
 
-                classTransactionDatas.add(transaction);
+            classTransactionDatas.add(transaction);
 
 
         }
 
         return responseService.successHandler(
                 ClassTransactionResponseDto.builder()
-                .currentPage(page)
-                .maxPage(maxPage)
-                .totalData(totalData)
-                .classTransactionData(classTransactionDatas)
-                .build()
-            );
+                        .currentPage(page)
+                        .maxPage(maxPage)
+                        .totalData(totalData)
+                        .classTransactionData(classTransactionDatas)
+                        .build()
+        );
     }
 
 
+
     //student Id를 주면 stduentjobDto를 반환해주는 함수
-    public BanklassResponseEntity getStudentJobDto(Long studentId, Long studentJobId){
+    public StudentJobDto getStudentJobDto(Long studentId, Long studentJobId){
 
 
         Student s = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
         UserInfo u = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
-        return responseService.successHandler(StudentJobDto.builder()
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
+
+        return StudentJobDto.builder()
                 .studentId(studentId)
                 .number(s.getNumber())
                 .studentName(u.getUserName())
                 .jobId(studentJobId) //주의 : student를 찾아서 걔의 jobId를 가져오면 직업이 변경되면 데이터 로그도 변경됨!! 로그는 그 당시 직업을 저장
                 .jobTitle(jobRepository.findById(studentJobId).get().getTitle())
-                .build());
+                .profileImg(p.getIconCode())
+                .build();
     }
 
 

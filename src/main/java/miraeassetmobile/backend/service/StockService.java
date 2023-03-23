@@ -297,8 +297,8 @@ public class StockService {
                             .price(price)
                             .count(stock.getAmount()) // 보유수량
                             .blendedPrice(blendedPrice) // 평균구매단가
-                            .marketProfitLoss(marketProfitLoss)
-                            .yield(yield)
+                            .marketProfitLoss(marketProfitLoss.equals("-0.0")? "0.0":marketProfitLoss)
+                            .yield(yield.equals("-0.0")? "0.0": yield)
                             .tagInfo(tagInfo)
                             .build()
 
