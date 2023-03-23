@@ -213,8 +213,15 @@ public class FinanceQuote {
     double preMarketPreviousClose;
     @Nullable
     double preMarketPrice;
+
+    @Nullable
+    String expireIsoDate;
+    @Nullable
+    String newListingDate;
     @Nullable
     Long preMarketVolume;
+    @Nullable
+    Long openInterest;
     @Nullable
     String prevName;
     @Nullable
@@ -228,6 +235,22 @@ public class FinanceQuote {
     double ytdReturn;
     @Nullable
     double trailingThreeMonthReturns;
+
+    @Nullable
+    String underlyingExchangeSymbol;
+
+    @Nullable
+    String underlyingSymbol;
+
+
+    @Nullable
+    String headSymbolAsString;
+
+    @Nullable
+    boolean contractSymbol;
+
+    @Nullable
+    Long expireDate;
 
 }
 
