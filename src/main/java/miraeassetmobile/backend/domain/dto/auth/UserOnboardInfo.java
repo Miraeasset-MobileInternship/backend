@@ -24,6 +24,6 @@ public class UserOnboardInfo {
     String profileImg;
 
 
-    List<ClassOnboardInfo> classInfo;
+    UserClassInfo classInfo;
 
 }

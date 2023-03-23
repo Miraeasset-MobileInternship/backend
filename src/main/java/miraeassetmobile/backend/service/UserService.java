@@ -1,6 +1,7 @@
 package miraeassetmobile.backend.service;
 
 import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
+import miraeassetmobile.backend.domain.dto.auth.UserClassInfo;
 import miraeassetmobile.backend.domain.entity.Classes;
 import miraeassetmobile.backend.domain.entity.Student;
 import miraeassetmobile.backend.repository.ClassRepository;
@@ -100,7 +101,10 @@ public class UserService {
         }
 
         return responseService.successHandler(
-                classOnboardInfos
+                UserClassInfo.builder()
+                        .totalData(classOnboardInfos.size())
+                        .classInfo(classOnboardInfos)
+                        .build()
         );
 
     }

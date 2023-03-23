@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import miraeassetmobile.backend.domain.dto.auth.ClassOnboardInfo;
+import miraeassetmobile.backend.domain.dto.auth.UserClassInfo;
 import miraeassetmobile.backend.domain.dto.students.StudentSalaryResponseDto;
 import miraeassetmobile.backend.domain.dto.transactions.TransactionCategoryDto;
 import miraeassetmobile.backend.domain.dto.users.UserInfoResponseDto;
@@ -58,7 +59,7 @@ public class UserController {
 //    @Operation(description = "속해 있는 모든 학급 리스트를 반환 - 학생용")
     @Operation(summary = "속한 학급 조회", description = "속해 있는 모든 학급 리스트를 반환 - 학생용",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ClassOnboardInfo.class)))),
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserClassInfo.class)))),
                     @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
             })

@@ -318,7 +318,12 @@ public class AuthService {
                 .userName(u.getUserName())
                 .userRole(u.getUserRole())
                 .profileImg(p.getIconCode())
-                .classInfo(classOnboardInfos)
+                .classInfo(
+                        UserClassInfo.builder()
+                                .totalData(classOnboardInfos.size())
+                                .classInfo(classOnboardInfos)
+                                .build()
+                )
                 .build();
 
 
