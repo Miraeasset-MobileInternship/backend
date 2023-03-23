@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.domain.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -45,6 +46,14 @@ public class StudentStock extends BaseTimeEntity{
         this.blendedPrice = blendedPrice;
 
         return this;
+    }
+
+    @Builder
+    public StudentStock(Long studentId, String stockSymbol, BigDecimal blendedPrice, int amount){
+        this.studentId = studentId;
+        this.stockSymbol = stockSymbol;
+        this.blendedPrice = blendedPrice;
+        this.amount = amount;
     }
 
 }

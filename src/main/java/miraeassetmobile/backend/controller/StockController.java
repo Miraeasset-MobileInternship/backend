@@ -82,13 +82,6 @@ public class StockController {
 
 
 
-    //인기종목 Top N개
-//    @GetMapping("/trending")
-//    @Operation(description = "인기 종목 리스트")
-//    public ResponseEntity getStudentAccountInfo(@RequestParam(value = "student_id") Long studentId){
-//        return ResponseEntity.ok(stockService.getTotalStockStatus(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-
     @GetMapping("/search-stocks")
 //    @Operation(description = "자동완성 검색")
     @Operation(summary = "자동완성 검색 기능", description = "자동완성 검색 기능",
@@ -145,6 +138,31 @@ public class StockController {
     }
 
 
+    @GetMapping("/check-buying")
+    @Operation(summary = "매수 가격 체크", description = "매수 가격 및 필요정보 체크",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = CheckForBuyingStockResponseDto.class))),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
+            })
+    public ResponseEntity<BanklassResponseEntity> checkBeforeBuying(@RequestParam String stockId, @RequestParam Long studentId) {
+        return ResponseEntity.ok(stockService.checkBeforeBuying(stockId, studentId));
+    }
+
+
+    @PostMapping("/buy")
+    @Operation(summary = "매수 기능", description = "매수",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+                    @ApiResponse(responseCode = "E903", description = "주문을 위해 필요한 돈이 충분하지 않음", content = @Content),
+                    @ApiResponse(responseCode = "E950", description = "DB관련 저장/삭제/업데이트 에러 - 주식 거래 통합에러", content = @Content),
+            })
+    public ResponseEntity<BanklassResponseEntity> buyStock(@RequestBody @Valid StockBuyingRequestDto stockBuyingRequestDto) {
+        return ResponseEntity.ok(stockService.buyShares(stockBuyingRequestDto)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
 
 //    @GetMapping("/check-price")
 //    @Operation(summary = "매수 가격 체크", description = "매도할 수 있는 주식의 수량 체크",
