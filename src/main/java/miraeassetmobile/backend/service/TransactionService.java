@@ -241,8 +241,7 @@ public class TransactionService {
             StudentJobDto studentDto = getStudentJobDto(t.getStudentId(), t.getStudentJobId());
 
 
-            TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
-                    .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
+
 
             TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
                     .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));

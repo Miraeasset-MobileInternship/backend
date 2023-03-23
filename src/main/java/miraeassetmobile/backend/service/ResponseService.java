@@ -223,12 +223,6 @@ public class ResponseService {
     }
 
 
-    // 0원 이하로 거래 불가
-    public void unavailableTransferOrPayZero(int transferMoney){
-        if(transferMoney <= 0){ //0원이하 불가능
-            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_ZERO); //0원 이하로 거래 불가
-        }
-    }
 
 
     public void wrongTransactionCategoryForTransfer(Long categoryId){
