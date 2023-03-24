@@ -292,6 +292,72 @@ public class YhFinanceApiService {
 
 
 
+
+    public FinanceSpark getFinanceSpark(String interval, String range, String symbol) {
+
+        try {
+
+
+            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getBaseUrl()+"/v8/finance/spark"); /*URL*/
+            urlBuilder.append("?" + URLEncoder.encode("interval", "UTF-8") + "=" + URLEncoder.encode(interval, "UTF-8")); // interval
+            urlBuilder.append("&" + URLEncoder.encode("range", "UTF-8") + "=" + URLEncoder.encode(range, "UTF-8")); //기간
+            urlBuilder.append("&" + URLEncoder.encode("symbols", "UTF-8") + "=" + URLEncoder.encode(symbol, "UTF-8")); // 종목
+
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
+
+            BufferedReader rd;
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
+            StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            rd.close();
+            conn.disconnect();
+
+            //string to JSON
+            JSONObject jsonObject = new JSONObject(sb.toString());
+
+            System.out.println(sb.toString());
+
+            JSONObject sparkObject = jsonObject.getJSONObject(symbol); //json 이  symbol 임
+
+
+            // ObjectMapper를 통해 String to Object로 변환
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
+
+            FinanceSpark financeSpark = objectMapper.readValue(sparkObject.toString(),
+                    new TypeReference<FinanceSpark>() {
+                    });
+
+
+
+
+
+            return financeSpark;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+        }
+
+    }
+
+
+
 //
 //    public ResponseEntity getRealtimePrice(String symbol) {
 //
