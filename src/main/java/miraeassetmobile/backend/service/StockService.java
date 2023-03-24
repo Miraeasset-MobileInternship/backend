@@ -32,6 +32,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.*;
 import static org.hibernate.internal.CoreLogging.logger;
@@ -67,6 +69,7 @@ public class StockService {
 
     //오늘의 trending 주식
     public BanklassResponseEntity getTodayTrending(){
+        long start = System.currentTimeMillis();
 
 
         TrendingByRegion trending = yhFinanceApiService.getTrendingByRegion();
@@ -75,13 +78,23 @@ public class StockService {
 
         List<TrendStockDto> trendList = new ArrayList<>();
 
+        List<CompletableFuture<FinanceQuote>> fList = new ArrayList<>();
 
         for (Symbol s: symbolList) {
 
             String symbolCode = s.getSymbol();
 
-            FinanceQuote f = yhFinanceApiService.getFinanceQuote(symbolCode);
+            fList.add(CompletableFuture.supplyAsync(()->{
+                return yhFinanceApiService.getFinanceQuote(symbolCode);
+            }));
+        }
 
+        CompletableFuture.allOf(fList.toArray(new CompletableFuture[fList.size()])).join();
+        List<FinanceQuote> dtoList = fList.stream().map(CompletableFuture::join).collect(Collectors.toList());
+
+
+
+        for (FinanceQuote f: dtoList) {
             String price = String.format("%.2f",f.getRegularMarketPrice());
             String change = String.format("%.2f",f.getRegularMarketChange());
             String changePercent = String.format("%.1f",f.getRegularMarketChangePercent());
@@ -124,6 +137,9 @@ public class StockService {
 
         }
 
+        long end = System.currentTimeMillis();
+        System.out.println("수행시간: " + (end - start) + " ms");
+
         return responseService.successHandler(
 
                 TrendingStockListDto.builder()
@@ -131,8 +147,6 @@ public class StockService {
                         .trendStockList(trendList)
                         .build()
         );
-
-
 
     }
 
