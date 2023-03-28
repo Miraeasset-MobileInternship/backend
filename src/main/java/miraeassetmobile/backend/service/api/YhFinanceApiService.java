@@ -116,6 +116,91 @@ public class YhFinanceApiService {
 
 
 
+    public List<FinanceQuote> getFinanceQuotes(String symbols) {
+
+        try {
+
+
+            System.out.println(symbols);
+
+            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getBaseUrl()+"/v6/finance/quote"); /*URL*/
+            urlBuilder.append("?" + URLEncoder.encode("region", "UTF-8") + "=" + URLEncoder.encode("US", "UTF-8")); /*한 페이지 결과 수*/
+            urlBuilder.append("&" + URLEncoder.encode("lang", "UTF-8") + "=" + URLEncoder.encode("en", "UTF-8")); /*페이지 번호*/
+            urlBuilder.append("&" + URLEncoder.encode("symbols", "UTF-8") + "=" + URLEncoder.encode(symbols, "UTF-8")); /*결과 형식*/
+
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
+
+            BufferedReader rd;
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
+            StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            rd.close();
+            conn.disconnect();
+
+            //string to JSON
+            JSONObject jsonObject = new JSONObject(sb.toString());
+
+            System.out.println(sb.toString());
+
+            JSONObject financeObject = jsonObject.getJSONObject("quoteResponse"); //finance 제이슨 가져오기
+
+            if(financeObject.get("error") == null){
+                //에러로 온 것이 null이 아닌 경우 서버에서 온 데이터 에러가 있음
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
+
+            // 실 데이터 부분 추출
+            JSONArray trendingByRegion = financeObject.getJSONArray("result");
+
+            List<FinanceQuote> resultList = new ArrayList<>();
+
+            for(int i=0; i<trendingByRegion.length(); i++) {
+
+
+                JSONObject trendingObject = trendingByRegion.getJSONObject(i);
+
+                // ObjectMapper를 통해 String to Object로 변환
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
+
+                FinanceQuote financeQuote = objectMapper.readValue(trendingObject.toString(),
+                        new TypeReference<FinanceQuote>() {
+                        });
+
+                resultList.add(financeQuote);
+
+            }
+
+
+
+            return resultList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+        }
+
+    }
+
+
+
+
+
     //트랜딩한 종목 리스트 가져오는 API사용
     public TrendingByRegion getTrendingByRegion() {
 
@@ -330,6 +415,7 @@ public class YhFinanceApiService {
             System.out.println(sb.toString());
 
             JSONObject sparkObject = jsonObject.getJSONObject(symbol); //json 이  symbol 임
+
 
 
             // ObjectMapper를 통해 String to Object로 변환
