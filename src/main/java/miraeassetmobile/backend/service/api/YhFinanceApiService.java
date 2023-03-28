@@ -534,13 +534,13 @@ public class YhFinanceApiService {
 
 
 
-    public JSONObject getAssetProfile(String symbol) {
+    public List<Trend> getRecommendationTrend(String symbol) {
 
         try {
 
 
             StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getBaseUrl()+"/v11/finance/quoteSummary/"+symbol); /*URL*/
-            urlBuilder.append("?" + URLEncoder.encode("modules", "UTF-8") + "=" + URLEncoder.encode("assetProfile", "UTF-8")); // interval
+            urlBuilder.append("?" + URLEncoder.encode("modules", "UTF-8") + "=" + URLEncoder.encode("recommendationTrend", "UTF-8")); // interval
             urlBuilder.append("&" + URLEncoder.encode("region", "UTF-8") + "=" + URLEncoder.encode("US", "UTF-8")); // interval
             urlBuilder.append("&" + URLEncoder.encode("lang", "UTF-8") + "=" + URLEncoder.encode("en", "UTF-8")); // interval
 
@@ -572,51 +572,47 @@ public class YhFinanceApiService {
 
             //string to JSON
             JSONObject jsonObject = new JSONObject(sb.toString());
+            JSONObject summaryObject = jsonObject.getJSONObject("quoteSummary"); //
 
-            JSONObject financeObject = jsonObject.getJSONObject("quoteSummary"); //finance 제이슨 가져오기
-
-
-            return financeObject;
-////            System.out.println(financeObject.get("error"));
-//
-//            if(financeObject.get("error") == null){
-//                //에러
-//                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
-//            }
-//
-//            JSONArray resultArray = financeObject.getJSONArray("result");
-//
-//            JSONObject jsonObejct = resultArray.getJSONObject(0);
-//
-//            JSONArray recommendedObject = jsonObejct.getJSONArray("recommendedSymbols");
-//
-//
-//
-//            List<SimilarSymbol> resultList = new ArrayList<>();
-//
-//            //결과가 여러개 일 수 있음
-//            for(int i=0; i<recommendedObject.length(); i++){
-//
-//                JSONObject similarStock = recommendedObject.getJSONObject(i);
-//
-//                // ObjectMapper를 통해 String to Object로 변환
-//                ObjectMapper objectMapper = new ObjectMapper();
-//
-//                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
-//
-//                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
-//
-//                SimilarSymbol sim = objectMapper.readValue(similarStock.toString(),
-//                        new TypeReference<SimilarSymbol>() {
-//                        });
-//
-//
-//                resultList.add(sim);
-//
-//            }
+            if(summaryObject.get("error") == null){
+                //에러
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
 
 
-//            return resultList;
+            JSONArray resultObject = summaryObject.getJSONArray("result"); // 1개의 결과
+
+            JSONObject recTrendObject = resultObject.getJSONObject(0).getJSONObject("recommendationTrend"); //
+            JSONArray trendObject = recTrendObject.getJSONArray("trend"); //
+
+
+
+
+            List<Trend> trendList = new ArrayList<>();
+
+            //결과가 여러개 일 수 있음
+            for(int i=0; i<trendObject.length(); i++){
+
+                JSONObject similarStock = trendObject.getJSONObject(i);
+
+                // ObjectMapper를 통해 String to Object로 변환
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
+
+                Trend t = objectMapper.readValue(similarStock.toString(),
+                        new TypeReference<Trend>() {
+                        });
+
+
+                trendList.add(t);
+
+            }
+
+
+            return trendList;
 
         } catch (Exception e) {
             e.printStackTrace();

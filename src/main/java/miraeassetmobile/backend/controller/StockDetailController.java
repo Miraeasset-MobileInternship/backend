@@ -64,6 +64,12 @@ public class StockDetailController {
 //        return ResponseEntity.ok(yhFinanceApiService.getSymbolDetail(symbol,modules));
 //    }
 
+
+    @GetMapping("/summary")
+    public ResponseEntity getSummary(String symbol){
+        return ResponseEntity.ok(yhFinanceApiService.getRecommendationTrend(symbol));
+    }
+
     //주식 상세 정보
     @GetMapping("/{stock_id}")
     @Operation(summary = "상세 주식 정보 보기 기능", description = "주식 종목 상세 정보",
