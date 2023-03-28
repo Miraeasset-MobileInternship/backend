@@ -358,141 +358,185 @@ public class YhFinanceApiService {
 
 
 
-//
-//    public ResponseEntity getRealtimePrice(String symbol) {
-//
-//        try {
-//
-//
-//            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getAlphaUrl()+"/market/get-realtime-prices"); /*URL*/
-//            urlBuilder.append("?" + URLEncoder.encode("symbols", "UTF-8") + "=" + URLEncoder.encode(symbol, "UTF-8")); /*한 페이지 결과 수*/
-//
-//
-//            URL url = new URL(urlBuilder.toString());
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setRequestMethod("GET");
-//            conn.setRequestProperty("Accept", "application/json");
-//            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
-//
-//            BufferedReader rd;
-//            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-//                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//            } else {
-//                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-//                errorService.errorFromExternalServer();
-//            }
-//            StringBuffer sb = new StringBuffer();
-//            String line;
-//            while ((line = rd.readLine()) != null) {
-//                sb.append(line);
-//            }
-//            rd.close();
-//            conn.disconnect();
-//
+    public List<SimilarSymbol> getSimilarSymbol(String symbol) {
+
+        try {
+
+
+            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getBaseUrl()+"/v6/finance/recommendationsbysymbol/"+symbol); /*URL*/
+
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
+
+            BufferedReader rd;
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
+            StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            rd.close();
+            conn.disconnect();
+
 //            System.out.println(sb.toString());
-//
-//            return null;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return ResponseEntity.badRequest().body(null);
-//
-//    }
 
 
-//
-//    public ResponseEntity getChart(String period, String symbol) {
-//
-//        try {
-//
-//
-//            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getAlphaUrl()+"/symbol/get-chart"); /*URL*/
-//            urlBuilder.append("?" + URLEncoder.encode("period", "UTF-8") + "=" + URLEncoder.encode(period, "UTF-8")); /*한 페이지 결과 수*/
-//            urlBuilder.append("&" + URLEncoder.encode("symbol", "UTF-8") + "=" + URLEncoder.encode(symbol, "UTF-8")); /*페이지 번호*/
-//
-//
-//            URL url = new URL(urlBuilder.toString());
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setRequestMethod("GET");
-//            conn.setRequestProperty("Accept", "application/json");
-//            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
-//
-//            BufferedReader rd;
-//            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-//                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//            } else {
-//                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-//                errorService.errorFromExternalServer();
-//            }
-//            StringBuffer sb = new StringBuffer();
-//            String line;
-//            while ((line = rd.readLine()) != null) {
-//                sb.append(line);
-//            }
-//            rd.close();
-//            conn.disconnect();
-//
-//            System.out.println(sb.toString());
-//
-//            return null;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return ResponseEntity.badRequest().body(null);
-//
-//    }
-//
-//
-//
-//    public ResponseEntity getAutocomplete(String region, String lang, String query){
-//
-//
-//        try {
-//
-//
-//            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getBaseUrl()+"/v6/finance/autocomplete"); /*URL*/
-//            urlBuilder.append("?" + URLEncoder.encode("region", "UTF-8") + "=" + URLEncoder.encode(region, "UTF-8")); /*한 페이지 결과 수*/
-//            urlBuilder.append("&" + URLEncoder.encode("lang", "UTF-8") + "=" + URLEncoder.encode(lang, "UTF-8")); /*페이지 번호*/
-//            urlBuilder.append("&" + URLEncoder.encode("query", "UTF-8") + "=" + URLEncoder.encode(query, "UTF-8")); /*페이지 번호*/
-//
-//
-//            URL url = new URL(urlBuilder.toString());
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setRequestMethod("GET");
-//            conn.setRequestProperty("Accept", "application/json");
-//            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
-//
-//            BufferedReader rd;
-//            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-//                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//            } else {
-//                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-//                errorService.errorFromExternalServer();
-//            }
-//            StringBuffer sb = new StringBuffer();
-//            String line;
-//            while ((line = rd.readLine()) != null) {
-//                sb.append(line);
-//            }
-//            rd.close();
-//            conn.disconnect();
-//
-//            System.out.println(sb.toString());
-//
-//            return null;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return ResponseEntity.badRequest().body(null);
-//
-//    }
+
+            //string to JSON
+            JSONObject jsonObject = new JSONObject(sb.toString());
+
+            JSONObject financeObject = jsonObject.getJSONObject("finance"); //finance 제이슨 가져오기
+
+//            System.out.println(financeObject.get("error"));
+
+            if(financeObject.get("error") == null){
+                //에러
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
+
+            JSONArray resultArray = financeObject.getJSONArray("result");
+
+            JSONObject jsonObejct = resultArray.getJSONObject(0);
+
+            JSONArray recommendedObject = jsonObejct.getJSONArray("recommendedSymbols");
 
 
+
+            List<SimilarSymbol> resultList = new ArrayList<>();
+
+            //결과가 여러개 일 수 있음
+            for(int i=0; i<recommendedObject.length(); i++){
+
+                JSONObject similarStock = recommendedObject.getJSONObject(i);
+
+                // ObjectMapper를 통해 String to Object로 변환
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
+
+                SimilarSymbol sim = objectMapper.readValue(similarStock.toString(),
+                        new TypeReference<SimilarSymbol>() {
+                        });
+
+
+                resultList.add(sim);
+
+            }
+
+
+            return resultList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+        }
+
+    }
+
+
+
+
+
+
+    public JSONObject getAssetProfile(String symbol) {
+
+        try {
+
+
+            StringBuilder urlBuilder = new StringBuilder(yahooFinanceUtils.getBaseUrl()+"/v11/finance/quoteSummary/"+symbol); /*URL*/
+            urlBuilder.append("?" + URLEncoder.encode("modules", "UTF-8") + "=" + URLEncoder.encode("assetProfile", "UTF-8")); // interval
+            urlBuilder.append("&" + URLEncoder.encode("region", "UTF-8") + "=" + URLEncoder.encode("US", "UTF-8")); // interval
+            urlBuilder.append("&" + URLEncoder.encode("lang", "UTF-8") + "=" + URLEncoder.encode("en", "UTF-8")); // interval
+
+
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("X-API-KEY", yahooFinanceUtils.getApiKey());
+
+            BufferedReader rd;
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+            }
+            StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            rd.close();
+            conn.disconnect();
+
+            System.out.println(sb.toString());
+
+
+
+            //string to JSON
+            JSONObject jsonObject = new JSONObject(sb.toString());
+
+            JSONObject financeObject = jsonObject.getJSONObject("quoteSummary"); //finance 제이슨 가져오기
+
+
+            return financeObject;
+////            System.out.println(financeObject.get("error"));
+//
+//            if(financeObject.get("error") == null){
+//                //에러
+//                throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+//            }
+//
+//            JSONArray resultArray = financeObject.getJSONArray("result");
+//
+//            JSONObject jsonObejct = resultArray.getJSONObject(0);
+//
+//            JSONArray recommendedObject = jsonObejct.getJSONArray("recommendedSymbols");
+//
+//
+//
+//            List<SimilarSymbol> resultList = new ArrayList<>();
+//
+//            //결과가 여러개 일 수 있음
+//            for(int i=0; i<recommendedObject.length(); i++){
+//
+//                JSONObject similarStock = recommendedObject.getJSONObject(i);
+//
+//                // ObjectMapper를 통해 String to Object로 변환
+//                ObjectMapper objectMapper = new ObjectMapper();
+//
+//                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+//
+//                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
+//
+//                SimilarSymbol sim = objectMapper.readValue(similarStock.toString(),
+//                        new TypeReference<SimilarSymbol>() {
+//                        });
+//
+//
+//                resultList.add(sim);
+//
+//            }
+
+
+//            return resultList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_YHFINANCE);
+        }
+
+    }
 
 }
