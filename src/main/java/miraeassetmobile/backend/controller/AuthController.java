@@ -14,6 +14,7 @@ import miraeassetmobile.backend.domain.dto.auth.AccessTokenInfo;
 import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.SignInResponseDto;
 import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.sms.SendCodeRequestDto;
 import miraeassetmobile.backend.service.auth.AuthService;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
@@ -116,7 +117,6 @@ public class AuthController {
 
 
 
-
     // coolSMS 구현 로직 연결
     @PostMapping("/sendSMS")
     @Operation(summary = "핸드폰 문자인증번호 받기", description = "",
@@ -125,8 +125,8 @@ public class AuthController {
                     @ApiResponse(responseCode = "E501", description = "메세지 전송 서버의 에러(외부 서버 에러)", content = @Content ),
                     @ApiResponse(responseCode = "E807", description = "인증 코드 생성과정에서 redis서버 저장시 에러", content = @Content ),
             })
-    public ResponseEntity<BanklassResponseEntity> sendSMS(@RequestParam(value="phone_number") String phoneNumber) throws CoolsmsException {
-        return ResponseEntity.ok(authService.sendMessage(phoneNumber));
+    public ResponseEntity<BanklassResponseEntity> sendSMS(@RequestBody SendCodeRequestDto sendCodeRequestDto) throws CoolsmsException {
+        return ResponseEntity.ok(authService.sendMessage(sendCodeRequestDto.getPhoneNumber()));
     }
 
 
