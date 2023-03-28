@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.service.comparator;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
+import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.StockNews;
 
 import java.util.Comparator;
 

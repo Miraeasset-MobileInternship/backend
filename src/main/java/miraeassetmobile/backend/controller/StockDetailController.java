@@ -11,7 +11,9 @@ import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.StockNews;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceSpark;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.SimilarSymbol;
+import miraeassetmobile.backend.domain.dto.stockdetails.SimilarStockResponseDto;
 import miraeassetmobile.backend.domain.dto.stockdetails.StockDetailResponseDto;
+import miraeassetmobile.backend.domain.dto.stocks.MarketNewsResponseDto;
 import miraeassetmobile.backend.service.StockDetailService;
 import miraeassetmobile.backend.service.api.YhFinanceApiService;
 import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
 import java.util.List;
 
 @RequestMapping("/api/stock-detail")
@@ -74,15 +77,40 @@ public class StockDetailController {
 
 
     //유사 종목 추천
-    @GetMapping("/similar/{stock_id}")
+    @GetMapping("/{stock_id}/similar")
     @Operation(summary = "유사 종목 리스트", description = "유사한 주식 종목 리스트",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = StockDetailResponseDto.class))),
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SimilarStockResponseDto.class))),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getSimilarStocks(@PathVariable(value = "stock_id") String symbol){
         return ResponseEntity.ok(stockDetailService.getSimilarStocks(symbol));
     }
+
+
+
+    //종목관련 뉴스
+    @GetMapping("/{stock_id}/news")
+    @Operation(summary = "종목 관련 뉴스", description = "종목 관련 뉴스",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = MarketNewsResponseDto.class))),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+            })
+    public ResponseEntity<BanklassResponseEntity> getStockNews(@PathVariable(value = "stock_id") String symbol) throws ParseException {
+        return ResponseEntity.ok(stockDetailService.getStockNews(symbol,"en"));
+    }
+
+
+    //투자 동향
+//    @GetMapping("/{stock_id}/trend")
+//    @Operation(summary = "최근 투자 동향", description = "최근 투자 동향 그래프",
+//            responses = {
+//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = .class))),
+//                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+//            })
+//    public ResponseEntity<BanklassResponseEntity> getRecommendationTrend(@PathVariable(value = "stock_id") String symbol){
+//        return ResponseEntity.ok(stockDetailService.getRecommendationTrend(symbol));
+//    }
 
 
 }
