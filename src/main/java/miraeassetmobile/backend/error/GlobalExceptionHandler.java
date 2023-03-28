@@ -29,7 +29,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                         .build()
                         )
                         .result(
-                                new ArrayList<>()
+                                null
                         )
                         .build()
         );
