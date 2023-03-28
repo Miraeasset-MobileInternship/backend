@@ -5,6 +5,7 @@ import miraeassetmobile.backend.config.security.jwt.TokenProvider;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.auth.*;
 import miraeassetmobile.backend.domain.dto.auth.sms.PhoneNumberCode;
+import miraeassetmobile.backend.domain.dto.auth.sms.SendCodeRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.sms.SmsAuthUtil;
 import miraeassetmobile.backend.domain.dto.auth.token.LogoutAccessToken;
 import miraeassetmobile.backend.domain.dto.auth.token.RefreshToken;
@@ -457,24 +458,23 @@ public class AuthService {
 
 
     //문자전송
-    public BanklassResponseEntity sendMessage(String toNumber) {
+
+    public BanklassResponseEntity sendMessage(SendCodeRequestDto sendCodeRequestDto) {
+
+        String toNumber = sendCodeRequestDto.getPhoneNumber();
 
         Message coolsms = new Message(smsAuthUtil.getApiKey(), smsAuthUtil.getApiSecret());
 
         String code = createCode();
 
-        try {
 
-            //redis에 3분 유효기간으로 저장
-            phoneNumberCodeRedisRepository.save(PhoneNumberCode.builder()
-                    .id(toNumber)
-                    .code(code)
-                    .expiration(smsAuthUtil.getExpiration())
-                    .build());
+        //redis에 3분 유효기간으로 저장
+        phoneNumberCodeRedisRepository.save(PhoneNumberCode.builder()
+                .id(toNumber)
+                .code(code)
+                .expiration(smsAuthUtil.getExpiration())
+                .build());
 
-        }catch(Exception e){
-            throw new ServiceException(ErrorCode.NOT_SAVE_CODE);
-        }
 
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("to", toNumber);
@@ -493,12 +493,12 @@ public class AuthService {
 
             String result = obj.get("error_count").toString();
 
+//            System.out.println(result);
+//            System.out.println(obj.toJSONString());
+
             if(!result.equals("0")){
                 throw new ServiceException(ErrorCode.MESSAGE_SERVER_ERROR);
             }
-
-            System.out.println(obj.toString());
-
 
         } catch (CoolsmsException e) {
             System.out.println(e.getMessage());
@@ -510,9 +510,8 @@ public class AuthService {
         result.put("message","메세지가 성공적으로 전송되었습니다.");
 
         return responseService.successHandler(
-            result
+                result
         );
-
 
     }
 
