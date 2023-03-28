@@ -4,10 +4,7 @@ import miraeassetmobile.backend.controller.StockDetailController;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.StockNews;
-import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
-import miraeassetmobile.backend.domain.dto.api.yahooFinance.SimilarSymbol;
-import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
-import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
+import miraeassetmobile.backend.domain.dto.api.yahooFinance.*;
 import miraeassetmobile.backend.domain.dto.stockdetails.*;
 import miraeassetmobile.backend.domain.dto.stocks.MarketNewsDto;
 import miraeassetmobile.backend.domain.dto.stocks.MarketNewsResponseDto;
@@ -26,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static miraeassetmobile.backend.domain.enums.RecommendedTrendTypes.*;
 
 @Service
 public class StockDetailService {
@@ -195,13 +194,93 @@ public class StockDetailService {
     }
 
 
+    public BanklassResponseEntity getRecommendationTrend(String symbol, String period){
+
+        /*
+          period : 0m / -1m / -2m / -3m
+         */
+
+        List<Trend> trends = yhFinanceApiService.getRecommendationTrend(symbol);
+
+        List<RecommendTrendGraphData> recommendTrendGraphData = new ArrayList<>();
+
+        for (Trend t :trends) {
+
+            if(t.getPeriod().equals(period)){
+
+                recommendTrendGraphData.add(
+                        RecommendTrendGraphData.builder()
+                                .id(STRONGBUY.getTypeName())
+                                .label(STRONGBUY.getTypeName())
+                                .value(t.getStrongBuy())
+                                .color(STRONGBUY.getColorCode())
+                                .build()
+                );
+
+                recommendTrendGraphData.add(
+                        RecommendTrendGraphData.builder()
+                                .id(BUY.getTypeName())
+                                .label(BUY.getTypeName())
+                                .value(t.getBuy())
+                                .color(BUY.getColorCode())
+                                .build()
+                );
+
+                recommendTrendGraphData.add(
+                        RecommendTrendGraphData.builder()
+                                .id(HOLD.getTypeName())
+                                .label(HOLD.getTypeName())
+                                .value(t.getHold())
+                                .color(HOLD.getColorCode())
+                                .build()
+                );
+
+                recommendTrendGraphData.add(
+                        RecommendTrendGraphData.builder()
+                                .id(SELL.getTypeName())
+                                .label(SELL.getTypeName())
+                                .value(t.getSell())
+                                .color(SELL.getColorCode())
+                                .build()
+                );
+
+                recommendTrendGraphData.add(
+                        RecommendTrendGraphData.builder()
+                                .id(STRONGSELL.getTypeName())
+                                .label(STRONGSELL.getTypeName())
+                                .value(t.getStrongSell())
+                                .color(STRONGSELL.getColorCode())
+                                .build()
+                );
+
+                break;
+
+            }
+
+        }
+        
+
+
+        
+        return responseService.successHandler(
+                recommendTrendGraphData
+        );
+
+    }
+
 
     public long calculateTime(String pubDate) throws ParseException {
 
 
         //1. Date로 type변경
         //"Tue, 28 Mar 2023 01:31:00 +0000"
+        //변경하는 법
         //https://stackoverflow.com/questions/32911677/what-is-date-format-of-eee-dd-mmm-yyyy-hhmmssz
+        //https://www.tabnine.com/code/java/methods/java.text.DateFormat/parse
+        // 패턴 리스트
+        //http://www.java2s.com/ref/java/java-datetimeformatter-patterns.html
+        // +0000 관련(서머타임 없는 걸로 아는데 1시간이 적용이 안되어서 문제되면 고쳐야함)
+        // https://stackoverflow.com/questions/12305826/what-does-0000-mean-in-the-context-of-a-date-returned-by-the-twitter-api
         SimpleDateFormat curFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ssZ",Locale.UK);
         Date pubDateTime = curFormater.parse(pubDate);
 
@@ -209,6 +288,7 @@ public class StockDetailService {
         Date today = new Date();
 
         //3. 현시각 - (기사가 올라간 시각) -> 초단위
+        //https://coding-factory.tistory.com/737 : Date타입 연산법
         long sec = (today.getTime() - pubDateTime.getTime())/1000;
 
 

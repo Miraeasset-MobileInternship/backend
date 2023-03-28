@@ -18,10 +18,7 @@ import miraeassetmobile.backend.service.StockDetailService;
 import miraeassetmobile.backend.service.api.YhFinanceApiService;
 import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.List;
@@ -108,15 +105,16 @@ public class StockDetailController {
 
 
     //투자 동향
-//    @GetMapping("/{stock_id}/trend")
-//    @Operation(summary = "최근 투자 동향", description = "최근 투자 동향 그래프",
-//            responses = {
-//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = .class))),
-//                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
-//            })
-//    public ResponseEntity<BanklassResponseEntity> getRecommendationTrend(@PathVariable(value = "stock_id") String symbol){
-//        return ResponseEntity.ok(stockDetailService.getRecommendationTrend(symbol));
-//    }
+    @GetMapping("/{stock_id}/recommend-trend")
+    @Operation(summary = "최근 투자 동향", description = "최근 투자 동향 그래프",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = MarketNewsResponseDto.class))),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+            })
+    public ResponseEntity<BanklassResponseEntity> getRecommendationTrend(@PathVariable(value = "stock_id") String symbol
+                                                                        , @RequestParam(defaultValue = "0m") String period){
+        return ResponseEntity.ok(stockDetailService.getRecommendationTrend(symbol,period));
+    }
 
 
 }
