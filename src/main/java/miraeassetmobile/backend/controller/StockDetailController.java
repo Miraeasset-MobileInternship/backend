@@ -117,4 +117,17 @@ public class StockDetailController {
     }
 
 
+    //
+    @GetMapping("/{stock_id}/chart")
+    @Operation(summary = "차트 그래프 데이터 얻기", description = "차트 그래프 데이터 얻기",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = MarketNewsResponseDto.class))),
+                    @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
+            })
+    public ResponseEntity<BanklassResponseEntity> getChartData(@RequestParam(defaultValue = "15m") String interval,
+                                                            @RequestParam(defaultValue = "1d") String range,
+                                                            @PathVariable(value = "stock_id") String symbol){
+        return ResponseEntity.ok(stockDetailService.getChartData(interval,range,symbol));
+    }
+
 }

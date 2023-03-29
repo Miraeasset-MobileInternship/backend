@@ -334,12 +334,78 @@ public class StockDetailService {
     }
 
 
-//    public BanklassResponseEntity getRecommendationTrend(String symbol){
-//
-//
-//
-//
-//    }
+
+
+
+    public BanklassResponseEntity getChartData(String interval, String range, String symbol){
+
+        FinanceSpark financeSpark = yhFinanceApiService.getFinanceSpark(interval,range, symbol);
+
+        List<Long> timestamp = financeSpark.getTimestamp();
+        List<Double> close = financeSpark.getClose();
+
+
+        List<PriceData> priceData = new ArrayList<>();
+
+        int minPrice = 999999;
+        int maxPrice = 0;
+        for(int i=0; i<timestamp.size(); i++){
+
+            int v = (int) Math.ceil(close.get(i));
+
+            if(v>maxPrice) maxPrice=v;
+            if(v<minPrice) minPrice=v;
+
+            priceData.add(
+                    PriceData.builder()
+                            .time(timestamp.get(i))
+                            .price(close.get(i))
+                            .build()
+            );
+
+        }
+
+
+        DateInfo dateInfo;
+
+        if(range.equals("1d")){
+
+            dateInfo = DateInfo.builder()
+                    .minDate(timestamp.get(0))
+                    .maxDate(timestamp.get(0)+23400) // 장이 열린 시간 + (6시간 30분:장이 열리는 시간) 을 초로 환산
+                    .build();
+
+        }else{
+
+            dateInfo = DateInfo.builder()
+                    .maxDate(timestamp.get(timestamp.size()-1)) //마지막 값
+                    .minDate(timestamp.get(0))
+                    .build();
+
+        }
+
+
+
+        return responseService.successHandler(
+
+                StockPriceGraphDataResponseDto.builder()
+                        .symbol(symbol)
+                        .period(range)
+                        .dateInfo(dateInfo)
+                        .priceInfo(
+                                PriceInfo.builder()
+                                        .minPrice(minPrice)
+                                        .maxPrice(maxPrice)
+                                        .build()
+
+                        )
+                        .data(priceData)
+                        .build()
+
+        );
+
+
+    }
 
 
 }
