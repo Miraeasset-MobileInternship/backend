@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.domain.dto.auth.sms;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

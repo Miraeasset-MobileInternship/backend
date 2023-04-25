@@ -31,13 +31,12 @@ public class NaverTranslatorApiService {
 
 
     NaverApiServiceUtils naverApiServiceUtils;
-    ResponseService responseService;
 
 
 
-    NaverTranslatorApiService(NaverApiServiceUtils naverApiServiceUtils, ResponseService responseService){
+
+    NaverTranslatorApiService(NaverApiServiceUtils naverApiServiceUtils){
         this.naverApiServiceUtils = naverApiServiceUtils;
-        this.responseService= responseService;
     }
 
 

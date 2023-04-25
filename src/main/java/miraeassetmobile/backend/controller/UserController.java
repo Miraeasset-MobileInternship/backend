@@ -29,8 +29,6 @@ public class UserController {
         this.userService=userService;
     }
 
-
-
     @GetMapping("/profile-img-list")
 //    @Operation(description = "프로필 이미지 후보 리스트 보기")
     @Operation(summary = "프로필 이미지 리스트 조회", description = "프로필 이미지 후보 리스트 보기",
@@ -68,4 +66,6 @@ public class UserController {
     }
 
 
+
 }
+

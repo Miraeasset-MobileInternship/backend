@@ -17,7 +17,6 @@ public interface ClassRepository extends JpaRepository<Classes,Long> {
 
     List<Classes> findByTeacherId(Long teacherId);
 
-
     //같은 학교에 같은 나라이름이 존재해서는 안됨
     boolean existsBySchoolNameAndTitle(String schoolName, String title);
 
@@ -28,5 +27,7 @@ public interface ClassRepository extends JpaRepository<Classes,Long> {
     @Query(value = "select * from class where school_name=:schoolName and grade=:grade and class_number=:classNumber and YEAR(create_timestamp) =:year", nativeQuery = true)
 
     Optional<Classes> findSameClassInYear(String schoolName, int grade, int classNumber, String year);
+
+
 
 }

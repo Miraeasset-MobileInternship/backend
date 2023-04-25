@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Table(name="class")
 @Getter
 @NoArgsConstructor
-public class Classes extends BaseTimeEntity {
+public class Classes extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
@@ -66,3 +66,4 @@ public class Classes extends BaseTimeEntity {
 
 
 }
+

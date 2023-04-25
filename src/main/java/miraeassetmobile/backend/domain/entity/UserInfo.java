@@ -1,6 +1,5 @@
 package miraeassetmobile.backend.domain.entity;
 
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +42,7 @@ public class UserInfo extends BaseTimeEntity{
         this.userRole = userRole;
         this.profileImgId =profileImgId;
     }
+
 
 
 }

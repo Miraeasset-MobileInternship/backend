@@ -1,11 +1,16 @@
 package miraeassetmobile.backend.domain.dto.jobs;
 
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import miraeassetmobile.backend.domain.entity.Job;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class JobCreateRequestDto {
 
 
@@ -17,7 +22,7 @@ public class JobCreateRequestDto {
 
     private int monthlySalary;
 
-
+    //is로 이름지으면 안된다 .getWithdrawStudent가 아니라 .isWithdrawStudent로 값이 가져와지기 때문에 이름이 중복임
     private boolean withdrawStudent;
 
     private boolean withdrawClass;
@@ -34,7 +39,5 @@ public class JobCreateRequestDto {
                 .isWithdrawClass(withdrawClass)
                 .build();
     }
-
-
 
 }

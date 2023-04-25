@@ -1,12 +1,16 @@
 package miraeassetmobile.backend.domain.dto.stocks;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import miraeassetmobile.backend.domain.entity.StockTradingData;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class StockSellingRequestDto {
 
     Long studentId; //누가 주식을 팔려고 하는가

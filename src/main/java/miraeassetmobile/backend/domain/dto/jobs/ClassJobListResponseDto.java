@@ -6,7 +6,6 @@ import lombok.Setter;
 
 import java.util.List;
 
-
 @Getter
 @Setter
 @Builder
@@ -17,5 +16,5 @@ public class ClassJobListResponseDto {
     int totalNum; //총 직업의 갯수
 
     List<JobDto> jobs;
-
 }
+

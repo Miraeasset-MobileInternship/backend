@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
+import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.StockNews;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.YhFinanceRapidApiUtils;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.AutoComplete;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.FinanceQuote;
@@ -14,6 +15,7 @@ import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.service.ResponseService;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,12 +38,10 @@ public class YhFinanceRapidApiService {
 
 
     YhFinanceRapidApiUtils yhFinanceRapidApiUtils;
-    ResponseService responseService;
 
 
-    YhFinanceRapidApiService(YhFinanceRapidApiUtils yhFinanceRapidApiUtils, ResponseService responseService){
+    YhFinanceRapidApiService(YhFinanceRapidApiUtils yhFinanceRapidApiUtils){
         this.yhFinanceRapidApiUtils = yhFinanceRapidApiUtils;
-        this.responseService = responseService;
     }
 
 
@@ -49,16 +49,14 @@ public class YhFinanceRapidApiService {
 
         try {
 
-            String requestUrl = yhFinanceRapidApiUtils.getBaseUrl() + "/ne/news";
-
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(requestUrl))
+                    .uri(URI.create("https://yahoo-finance15.p.rapidapi.com/api/yahoo/ne/news"))
                     .header("X-RapidAPI-Key", yhFinanceRapidApiUtils.getApiKey())
-                    .header("X-RapidAPI-Host", yhFinanceRapidApiUtils.getHost())
+                    .header("X-RapidAPI-Host", yhFinanceRapidApiUtils.getHostSymbol())
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
             HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-
+//            System.out.println(response.body());
 
             JSONArray jsonArray = new JSONArray(response.body());
 
@@ -97,6 +95,65 @@ public class YhFinanceRapidApiService {
 
 
     }
+
+
+
+    public List<StockNews> getStockMarketNews(String symbol){
+
+        try {
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://yahoo-finance15.p.rapidapi.com/api/yahoo/ne/news/"+symbol))
+                    .header("X-RapidAPI-Key", yhFinanceRapidApiUtils.getApiKey())
+                    .header("X-RapidAPI-Host", yhFinanceRapidApiUtils.getHostSymbol())
+                    .method("GET", HttpRequest.BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.body());
+
+
+            JSONObject jsonObject = new JSONObject(response.body());
+            JSONArray jsonArray = jsonObject.getJSONArray("item");
+
+            List<StockNews> stockNewsList = new ArrayList<>();
+
+
+            for(int i=0; i<jsonArray.length(); i++){
+
+                JSONObject news = jsonArray.getJSONObject(i);
+
+
+// ObjectMapper를 통해 String to Object로 변환
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // NULL이 아닌 값만 응답받기(NULL인 경우는 생략)
+
+                StockNews newsData = objectMapper.readValue(news.toString(),
+                        new TypeReference<StockNews>() {
+                        });
+
+
+                stockNewsList.add(newsData);
+
+            }
+
+            return stockNewsList;
+
+        } catch (JSONException e) { //json exception이 발생하면 기사가 존재하지 않는 것임
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.NOT_PROVIDED_INFO_STOCK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_RAPID_YHFINANCE);
+        }
+
+
+
+    }
+
 
 
 

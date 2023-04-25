@@ -52,6 +52,9 @@ public enum ErrorCode {
     NOT_EXIST_CATEGORY_TYPE("E411", "존재하지 않는 카테고리 타입(transfer/pay)에 대한 요청 입니다."),
 
 
+    //잘못된 파라미터
+    WRONG_PARAM_NUMBER("E420", "잘못된 파라미터 값입니다."),
+
 
     //저장,삭제, 업데이트 에러 (8XX)
     NOT_SAVE("E802", "새로운 정보를 등록하는 과정에서 에러가 발생했습니다."),
@@ -72,13 +75,13 @@ public enum ErrorCode {
     TOKEN_REISSUE_ERROR("E850", "재인증 과정에서 에러가 발생하였습니다. 다시 로그인을 시도해주세요."),
 
 
-
     // 중복 등록
     ALREADY_EXIST_IN_CLASS("E601", "해당 유저가 이미 학급에 존재합니다."),
     ALREADY_EXIST_JOB_IN_CLASS("E602", "해당 이름의 직업이 이미 학급에 존재합니다."),
     UNAVAILABLE_ACTION_TOO_MANY_JOBS("E603", "학급에 직업을 50개 이상 등록할 수 없습니다."),
     ALREADY_EXIST_CLASS_SAME_YEAR("E604", "이미 해당 년도에 학교/학년/반 정보로 생성된 학급이 존재합니다"),
     ALREADY_EXIST_CLASS_SAME_NAME("E605", "이미 해당 학교에서 사용중인 나라이름입니다."),
+    ALREADY_EXIST_CLASS_STUDENT_NUMBER("E606", "해당 출석 번호는 이미 학급에서 사용중입니다."),
 
 
 
@@ -98,12 +101,25 @@ public enum ErrorCode {
     UNAVAILABLE_ACTION_NOT_INCLUDED_STUDENT("E709", "해당 학급에 학생이 아닙니다."),
 
 
+
+    //주식관련
     //주식
     NOT_OWNED_STOCK("E901", "보유하지 않은 주식 종목입니다."),
     NOT_ENOUGH_SHARES("E902","판매하려는 수량이 보유하고 있는 수량보다 많습니다."),
     NOT_ENOUGH_MONEY_BUYING("E903", "주문가능한 금액이 부족합니다."),
 
     TRADING_STOCK("E950", "주식 체결과정에서 에러가 발생하였습니다. 잠시후에 다시 시도해주세요"),
+
+    //주식 서버관련 디테일 에러
+    //제공하지 않는 기능
+    NOT_PROVIDED_INFO_STOCK("E904", "해당 종목에서 제공하지 않는 기능입니다."),
+
+    //존재하지 않는 종목 -> 잘못된 stock symbol
+    NOT_EXIST_STOCK_SYMBOL("E905", "존재하지 않는 종목이거나 해당 서비스에서 거래 불가능한 종목 입니다."),
+
+    //
+    UNAVAILABLE_TRADING_ZERO("E906","0개 이하의 수량을 매매할 수 없습니다."),
+
 
 
     //common error (서버에러 5xx)

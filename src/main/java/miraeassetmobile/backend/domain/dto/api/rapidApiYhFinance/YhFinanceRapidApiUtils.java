@@ -18,4 +18,7 @@ public class YhFinanceRapidApiUtils {
     @Value("${api.rapid-api-yahoo-finance.host}")
     private String host;
 
+    @Value("${api.rapid-api-yahoo-finance.host-symbol}")
+    private String hostSymbol;
+
 }

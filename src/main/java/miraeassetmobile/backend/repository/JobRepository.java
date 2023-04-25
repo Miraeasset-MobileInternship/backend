@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface JobRepository extends JpaRepository<Job,Long> {
 
+
     //해당 학급이 가진 직업을 전부 조회함
     List<Job> findByClassId(Long classId);
 
@@ -30,3 +31,4 @@ public interface JobRepository extends JpaRepository<Job,Long> {
 
 
 }
+

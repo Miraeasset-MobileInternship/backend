@@ -22,18 +22,13 @@ public class ResponseService {
     UserInfoRepository userInfoRepository;
     TransactionCategoryRepository transactionCategoryRepository;
 
-    StudentStockRepository studentStockRepository;
 
-
-    public ResponseService(StudentStockRepository studentStockRepository, TransactionCategoryRepository transactionCategoryRepository,UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
-
+    public ResponseService(TransactionCategoryRepository transactionCategoryRepository,UserInfoRepository userInfoRepository, ClassRepository classRepository, JobRepository jobRepository, StudentRepository studentRepository){
         this.userInfoRepository = userInfoRepository;
         this.classRepository =classRepository;
         this.jobRepository =jobRepository;
         this.studentRepository =studentRepository;
         this.transactionCategoryRepository = transactionCategoryRepository;
-        this.studentStockRepository = studentStockRepository;
-
     }
 
 
@@ -46,9 +41,9 @@ public class ResponseService {
 
 
         return BanklassResponseEntity.builder()
-                        .status(statusResponse)
-                        .result(jsonObject)
-                        .build();
+                .status(statusResponse)
+                .result(jsonObject)
+                .build();
 
     }
 
@@ -77,12 +72,12 @@ public class ResponseService {
     //새로 생성되거나 수정된 job의 id를 포함한 URI만들기
     public String createUri(Long id, UriTypes uriTypes){
         URI uri = UriComponentsBuilder.newInstance()
-//                .scheme("https")
-//                .host("m-crew.iptime.org")
-//                .port(8001)
-                .scheme("http")
-                .host("localhost")
-                .port(8080)
+                .scheme("https")
+                .host("m-crew.iptime.org")
+                .port(8001)
+//                .scheme("http")
+//                .host("localhost")
+//                .port(8080)
                 .path("/api/"+ uriTypes.getTypeName() + "/" + id)
                 .build()
                 .toUri(); //UriComponents into URI
@@ -177,14 +172,6 @@ public class ResponseService {
     }
 
 
-    // 0원 이하로 거래 불가
-    public void unavailableTransferOrPayZero(int transferMoney){
-        if(transferMoney <= 0){ //0원이하 불가능
-            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_ZERO); //0원 이하로 거래 불가
-        }
-    }
-
-
     //직업이 학생 계좌 출금(이체)권한을 가진 직업인가
     public void unavailableJobTransfer(Long jobId){
         if(!jobRepository.findById(jobId).get().isWithdrawStudent()){
@@ -208,7 +195,7 @@ public class ResponseService {
 
     }
 
-        //같은 년도에 같은 학교에 같은 반, 학년에 반이 생성되었음
+    //같은 년도에 같은 학교에 같은 반, 학년에 반이 생성되었음
     public void isExistClassWithSameInfo(String schoolName, int grade, int classNumber, String year){
         if(!classRepository.findSameClassInYear(schoolName,grade,classNumber,year).isEmpty()){
             throw new ServiceException(ErrorCode.ALREADY_EXIST_CLASS_SAME_YEAR);
@@ -223,7 +210,12 @@ public class ResponseService {
     }
 
 
-
+    // 0원 이하로 거래 불가
+    public void unavailableTransferOrPayZero(int transferMoney){
+        if(transferMoney <= 0){ //0원이하 불가능
+            throw new ServiceException(ErrorCode.UNAVAILABLE_ACTION_TRANSFER_ZERO); //0원 이하로 거래 불가
+        }
+    }
 
     public void wrongTransactionCategoryForTransfer(Long categoryId){
         if(!transactionCategoryRepository.existsByTransferTrueAndId(categoryId)){
@@ -237,23 +229,5 @@ public class ResponseService {
         }
     }
 
-
-    //사용자가 보유하지 않은 주식
-    public void notOwnStockByUser(Long studentId, String stockSymbol){
-        if(!studentStockRepository.existsByStockSymbolAndStudentId(stockSymbol,studentId)){
-            throw new ServiceException(ErrorCode.NOT_OWNED_STOCK);
-        }
-
-
-    }
-
-
-    public void notEnoughMoneyForBuyingStock(Long studentId, int price){
-
-        if(studentRepository.findById(studentId).get().getMoney() < price){
-            throw new ServiceException(ErrorCode.NOT_ENOUGH_MONEY_BUYING);
-        }
-
-    }
 
 }

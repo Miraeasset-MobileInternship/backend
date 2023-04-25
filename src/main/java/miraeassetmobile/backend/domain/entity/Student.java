@@ -79,6 +79,4 @@ public class Student extends BaseTimeEntity{
     }
 
 
-
-
 }

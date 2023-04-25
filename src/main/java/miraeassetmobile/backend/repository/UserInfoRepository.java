@@ -14,4 +14,7 @@ public interface UserInfoRepository extends JpaRepository<UserInfo,Long> {
     Optional<UserInfo> findById(Long id);
 
 
+    //임시
+    void deleteByPhoneNum(String phoneNum);
+
 }

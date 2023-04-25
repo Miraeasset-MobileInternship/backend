@@ -10,10 +10,12 @@ import miraeassetmobile.backend.domain.dto.api.yahooFinance.Symbol;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.TrendingByRegion;
 import miraeassetmobile.backend.domain.dto.stocks.*;
 import miraeassetmobile.backend.domain.entity.*;
+import miraeassetmobile.backend.domain.entity.error.SearchQueryLog;
 import miraeassetmobile.backend.domain.enums.UriTypes;
 import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.repository.*;
+import miraeassetmobile.backend.repository.redis.SearchQueryLogRedisRepository;
 import miraeassetmobile.backend.service.api.NaverTranslatorApiService;
 import miraeassetmobile.backend.service.api.YhFinanceApiService;
 import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
@@ -25,13 +27,15 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.*;
 import static org.hibernate.internal.CoreLogging.logger;
@@ -50,8 +54,11 @@ public class StockService {
     StockTradingDataRepository stockTradingDataRepository;
     TransactionCategoryRepository transactionCategoryRepository;
     TransactionDataRepository transactionDataRepository;
+    TrendingStocksRepository trendingStocksRepository;
+    StockBatchRepository stockBatchRepository;
+    SearchQueryLogRedisRepository searchQueryLogRedisRepository;
 
-    StockService(TransactionDataRepository transactionDataRepository, TransactionCategoryRepository transactionCategoryRepository, StockTradingDataRepository stockTradingDataRepository, NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
+    StockService(SearchQueryLogRedisRepository searchQueryLogRedisRepository, StockBatchRepository stockBatchRepository, TrendingStocksRepository trendingStocksRepository, TransactionDataRepository transactionDataRepository, TransactionCategoryRepository transactionCategoryRepository, StockTradingDataRepository stockTradingDataRepository, NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, YhFinanceApiService yhFinanceApiService, ResponseService responseService, StudentRepository studentRepository, ClassRepository classRepository,StudentStockRepository studentStockRepository){
         this.yhFinanceApiService = yhFinanceApiService;
         this.responseService = responseService;
         this.studentRepository =studentRepository;
@@ -62,86 +69,176 @@ public class StockService {
         this.stockTradingDataRepository = stockTradingDataRepository;
         this.transactionDataRepository = transactionDataRepository;
         this.transactionCategoryRepository = transactionCategoryRepository;
+        this.trendingStocksRepository = trendingStocksRepository;
+        this.stockBatchRepository = stockBatchRepository;
+        this.searchQueryLogRedisRepository = searchQueryLogRedisRepository;
     }
 
 
-    //오늘의 trending 주식
     public BanklassResponseEntity getTodayTrending(){
 
+        // 가장 최신으로 업데이트된 날짜를 구하기
+        TrendingStocks t = trendingStocksRepository.findLastUpdate()
+                .orElse(TrendingStocks.builder()
+                        .title("no_result")
+                        .build());
 
-        TrendingByRegion trending = yhFinanceApiService.getTrendingByRegion();
+        //결과 없음
+        if(t.getTitle().equals("no_result")){
 
-        List<Symbol> symbolList = trending.getQuotes();
+            return responseService.successHandler(
+
+                    TrendingStockListDto.builder()
+                            .totalNum(0)
+                            .trendStockList(new ArrayList<>())
+                            .build()
+            );
+
+        }
+
+        Timestamp createTimeStamp = t.getCreateTimestamp();
+
+        List<TrendingStocks> trendingStocks = trendingStocksRepository.findLastestUpdatedList(createTimeStamp);
 
         List<TrendStockDto> trendList = new ArrayList<>();
 
 
-        for (Symbol s: symbolList) {
-
-            String symbolCode = s.getSymbol();
-
-            FinanceQuote f = yhFinanceApiService.getFinanceQuote(symbolCode);
-
-            String price = String.format("%.2f",f.getRegularMarketPrice());
-            String change = String.format("%.2f",f.getRegularMarketChange());
-            String changePercent = String.format("%.1f",f.getRegularMarketChangePercent());
-
-            int changeStatus = -1;
-
-            if(f.getRegularMarketChange()>=0){
-
-                change = "+" + change;
-                changePercent = "+" + changePercent;
-                changeStatus = 1;
-
-                if(f.getRegularMarketChange() == 0){
-                    changeStatus = 0;
-                }
-
-            }
-
-            boolean open = f.getMarketState().equals("REGULAR");
+        for (TrendingStocks ts : trendingStocks) {
 
 
             TagInfo tagInfo = TagInfo.builder()
-                    .type(f.getTypeDisp())
-                    .market(f.getFullExchangeName())
-                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
-                    .isOpen(open)
+                    .type(ts.getTagType())
+                    .market(ts.getTagMarket())
+                    .customPriceConfidence(ts.getTagConfidence())
+                    .isOpen(ts.isOpen())
                     .build();
 
 
             trendList.add(TrendStockDto.builder()
-                    .stockId(f.getSymbol())
-                    .stockTitle(f.getShortName())
-                    .price(price)
-                    .change(change)
-                    .changePercent(changePercent)
-                    .changeStatus(changeStatus)
+                    .stockId(ts.getSymbol())
+                    .stockTitle(ts.getTitle())
+                    .price(ts.getPrice())
+                    .change(ts.getChangePrice())
+                    .changePercent(ts.getChangePercent())
+                    .changeStatus(ts.getChangeStatus())
                     .tagInfo(tagInfo)
                     .build()
             );
 
         }
 
+
+
         return responseService.successHandler(
 
                 TrendingStockListDto.builder()
-                        .totalNum(trending.getCount())
+                        .totalNum(trendList.size())
                         .trendStockList(trendList)
                         .build()
         );
 
-
-
     }
+
+
+    //오늘의 trending 주식 - 스레드 이용
+//    public BanklassResponseEntity getTodayTrendingRealTime(){
+//
+//
+//        TrendingByRegion trending = yhFinanceApiService.getTrendingByRegion();
+//
+//        List<Symbol> symbolList = trending.getQuotes();
+//
+//        List<TrendStockDto> trendList = new ArrayList<>();
+//
+//        List<CompletableFuture<FinanceQuote>> fList = new ArrayList<>();
+//
+//        for (Symbol s: symbolList) {
+//
+//            String symbolCode = s.getSymbol();
+//
+//            fList.add(CompletableFuture.supplyAsync(()->{
+//                return yhFinanceApiService.getFinanceQuote(symbolCode);
+//            }));
+//        }
+//
+//        CompletableFuture.allOf(fList.toArray(new CompletableFuture[fList.size()])).join();
+//        List<FinanceQuote> dtoList = fList.stream().map(CompletableFuture::join).collect(Collectors.toList());
+//
+//
+//
+//        for (FinanceQuote f: dtoList) {
+//            String price = String.format("%.2f",f.getRegularMarketPrice());
+//            String change = String.format("%.2f",f.getRegularMarketChange());
+//            String changePercent = String.format("%.1f",f.getRegularMarketChangePercent());
+//
+//            int changeStatus = -1;
+//
+//            if(f.getRegularMarketChange()>=0){
+//
+//                change = "+" + change;
+//                changePercent = "+" + changePercent;
+//                changeStatus = 1;
+//
+//                if(f.getRegularMarketChange() == 0){
+//                    changeStatus = 0;
+//                }
+//
+//            }
+//
+//            boolean open = f.getMarketState().equals("REGULAR");
+//
+//
+//            TagInfo tagInfo = TagInfo.builder()
+//                    .type(f.getQuoteType())
+//                    .market(f.getFullExchangeName())
+//                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+//                    .isOpen(open)
+//                    .build();
+//
+//            //display name없는 종목들이 가끔 있음
+//            String title = f.getDisplayName();
+//            if(title == null){
+//                title = f.getShortName();
+//            }
+//            if(title==null){
+//                title = f.getLongName();
+//            }
+//
+//            trendList.add(TrendStockDto.builder()
+//                    .stockId(f.getSymbol())
+//                    .stockTitle(title)
+//                    .price(price)
+//                    .change(change)
+//                    .changePercent(changePercent)
+//                    .changeStatus(changeStatus)
+//                    .tagInfo(tagInfo)
+//                    .build()
+//            );
+//
+//        }
+//
+//
+//
+//
+//        return responseService.successHandler(
+//
+//                TrendingStockListDto.builder()
+//                        .totalNum(trending.getCount())
+//                        .trendStockList(trendList)
+//                        .build()
+//        );
+//
+//
+//
+//    }
+
 
 
 
     public BanklassResponseEntity getTotalStockStatus(Long studentId){
 
-        Student s = studentRepository.findById(studentId).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
-        Classes c = classRepository.findById(s.getClassId()).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
+        Student s = studentRepository.findById(studentId).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST_STUDENT)));
+        Classes c = classRepository.findById(s.getClassId()).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST_CLASS)));
 
 
         List<StudentStock> studentStockList = studentStockRepository.findByStudentId(studentId);
@@ -150,11 +247,13 @@ public class StockService {
 
         //보유금액 (단위 이름 붙여서)
         double money = (double)s.getMoney();
+        String moneyString = String.format("%.2f", money); //보유금액(2자리)
 
 
+        if(!studentStockList.isEmpty()) { //보유종목이 있는 경우
 
-        //평가금액
-        double marketValue = 0;
+            //평가금액
+            double marketValue = 0;
 
         /*
         이 학생이 산 모든 주식 코드 얻어오기
@@ -162,10 +261,10 @@ public class StockService {
          */
 
 
-        //학생이 보유하고 있는 모든 주식에 대하여
-        for (StudentStock ss: studentStockList) {
+            //학생이 보유하고 있는 모든 주식에 대하여
+            for (StudentStock ss : studentStockList) {
 
-            String symbol = ss.getStockSymbol(); //해당 주식의 symbol
+                String symbol = ss.getStockSymbol(); //해당 주식의 symbol
 
             /*
             여기서 에러처리 한번 들어가야함
@@ -173,80 +272,91 @@ public class StockService {
             2. 결과가 없을 경우: list가 빈 리스트라 여기 안들어와질 것 같은데 (보유한 주식이 없는 경우)
              */
 
-            FinanceQuote financeQuote = yhFinanceApiService.getFinanceQuote(symbol);
+                StockBatch stockBatch = stockBatchRepository.findByStockSymbol(symbol)
+                        .orElseThrow(()->new ServiceException(ErrorCode.NOT_EXIST_STOCK_SYMBOL));
+//                FinanceQuote financeQuote = yhFinanceApiService.getFinanceQuote(symbol);
 
-            String price = String.format("%.2f",financeQuote.getRegularMarketPrice()) ; //현재 가격
-
-            // 보유 주식의 현 가격
-//            double price = Double.parseDouble(stockApiResponseDto.getItems().get(0).getClpr()) * 10;  // 미소 단위로 변환 (1달러 = 10미소 = 1000원)
-
-
-            // 결과가 string으로 api 에서 return되기 때문에 변경 해주어야함
-            // 100 미소 == 10000원
-            marketValue += Double.parseDouble(price) * ss.getAmount(); //가지고 있는 수량만큼 곱해줌
+                String price = String.format("%.2f", stockBatch.getRegularMarketPrice()); //현재 가격
 
 
+                // 결과가 string으로 api 에서 return되기 때문에 변경 해주어야함
+                // 100 미소 == 10000원
+                marketValue += Double.parseDouble(price) * ss.getAmount(); //가지고 있는 수량만큼 곱해줌
+
+
+            }
+
+
+            //매수금액
+            double blendedPrice = 0;
+            for (StudentStock ss : studentStockList) {
+
+                //평단가 가져와서 다 더하기
+                double blend = ss.getBlendedPrice().doubleValue();
+
+                blendedPrice += blend * ss.getAmount();
+
+
+            }
+
+
+            //평가손익 = 평가금액 - 매수금액
+            double marketProfitLoss = marketValue - blendedPrice;
+
+
+            //수익률 = (손익)/(투자원금=매수금액) * 100
+            double yield = marketProfitLoss / blendedPrice * 100;
+
+
+            //자릿수 변경
+            String marketValueString = String.format("%.2f", marketValue); //평가금액(2자리)
+            String blendedPriceString = String.format("%.2f", blendedPrice); //매수금액(2자리)
+
+
+            String marketProfitLossString = String.format("%.2f", marketProfitLoss); //평가손익 2자리
+            String yieldString = String.format("%.1f", yield);
+
+            int yieldStatus = -1; // 기본은 마이너스
+
+            if (yield >= 0) {
+                yieldString = "+" + yieldString;
+                marketProfitLossString = "+" + marketProfitLossString;
+                yieldStatus = 1;
+
+                if (yield == 0) {
+                    yieldStatus = 0;
+                }
+
+            }
+
+
+            return responseService.successHandler(
+                    TotalStockInfoResponseDto.builder()
+                            .studentId(studentId)
+                            .money(moneyString) //2자리
+                            .classCurrency(c.getCurrency())
+                            .totalMarketValue(marketValueString)
+                            .totalBlendedPrice(blendedPriceString) //2자리
+                            .totalMarketProfitLoss(marketProfitLossString)
+                            .totalYield(yieldString)  //1자리
+                            .yieldStatus(yieldStatus)
+                            .build()
+            );
         }
-
-
-
-        //매수금액
-        double blendedPrice = 0;
-        for (StudentStock ss: studentStockList) {
-
-            //평단가 가져와서 다 더하기
-            double blend = ss.getBlendedPrice().doubleValue();
-
-            blendedPrice += blend * ss.getAmount();
-
-
+        else{ //보유 종목이 없는 경우
+            return responseService.successHandler(
+                    TotalStockInfoResponseDto.builder()
+                            .studentId(studentId)
+                            .money(moneyString) //2자리
+                            .classCurrency(c.getCurrency())
+                            .totalMarketValue("0.00")
+                            .totalBlendedPrice("0.00") //2자리
+                            .totalMarketProfitLoss("0.00")
+                            .totalYield("0.0")  //1자리
+                            .yieldStatus(0)
+                            .build()
+            );
         }
-
-
-        //평가손익 = 평가금액 - 매수금액
-        double marketProfitLoss = marketValue - blendedPrice;
-
-
-        //수익률 = (손익)/(투자원금=매수금액) * 100
-        double yield = marketProfitLoss/blendedPrice  * 100;
-
-
-
-        //자릿수 변경
-
-        String moneyString = String.format("%.2f", money); //보유금액(2자리)
-        String marketValueString = String.format("%.2f", marketValue); //평가금액(2자리)
-        String blendedPriceString = String.format("%.2f", blendedPrice); //매수금액(2자리)
-
-
-        String marketProfitLossString = String.format("%.2f", marketProfitLoss); //평가손익 2자리
-        String yieldString = String.format("%.1f",yield);
-
-        int yieldStatus = -1; // 기본은 마이너스
-
-        if(yield >= 0){
-            yieldString = "+" + yieldString;
-            marketProfitLossString = "+" + marketProfitLossString;
-            yieldStatus = 1;
-
-            if(yield==0) yieldStatus = 0;
-
-        }
-
-
-
-        return responseService.successHandler(
-                TotalStockInfoResponseDto.builder()
-                .studentId(studentId)
-                .money(moneyString) //2자리
-                .classCurrency(c.getCurrency())
-                .totalMarketValue(marketValueString)
-                .totalBlendedPrice(blendedPriceString) //2자리
-                .totalMarketProfitLoss(marketProfitLossString)
-                .totalYield(yieldString)  //1자리
-                .yieldStatus(yieldStatus)
-                .build()
-        );
 
     }
 
@@ -255,8 +365,8 @@ public class StockService {
 
     public BanklassResponseEntity getOwnedStockList(Long studentId, int page){
 
-        Student s = studentRepository.findById(studentId).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
-        Classes c = classRepository.findById(s.getClassId()).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST)));
+        Student s = studentRepository.findById(studentId).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST_STUDENT)));
+        Classes c = classRepository.findById(s.getClassId()).orElseThrow(()-> (new ServiceException(ErrorCode.NOT_EXIST_CLASS)));
 
 
         int totalData = studentStockRepository.countByStudentId(studentId);
@@ -287,10 +397,12 @@ public class StockService {
         for (StudentStock stock: ss) {
 
             //해당 주식 심볼로 검색
-            FinanceQuote f = yhFinanceApiService.getFinanceQuote(stock.getStockSymbol());
+            StockBatch stockBatch = stockBatchRepository.findByStockSymbol(stock.getStockSymbol())
+                    .orElseThrow(()->new ServiceException(ErrorCode.NOT_EXIST_STOCK_SYMBOL));
+//            FinanceQuote f = yhFinanceApiService.getFinanceQuote(stock.getStockSymbol());
 
             //현재가
-            double crPrice = f.getRegularMarketPrice(); //
+            double crPrice = stockBatch.getRegularMarketPrice(); //
             String price = String.format("%.2f",crPrice);
 
 
@@ -300,7 +412,7 @@ public class StockService {
 
 
             //평가금액
-            double mkPrice = f.getRegularMarketPrice() * stock.getAmount(); //시장가 * 보유수량
+            double mkPrice = stockBatch.getRegularMarketPrice() * stock.getAmount(); //시장가 * 보유수량
             String marketPrice = String.format("%.2f", mkPrice);
 
 
@@ -327,21 +439,20 @@ public class StockService {
 
 
             //태그 작성
-            boolean open = f.getMarketState().equals("REGULAR");
+            boolean open = stockBatch.getMarketStatus().equals("REGULAR");
 
             TagInfo tagInfo = TagInfo.builder()
-                    .type(f.getTypeDisp())
-                    .market(f.getFullExchangeName())
-                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
+                    .type(stockBatch.getTypeDisplay())
+                    .market(stockBatch.getFullExchangeName())
+                    .customPriceConfidence(stockBatch.getCustomPriceAlertConfidence())
                     .isOpen(open)
                     .build();
-
 
             ownStockInfos.add(
 
                     OwnStockInfo.builder()
                             .stockId(stock.getStockSymbol()) // symbol
-                            .stockTitle(f.getShortName())
+                            .stockTitle(stockBatch.getTitle())
                             .price(price) //현재가 (2자리수)
                             .count(stock.getAmount()) // 보유수량
                             .blendedPrice(blendedPrice) // 평균구매단가(2자리)
@@ -373,42 +484,25 @@ public class StockService {
 
 
 
-//    public BanklassResponseEntity getSearchAutoComplete(String query){
-//
-//
-//        List<AutoComplete> autoComplete = yhFinanceApiService.getAutoComplete(query);
-//
-//
-////        List<AutoCompleteResponseDto> result = new ArrayList<>();
-//
-////        for (AutoComplete a :autoComplete) {
-////
-////            FinanceQuote f = yhFinanceApiService.getFinanceQuote(a.getSymbol());
-////
-////            boolean open = f.getMarketState().equals("REGULAR");
-////
-////            TagInfo tagInfo = TagInfo.builder()
-////                    .type(f.getTypeDisp())
-////                    .market(f.getFullExchangeName())
-////                    .customPriceConfidence(f.getCustomPriceAlertConfidence())
-////                    .isOpen(open)
-////                    .build();
-////
-////
-////            result.add(AutoCompleteResponseDto.builder()
-////                    .stockId(a.getSymbol())
-////                    .stockTitle(f.getShortName())
-////                    .tagInfo(tagInfo)
-////                    .build());
-////
-////        }
-//
-//        return responseService.successHandler(autoComplete);
-//
-//    }
+
 
 
     public BanklassResponseEntity getSearchAutoComplete(String query){
+
+        Long nowDate = System.currentTimeMillis();
+        Timestamp timeStamp = new Timestamp(nowDate);
+        SimpleDateFormat sdf = new SimpleDateFormat( "yy-MM-dd HH:mm:ss" , Locale.KOREA );
+        String str = sdf.format( new Date( timeStamp.getTime()));
+
+
+        searchQueryLogRedisRepository.save(
+                SearchQueryLog.builder()
+                        .query(query)
+                        .timestamp(str)
+                        .build()
+        );
+
+
 
         List<AutoComplete> autoComplete = yhFinanceApiService.getAutoComplete(query);
 
@@ -573,11 +667,20 @@ public class StockService {
 
         int price = (int) Math.floor(Double.parseDouble(marketPrice)); // marketPrice를 내림 int로 // 팔떄는 싸게
 
+        //display name없는 종목들이 가끔 있음
+        String title = f.getDisplayName();
+        if(title == null){
+            title = f.getShortName();
+        }
+        if(title==null){
+            title = f.getLongName();
+        }
+
         return responseService.successHandler(
 
                 CheckForSellingStockResponseDto.builder()
                         .stockId(ss.getStockSymbol())
-                        .stockTitle(f.getShortName())
+                        .stockTitle(title)
                         .marketPrice(marketPrice)
                         .price(price)
                         .availableAmount(ss.getAmount())
@@ -599,12 +702,17 @@ public class StockService {
         Long studentId = stockSellingRequestDto.getStudentId();
         int sellingAmount = stockSellingRequestDto.getAmount();
 
-
+        if(sellingAmount<=0){
+            throw new ServiceException(ErrorCode.UNAVAILABLE_TRADING_ZERO);
+        }
 
 
         //존재하는 학생인가
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+
+        Classes classes = classRepository.findById(student.getClassId())
+                .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
         //보유한 종목이 맞는가
         StudentStock ss = studentStockRepository.findByStudentIdAndStockSymbol(studentId, stockSymbol)
@@ -619,7 +727,6 @@ public class StockService {
         //거래가 가능함
 
 
-            //
 //        /*
 //        **국고와는 관계가 없다.
 //
@@ -632,12 +739,12 @@ public class StockService {
 //
 //         */
 
-            //0. 학생잔고에 돈 추가하기
-            //" 판매금액 * 보유수량 "
-            int updatedStudentMoney = updateSellingStudentMoney(studentId, price * sellingAmount);
+        //0. 학생잔고에 돈 추가하기
+        //" 판매금액 * 보유수량 "
+        int updatedStudentMoney = updateSellingStudentMoney(studentId, price * sellingAmount);
 
 
-            //1. student stock table에서 보유수량 변경
+        //1. student stock table에서 보유수량 변경
             /*
 
             1. 판매하려고 하는 수량이 보유수량보다 많은지 확인
@@ -645,77 +752,72 @@ public class StockService {
             3. 만약 0개 이하인 경우 테이블에서 삭제함
 
              */
-            updateAmountOfShares(ss, sellingAmount);
+        updateAmountOfShares(ss, sellingAmount);
 
 
-            //2. stock trading table에 추가하기
-            try {
-                StockTradingData stockTradingData = stockSellingRequestDto.toStockTradingData(studentId, stockSymbol, sellingAmount, price);
+        //2. stock trading table에 추가하기
+        try {
+            StockTradingData stockTradingData = stockSellingRequestDto.toStockTradingData(studentId, stockSymbol, sellingAmount, price);
 
-                stockTradingDataRepository.save(stockTradingData);
-            }catch (Exception e){
-                log.error("Exception : "+"Stock Trading Data Table에 넣는 과정에서 생긴 에러");
-                throw new ServiceException(ErrorCode.TRADING_STOCK);
-            }
-
-
+            stockTradingDataRepository.save(stockTradingData);
+        }catch (Exception e){
+            log.error("Exception : "+"Stock Trading Data Table에 넣는 과정에서 생긴 에러");
+            throw new ServiceException(ErrorCode.TRADING_STOCK);
+        }
 
 
-            //3. transaction_data 테이블에 거래 내역저장하기
 
 
-            String detailMessage = stockInfo.getDisplayName()+" "+sellingAmount+"주 매도";
+        //3. transaction_data 테이블에 거래 내역저장하기
 
-            Long categoryId = 8L;
+        //display name없는 종목들이 가끔 있음
+        String title = stockInfo.getDisplayName();
+        if(title == null){
+            title = stockInfo.getShortName();
+        }
+        if(title==null){
+            title = stockInfo.getLongName();
+        }
 
-            try {
-                TransactionData transactionData = transactionDataRepository.save(
+        String detailMessage = title+" "+sellingAmount+"주 매도";
 
-                        TransactionData.builder()
-                                .money(price * sellingAmount) // 구매가격 * 구매수량
-                                .studentMoney(updatedStudentMoney) //거래 후 남은 학생 잔고
-                                .classMoney(-1)//관계없음
-                                .managerId(-1L)//존재하지 않음
-                                .managerJobId(-1L) //존재하지 않음
-                                .studentId(studentId)//본인
-                                .studentJobId(student.getJobId())//본인직업
-                                .classId(student.getClassId())//학생 소속 반
-                                .categoryId(categoryId) //number 8 : 투자
-                                .detail(detailMessage)//매도 매수
-                                .from(SELL.getTypeName()) //class 학급잔고에서 나온 돈은 아니지만 학생계좌로 돈이 들어가는 것 이므로..
-                                .build()
+        Long categoryId = 8L;
 
-                );
+        try {
+            TransactionData transactionData = transactionDataRepository.save(
 
-                return responseService.successHandler(
-                        CreatedUriDto.builder()
-                                .status("created")
-                                .url(responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
-                                .build()
-                );
+                    TransactionData.builder()
+                            .money(price * sellingAmount) // 구매가격 * 구매수량
+                            .studentMoney(updatedStudentMoney) //거래 후 남은 학생 잔고
+                            .classMoney(classes.getMoney())//관계없음(변경사항 없음)
+                            .managerId(-1L)//존재하지 않음
+                            .managerJobId(-1L) //존재하지 않음
+                            .studentId(studentId)//본인
+                            .studentJobId(student.getJobId())//본인직업
+                            .classId(student.getClassId())//학생 소속 반
+                            .categoryId(categoryId) //number 8 : 투자
+                            .detail(detailMessage)//매도 매수
+                            .from(SELL.getTypeName()) //class 학급잔고에서 나온 돈은 아니지만 학생계좌로 돈이 들어가는 것 이므로..
+                            .build()
+
+            );
+
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                            .status("created")
+                            .url(responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
+                            .build()
+            );
 
 
-            }catch(Exception e){
-                log.error("Exception : "+"Transaction data table에 넣는 과정에서 생긴 에러");
-                throw new ServiceException(ErrorCode.TRADING_STOCK);
-            }
+        }catch(Exception e){
+            log.error("Exception : "+"Transaction data table에 넣는 과정에서 생긴 에러");
+            throw new ServiceException(ErrorCode.TRADING_STOCK);
+        }
 
 
 
     }
-
-//    public BanklassResponseEntity checkPriceByStockId(String stockSymbol){
-//
-//        //종목 조회
-//        FinanceQuote stockInfo = yhFinanceApiService.getFinanceQuote(stockSymbol);
-//
-//        String price = String.format("%.2f",stockInfo.getRegularMarketPrice()); // 가격 미소로 변환 후 2자리까지
-//
-//
-//
-//
-//    }
-
 
 
     @Transactional
@@ -728,16 +830,18 @@ public class StockService {
         Long studentId = stockBuyingRequestDto.getStudentId();
         int buyingAmount = stockBuyingRequestDto.getAmount(); //사려고 하는 수
 
-
+        if(buyingAmount<=0){
+            throw new ServiceException(ErrorCode.UNAVAILABLE_TRADING_ZERO);
+        }
 
 
         //존재하는 학생인가
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(()-> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+        Classes classes = classRepository.findById(student.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
 
         //종목 조회
         FinanceQuote stockInfo = yhFinanceApiService.getFinanceQuote(stockSymbol);
-
 
 
         //주문 금액이 부족한지 체크 -> 학생 잔고 업데이트할 때 확인함
@@ -764,6 +868,7 @@ public class StockService {
         int updatedStudentMoney = updateBuyingStudentMoney(studentId, price * buyingAmount);
 
 
+
         //1. student stock table에서 보유수량 변경
             /*
 
@@ -774,6 +879,7 @@ public class StockService {
 
              */
         updateStudentStockAmountAndBlendedPrice(studentId,stockSymbol,buyingAmount,price);
+
 
 
         //2. stock trading table에 추가하기
@@ -791,7 +897,16 @@ public class StockService {
         //3. transaction_data 테이블에 거래 내역저장하기
 
 
-        String detailMessage = stockInfo.getDisplayName()+" "+buyingAmount+"주 매수";
+        //display name없는 종목들이 가끔 있음
+        String title = stockInfo.getDisplayName();
+        if(title == null){
+            title = stockInfo.getShortName();
+        }
+        if(title==null){
+            title = stockInfo.getLongName();
+        }
+
+        String detailMessage = title+" "+buyingAmount+"주 매수";
 
         Long categoryId = 8L;
 
@@ -801,7 +916,7 @@ public class StockService {
                     TransactionData.builder()
                             .money(price * buyingAmount) // 매수가격 * 구매수량
                             .studentMoney(updatedStudentMoney) //거래 후 남은 학생 잔고
-                            .classMoney(-1)//관계없음
+                            .classMoney(classes.getMoney())//관계없음(-1) -> 이러면 class change에서 -1쪽으로 계산되어서 안됨 -> 현재 학급의 돈으로 넣기
                             .managerId(-1L)//존재하지 않음
                             .managerJobId(-1L) //존재하지 않음
                             .studentId(studentId)//본인
@@ -813,6 +928,48 @@ public class StockService {
                             .build()
 
             );
+
+
+
+            //자동배치 테이블에 업데이트 시켜주기
+            //이미 존재하는 종목
+            if(stockBatchRepository.existsByStockSymbol(stockSymbol)){
+
+                StockBatch stockBatch = stockBatchRepository.findByStockSymbol(stockInfo.getSymbol()).get();
+
+
+                StockBatch newStock = stockBatch.updateInfo(
+                        stockInfo.getRegularMarketPrice(),stockInfo.getMarketState(),stockInfo.getQuoteType(),stockInfo.getFullExchangeName(),stockInfo.getCustomPriceAlertConfidence(),stockInfo.getRegularMarketChange(),stockInfo.getRegularMarketChangePercent()
+                );
+
+                stockBatchRepository.save(newStock);
+
+            }else{
+
+
+
+                stockBatchRepository.save(
+                        StockBatch.builder()
+                                .stockSymbol(stockInfo.getSymbol())
+                                .title(title)
+                                .regularMarketPrice(stockInfo.getRegularMarketPrice())
+                                .marketStatus(stockInfo.getMarketState())
+                                .fullExchangeName(stockInfo.getFullExchangeName())
+                                .typeDisplay(stockInfo.getQuoteType())
+                                .fullExchangeName(stockInfo.getFullExchangeName())
+                                .customPriceAlertConfidence(stockInfo.getCustomPriceAlertConfidence())
+                                .regularMarketChange(stockInfo.getRegularMarketChange())
+                                .regularMarketChangePercent(stockInfo.getRegularMarketChangePercent())
+                                .build()
+                );
+
+
+            }
+
+
+
+
+
 
             return responseService.successHandler(
                     CreatedUriDto.builder()
@@ -858,15 +1015,19 @@ public class StockService {
     @Transactional
     public int updateBuyingStudentMoney(Long studentId, int money) {
 
+
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
+
+
+        //주문 금액이 충분한지 체크
+        if(student.getMoney() < money){
+
+            //try catch범위를 여기까지 껴서 잡으면 여기서 발생한 에러도 catch로 잡힌다
+
+            throw new ServiceException(ErrorCode.NOT_ENOUGH_MONEY_BUYING);
+        }
+
         try {
-            Student student = studentRepository.findById(studentId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
-
-
-            //주문 금액이 충분한지 체크
-            if(student.getMoney() < money){
-                throw new ServiceException(ErrorCode.NOT_ENOUGH_MONEY_BUYING);
-            }
-
             //객체의 돈을 변경하여 새로운 객체를 생성
             Student updateStudent = student.updateMoney(student.getMoney() - money); //보유금액 - 매수금액
 
@@ -875,6 +1036,7 @@ public class StockService {
             return updateStudent.getMoney();
 
         }catch (Exception e){
+
             log.error("Exception : "+"Student money 업데이트 과정에서 생긴 에러");
             throw new ServiceException(ErrorCode.TRADING_STOCK);
         }
@@ -979,11 +1141,20 @@ public class StockService {
 
         int price = (int) Math.ceil(Double.parseDouble(marketPrice)); // marketPrice를 올림 int로 // 살때는 비싸게
 
+        //display name없는 종목들이 가끔 있음
+        String title = f.getDisplayName();
+        if(title == null){
+            title = f.getShortName();
+        }
+        if(title==null){
+            title = f.getLongName();
+        }
+
         return responseService.successHandler(
 
                 CheckForBuyingStockResponseDto.builder()
                         .stockId(stockSymbol)
-                        .stockTitle(f.getShortName())
+                        .stockTitle(title)
                         .marketPrice(marketPrice)
                         .price(price)
                         .currency(c.getCurrency())
@@ -993,6 +1164,19 @@ public class StockService {
 
 
     }
+
+
+
+
+    public List<SearchQueryLog> getSearchAutoCompleteList(){
+
+
+        List<SearchQueryLog> list = searchQueryLogRedisRepository.findAll();
+
+
+        return list;
+    }
+
 
 
 }

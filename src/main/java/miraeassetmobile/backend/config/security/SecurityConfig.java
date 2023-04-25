@@ -30,8 +30,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/swagger-resources/**",
             "/swagger-ui/**",
             "/webjars/**",
-            "/api/auth/**",
-            "/api/**",//개발단계 편의를 위해 임시 추가
+            "/api/**"
+//            "/api/job/**",
+//            "/api/v2/job/**",
+//            "/api/transaction/**",
+//            "/api/v2/transaction/**",
+//            "/api/student/**",
+//            "/api/v2/student/**",
+//            "/api/stock/**",
+//            "/api/v2/stock/**",
+//            "/api/class/**",
+//            "/api/v2/class/**",
+//            "/api/auth/**",
+//            "/api/v2/auth/**",
+//            "/api/user/**",
+//            "/api/v2/user/**",
+//            "/api/v2/stock-detail/**",
     };
 
     @Bean

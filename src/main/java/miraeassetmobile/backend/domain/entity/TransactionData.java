@@ -77,4 +77,7 @@ public class TransactionData extends BaseTimeEntity{
         this.detail=detail;
         this.from=from;
     }
+
+
+
 }

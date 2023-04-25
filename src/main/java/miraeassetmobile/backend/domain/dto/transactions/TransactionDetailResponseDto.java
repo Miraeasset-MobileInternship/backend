@@ -34,6 +34,7 @@ public class TransactionDetailResponseDto {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "YYYY'년 'MM'월 'dd'일' HH:mm", timezone = "Asia/Seoul")
     LocalDateTime transactionDate;
+
     int leftMoney; //거래 후 잔고
 
 

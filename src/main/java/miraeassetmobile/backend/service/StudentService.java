@@ -87,15 +87,15 @@ public class StudentService {
 
         return responseService.successHandler(
                 StudentJobResponseDto.builder()
-                .studentId(student.getId())
-                .classInfo(classInfo)
-                .jobId(student.getJobId())
-                .JobTitle(studentJob.getTitle())
-                .JobDetail(studentJob.getDetail())
-                .profileImg(p.getIconCode())
-                .isTransfer(studentJob.isWithdrawStudent()) // 이체하기 -> 학생계좌 출금
-                .isPay(studentJob.isWithdrawClass()) //지급하기 -> 국고 출금
-                .build())
+                        .studentId(student.getId())
+                        .classInfo(classInfo)
+                        .jobId(student.getJobId())
+                        .JobTitle(studentJob.getTitle())
+                        .JobDetail(studentJob.getDetail())
+                        .profileImg(p.getIconCode())
+                        .isTransfer(studentJob.isWithdrawStudent()) // 이체하기 -> 학생계좌 출금
+                        .isPay(studentJob.isWithdrawClass()) //지급하기 -> 국고 출금
+                        .build())
                 ;
 
 
@@ -136,11 +136,11 @@ public class StudentService {
 
         return
                 responseService.successHandler(
-                StudentSalaryResponseDto.builder()
-                .jobId(j.getId())
-                .jobTitle(j.getTitle())
-                .monthlySalary(j.getMonthlySalary())
-                .build()
+                        StudentSalaryResponseDto.builder()
+                                .jobId(j.getId())
+                                .jobTitle(j.getTitle())
+                                .monthlySalary(j.getMonthlySalary())
+                                .build()
                 );
 
     }
@@ -152,6 +152,14 @@ public class StudentService {
         //해당 유저가 이미 해당 반에 존재하면 가입을 막아야함
         responseService.isUserExistInClass(studentClassJoinRequestDto.getClassId(), studentClassJoinRequestDto.getUserId());
 
+        //해당 학급 번호가 이미 사용중이거나 입력되지 않았는가
+        if(studentRepository.existsByClassIdAndNumber(studentClassJoinRequestDto.getClassId(),studentClassJoinRequestDto.getStudentNumber())){
+            throw new ServiceException(ErrorCode.ALREADY_EXIST_CLASS_STUDENT_NUMBER);
+        }
+
+
+        //
+
 
         Student newStudent = Student.builder()
                 .userId(studentClassJoinRequestDto.getUserId())
@@ -162,13 +170,12 @@ public class StudentService {
         try {
             Student s = studentRepository.save(newStudent);
 
-
-
             return responseService.successHandler(
-                    CreatedUriDto.builder()
-                        .status("created")
-                        .url(responseService.createUri(s.getId(), UriTypes.STUDENT))
-                        .build()
+
+                    StudentClassJoinResponseDto.builder()
+                            .studentId(s.getId())
+                            .build()
+
             );
 
         }catch (Exception e){
@@ -178,7 +185,6 @@ public class StudentService {
 
 
     }
-
 
 
 }

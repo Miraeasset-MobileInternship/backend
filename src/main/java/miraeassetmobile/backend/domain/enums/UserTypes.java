@@ -17,5 +17,4 @@ public enum UserTypes {
         return typeName;
     }
 
-
 }

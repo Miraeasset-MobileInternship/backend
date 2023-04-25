@@ -56,4 +56,6 @@ public class StudentStock extends BaseTimeEntity{
         this.amount = amount;
     }
 
+
+
 }

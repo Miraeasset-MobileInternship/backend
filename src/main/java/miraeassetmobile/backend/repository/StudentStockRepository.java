@@ -5,11 +5,13 @@ import miraeassetmobile.backend.domain.entity.TransactionData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface StudentStockRepository extends JpaRepository<StudentStock, Long> {
+
 
     //학생이 보유한 주식 전부 다 가져오기
     List<StudentStock> findByStudentId(Long studentId);
@@ -25,5 +27,11 @@ public interface StudentStockRepository extends JpaRepository<StudentStock, Long
 
 
     boolean existsByStockSymbolAndStudentId(String stockSymbol, Long studentId);
+
+
+
+    @Query(value = "SELECT DISTINCT stock_symbol FROM student_stock", nativeQuery = true)
+    List<Object> findAllStocksStudentHave();
+
 
 }

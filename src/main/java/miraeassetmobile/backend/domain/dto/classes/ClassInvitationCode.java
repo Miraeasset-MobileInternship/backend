@@ -1,5 +1,6 @@
 package miraeassetmobile.backend.domain.dto.classes;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

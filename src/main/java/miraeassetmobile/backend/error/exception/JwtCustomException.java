@@ -7,7 +7,7 @@ import lombok.Getter;
 public class JwtCustomException extends JwtException {
     private final ErrorCode errorCode;
 
-    public JwtCustomException(String message, ErrorCode errorCode) {
+    public JwtCustomException(String message,ErrorCode errorCode) {
         super(message);
         this.errorCode = errorCode;
     }

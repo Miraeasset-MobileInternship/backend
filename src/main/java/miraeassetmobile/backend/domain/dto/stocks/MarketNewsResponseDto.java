@@ -1,4 +1,5 @@
 package miraeassetmobile.backend.domain.dto.stocks;
+
 import lombok.Builder;
 import lombok.Getter;
 
