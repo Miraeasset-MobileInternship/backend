@@ -1,12 +1,18 @@
 package miraeassetmobile.backend.domain.dto.classes;
 
 
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import miraeassetmobile.backend.domain.entity.Classes;
+
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ClassCreateRequestDto {
 
     private Long teacher_id;

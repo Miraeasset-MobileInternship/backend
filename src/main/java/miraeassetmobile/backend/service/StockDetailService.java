@@ -1,34 +1,27 @@
 package miraeassetmobile.backend.service;
 
-import miraeassetmobile.backend.controller.StockDetailController;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
-import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.MarketNews;
 import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.StockNews;
+import miraeassetmobile.backend.domain.dto.api.rapidApiYhFinance.StockNewsTime;
 import miraeassetmobile.backend.domain.dto.api.yahooFinance.*;
 import miraeassetmobile.backend.domain.dto.stockdetails.*;
-import miraeassetmobile.backend.domain.dto.stocks.MarketNewsDto;
-import miraeassetmobile.backend.domain.dto.stocks.MarketNewsResponseDto;
 import miraeassetmobile.backend.domain.dto.stocks.TagInfo;
+import miraeassetmobile.backend.error.exception.ErrorCode;
+import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.service.api.NaverTranslatorApiService;
 import miraeassetmobile.backend.service.api.YhFinanceApiService;
 import miraeassetmobile.backend.service.api.YhFinanceRapidApiService;
-import miraeassetmobile.backend.service.comparator.ListComparator;
 import miraeassetmobile.backend.service.comparator.StockNewsListComparator;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static miraeassetmobile.backend.domain.enums.RecommendedTrendTypes.*;
 
 @Service
 public class StockDetailService {
-
     YhFinanceApiService yhFinanceApiService;
     YhFinanceRapidApiService yhFinanceRapidApiService;
     NaverTranslatorApiService naverTranslatorApiService;
@@ -52,17 +45,31 @@ public class StockDetailService {
         double changePrice = Math.round(f.getRegularMarketChange()*100)/100.0;
         double changePercent = Math.round(f.getRegularMarketChangePercent()*10)/10.0;
 
+        //가격이 0인 것이 있다면 에러처리
+        if(price == 0){
+            throw new ServiceException(ErrorCode.NOT_EXIST_STOCK_SYMBOL);
+        }
+
+        //display name없는 종목들이 가끔 있음
+        String title = f.getDisplayName();
+        if(title == null){
+            title = f.getShortName();
+        }
+        if(title==null){
+            title = f.getLongName();
+        }
+
 
         return responseService.successHandler(
                 StockDetailResponseDto.builder()
                         .symbol(f.getSymbol())
-                        .stockTitle(f.getShortName())
+                        .stockTitle(title)
                         .price(price)
                         .changePrice(changePrice)
                         .changePercent(changePercent)
                         .tagInfo(
                                 TagInfo.builder()
-                                        .type(f.getTypeDisp())
+                                        .type(f.getQuoteType())
                                         .market(f.getFullExchangeName())
                                         .customPriceConfidence(f.getCustomPriceAlertConfidence())
                                         .isOpen(f.getMarketState().equals("REGULAR"))
@@ -92,6 +99,7 @@ public class StockDetailService {
 
         List<SimilarStockInfo> resultList = new ArrayList<>();
 
+
         for(int i=0; i<fq.size()-1; i++) {
 
             FinanceQuote f = fq.get(i);
@@ -100,25 +108,50 @@ public class StockDetailService {
             double changePrice = Math.round(f.getRegularMarketChange()*100)/100.0;
             double changePercent = Math.round(f.getRegularMarketChangePercent()*10)/10.0;
 
+            if(price==0){ //가격이 0인 종목은 반영하지 않음
+                continue;
+            }
+
+
+            //display name없는 종목들이 가끔 있음
+            String title = f.getDisplayName();
+            if(title == null){
+                title = f.getShortName();
+            }
+            if(title==null){
+                title = f.getLongName();
+            }
+
+
             resultList.add(
-            SimilarStockInfo.builder()
-                    .symbol(f.getSymbol())
-                    .stockTitle(f.getShortName())
-                    .price(price)
-                    .changePrice(changePrice)
-                    .changePercent(changePercent)
-                    .build()
+                    SimilarStockInfo.builder()
+                            .symbol(f.getSymbol())
+                            .stockTitle(title)
+                            .price(price)
+                            .changePrice(changePrice)
+                            .changePercent(changePercent)
+                            .build()
             );
         }
 
         //맨 마지막 항목은 기존것
         FinanceQuote basic = fq.get(fq.size()-1);
 
+        //display name없는 종목들이 가끔 있음
+        String title = basic.getDisplayName();
+        if(title == null){
+            title = basic.getShortName();
+        }
+        if(title==null){
+            title = basic.getLongName();
+        }
+
+
         return responseService.successHandler(
 
                 SimilarStockResponseDto.builder()
                         .totalData(resultList.size())
-                        .stockTitle(basic.getShortName())
+                        .stockTitle(title)
                         .stockInfoList(resultList)
                         .build()
 
@@ -132,20 +165,56 @@ public class StockDetailService {
 
 
 
-    public BanklassResponseEntity getStockNews(String symbol, String lang) throws ParseException {
+    public BanklassResponseEntity getStockNews(String symbol, String lang, String num){
 
+        List<StockNews> news = yhFinanceRapidApiService.getStockMarketNews(symbol);
 
-        List<StockNews> newsList = yhFinanceRapidApiService.getStockMarketNews(symbol);
+//        Collections.sort(newsList, new StockNewsListComparator()); //결과값 최신순으로 정렬
+
+        List<StockNewsTime> newsList = new ArrayList<>();
+
+        for (StockNews s :news) {
+
+            newsList.add(
+
+                    StockNewsTime.builder()
+                            .description(s.getDescription())
+                            .guid(s.getGuid())
+                            .pubDate(calculateTime(s.getPubDate()))
+                            .link(s.getLink())
+                            .title(s.getTitle())
+                            .build()
+
+            );
+
+        }
 
         Collections.sort(newsList, new StockNewsListComparator()); //결과값 최신순으로 정렬
 
         List<StockNewsDto> result = new ArrayList<>();
 
-        if(lang.equals("ko")) {
+        int idx = newsList.size();
 
-            for (StockNews n : newsList) {
+        //갯수를 입력받아서 그 만큼만 넘겨줌
+        if (!num.equals("all")) {
+            try {
+                //총 보유한 뉴스의 양보다 많은 값을 요청하면 반영되지 않도록함
+                if (Integer.valueOf(num) < idx)
+                    idx = Integer.valueOf(num);
 
-                String date = changeTime(calculateTime(n.getPubDate()),"ko");
+            } catch (NumberFormatException ex) {
+                throw new ServiceException(ErrorCode.WRONG_PARAM_NUMBER);
+            }
+        }
+
+
+        if (lang.equals("ko")) {
+
+            for (int i = 0; i < idx; i++) {
+
+                StockNewsTime n = newsList.get(i);
+
+                String date = changeTime(n.getPubDate(), "ko");
 
                 result.add(
 
@@ -160,11 +229,13 @@ public class StockDetailService {
 
             }
 
-        }else{ //영어
+        } else { //영어
 
-            for (StockNews n : newsList) {
+            for (int i = 0; i < idx; i++) {
 
-                String date = changeTime(calculateTime(n.getPubDate()),"en");
+                StockNewsTime n = newsList.get(i);
+
+                String date = changeTime(n.getPubDate(), "en");
 
                 result.add(
 
@@ -182,6 +253,9 @@ public class StockDetailService {
 
         }
 
+
+
+
         return responseService.successHandler(
                 StockNewsResponseDto.builder()
                         .totalData(result.size())
@@ -190,8 +264,9 @@ public class StockDetailService {
         );
 
 
-
     }
+
+
 
 
     public BanklassResponseEntity getRecommendationTrend(String symbol, String period){
@@ -208,60 +283,65 @@ public class StockDetailService {
 
             if(t.getPeriod().equals(period)){
 
-                recommendTrendGraphData.add(
-                        RecommendTrendGraphData.builder()
-                                .id(STRONGBUY.getTypeName())
-                                .label(STRONGBUY.getTypeName())
-                                .value(t.getStrongBuy())
-                                .color(STRONGBUY.getColorCode())
-                                .build()
-                );
+                if(t.getStrongBuy()>0) {
+                    recommendTrendGraphData.add(
+                            RecommendTrendGraphData.builder()
+                                    .id(STRONGBUY.getTypeName())
+                                    .value(t.getStrongBuy())
+                                    .color("#F58220")
+                                    .build()
+                    );
+                }
 
-                recommendTrendGraphData.add(
-                        RecommendTrendGraphData.builder()
-                                .id(BUY.getTypeName())
-                                .label(BUY.getTypeName())
-                                .value(t.getBuy())
-                                .color(BUY.getColorCode())
-                                .build()
-                );
+                if(t.getBuy()>0) {
+                    recommendTrendGraphData.add(
+                            RecommendTrendGraphData.builder()
+                                    .id(BUY.getTypeName())
+                                    .value(t.getBuy())
+                                    .color("#F0B26B")
+                                    .build()
+                    );
+                }
 
-                recommendTrendGraphData.add(
-                        RecommendTrendGraphData.builder()
-                                .id(HOLD.getTypeName())
-                                .label(HOLD.getTypeName())
-                                .value(t.getHold())
-                                .color(HOLD.getColorCode())
-                                .build()
-                );
+                if(t.getHold()>0) {
+                    recommendTrendGraphData.add(
+                            RecommendTrendGraphData.builder()
+                                    .id(HOLD.getTypeName())
+                                    .value(t.getHold())
+                                    .color("#84888B")
+                                    .build()
+                    );
+                }
 
-                recommendTrendGraphData.add(
-                        RecommendTrendGraphData.builder()
-                                .id(SELL.getTypeName())
-                                .label(SELL.getTypeName())
-                                .value(t.getSell())
-                                .color(SELL.getColorCode())
-                                .build()
-                );
+                if(t.getSell()>0) {
+                    recommendTrendGraphData.add(
+                            RecommendTrendGraphData.builder()
+                                    .id(SELL.getTypeName())
+                                    .value(t.getSell())
+                                    .color("#8DC8E8")
+                                    .build()
+                    );
+                }
 
-                recommendTrendGraphData.add(
-                        RecommendTrendGraphData.builder()
-                                .id(STRONGSELL.getTypeName())
-                                .label(STRONGSELL.getTypeName())
-                                .value(t.getStrongSell())
-                                .color(STRONGSELL.getColorCode())
-                                .build()
-                );
+                if(t.getStrongSell()>0) {
+                    recommendTrendGraphData.add(
+                            RecommendTrendGraphData.builder()
+                                    .id(STRONGSELL.getTypeName())
+                                    .value(t.getStrongSell())
+                                    .color("#043B72")
+                                    .build()
+                    );
+                }
 
                 break;
 
             }
 
         }
-        
 
 
-        
+
+
         return responseService.successHandler(
                 recommendTrendGraphData
         );
@@ -269,30 +349,38 @@ public class StockDetailService {
     }
 
 
-    public long calculateTime(String pubDate) throws ParseException {
+
+    public long calculateTime(String pubDate) {
+
+        try {
+
+            //1. Date로 type변경
+            //"Tue, 28 Mar 2023 01:31:00 +0000"
+            //변경하는 법
+            //https://stackoverflow.com/questions/32911677/what-is-date-format-of-eee-dd-mmm-yyyy-hhmmssz
+            //https://www.tabnine.com/code/java/methods/java.text.DateFormat/parse
+            // 패턴 리스트
+            //http://www.java2s.com/ref/java/java-datetimeformatter-patterns.html
+            // +0000 관련(서머타임 없는 걸로 아는데 1시간이 적용이 안되어서 문제되면 고쳐야함)
+            // https://stackoverflow.com/questions/12305826/what-does-0000-mean-in-the-context-of-a-date-returned-by-the-twitter-api
+            SimpleDateFormat curFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ssZ", Locale.UK);
+            Date pubDateTime = curFormater.parse(pubDate);
+
+            //2. 현 시각을 구함
+            Date today = new Date();
+
+            //3. 현시각 - (기사가 올라간 시각) -> 초단위
+            //https://coding-factory.tistory.com/737 : Date타입 연산법
+            long sec = (today.getTime() - pubDateTime.getTime()) / 1000;
 
 
-        //1. Date로 type변경
-        //"Tue, 28 Mar 2023 01:31:00 +0000"
-        //변경하는 법
-        //https://stackoverflow.com/questions/32911677/what-is-date-format-of-eee-dd-mmm-yyyy-hhmmssz
-        //https://www.tabnine.com/code/java/methods/java.text.DateFormat/parse
-        // 패턴 리스트
-        //http://www.java2s.com/ref/java/java-datetimeformatter-patterns.html
-        // +0000 관련(서머타임 없는 걸로 아는데 1시간이 적용이 안되어서 문제되면 고쳐야함)
-        // https://stackoverflow.com/questions/12305826/what-does-0000-mean-in-the-context-of-a-date-returned-by-the-twitter-api
-        SimpleDateFormat curFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ssZ",Locale.UK);
-        Date pubDateTime = curFormater.parse(pubDate);
+            return sec;
 
-        //2. 현 시각을 구함
-        Date today = new Date();
-
-        //3. 현시각 - (기사가 올라간 시각) -> 초단위
-        //https://coding-factory.tistory.com/737 : Date타입 연산법
-        long sec = (today.getTime() - pubDateTime.getTime())/1000;
+        }catch(ParseException e){
+            throw new ServiceException(ErrorCode.API_SEVER_ERROR_RAPID_YHFINANCE);//parse에러도 결과를 보여줄 수 없으므로 그냥 에러 처리
+        }
 
 
-        return sec;
     }
 
 
@@ -303,6 +391,8 @@ public class StockDetailService {
         String mins = lang.equals("ko")? "분 전" : "minutes ago";
         String hours = lang.equals("ko")? "시간 전" : "hours ago";
         String days = lang.equals("ko")? "일 전" : "days ago";
+        String months = lang.equals("ko")? "달 전" : "months ago";
+        String years = lang.equals("ko")? "년 전" : "years ago";
 
 
 
@@ -317,6 +407,25 @@ public class StockDetailService {
             if(hour>=24){ //하루를 넘어가는 범위 -> 일 단위로 보여야함
 
                 long day = second/(24*60*60);
+
+                if(day>=30){//30일을 넘어가면 -> 달 단위로...
+
+                    long month = day/30;
+
+
+                    if(month>=12){
+
+                        long year = month/12;
+
+                        return year + years;
+
+                    }
+
+
+                    return month+ months;
+
+                }
+
 
                 return day + days;
 
@@ -335,9 +444,22 @@ public class StockDetailService {
 
 
 
+    public BanklassResponseEntity getChartData(String range, String symbol){
 
+        String interval = "";
 
-    public BanklassResponseEntity getChartData(String interval, String range, String symbol){
+        if(range.equals("1d")){
+            interval = "15m";
+        }else if(range.equals("5d")){
+            interval = "15m";
+        }else if(range.equals("3mo")){
+            interval = "1d";
+        }else if(range.equals("1y")){
+            interval = "1wk";
+        }else{ //5y라고 생각
+            interval = "1mo";
+        }
+
 
         FinanceSpark financeSpark = yhFinanceApiService.getFinanceSpark(interval,range, symbol);
 
@@ -351,17 +473,20 @@ public class StockDetailService {
         int maxPrice = 0;
         for(int i=0; i<timestamp.size(); i++){
 
-            int v = (int) Math.ceil(close.get(i));
+            if(close.get(i) != null) { //null인 경우가 있으면 skip해버리기
 
-            if(v>maxPrice) maxPrice=v;
-            if(v<minPrice) minPrice=v;
+                int v = (int) Math.ceil(close.get(i));
 
-            priceData.add(
-                    PriceData.builder()
-                            .time(timestamp.get(i))
-                            .price(close.get(i))
-                            .build()
-            );
+                if (v > maxPrice) maxPrice = v;
+                if (v < minPrice) minPrice = v;
+
+                priceData.add(
+                        PriceData.builder()
+                                .time(timestamp.get(i))
+                                .price(close.get(i))
+                                .build()
+                );
+            }
 
         }
 
@@ -407,5 +532,119 @@ public class StockDetailService {
 
     }
 
+
+    public BanklassResponseEntity getCompanyInfo(String symbol){
+
+
+        AssetProfile a = yhFinanceApiService.getAssetProfile(symbol);
+
+
+        CompanyInfoResponseDto companyInfoResponseDto = CompanyInfoResponseDto.builder()
+                .address(a.getAddress1()+", "+a.getCity()+", "+a.getState()+" "+a.getZip())
+                .country(a.getCountry())
+                .phoneNumber(a.getPhone())
+                .website(a.getWebsite())
+                .industry(a.getIndustry())
+                .sector(a.getSector())
+                .industry(a.getIndustry())
+                .employees(a.getFullTimeEmployees())
+                .ceo(a.getCompanyOfficers().get(0).getName())
+                .businessSummary(a.getLongBusinessSummary())
+                .build();
+
+        return responseService.successHandler(
+                companyInfoResponseDto
+        );
+
+
+    }
+
+
+    public BanklassResponseEntity getStockInfo(String symbol){
+
+
+        FinanceQuote f = yhFinanceApiService.getFinanceQuote(symbol);
+
+
+
+        return responseService.successHandler(
+                StockInfoResponseDto.builder()
+                        .exchangeName(f.getFullExchangeName())
+                        .fiftyTwoWeekHigh(f.getFiftyTwoWeekHigh())
+                        .fiftyTwoWeekLow(f.getFiftyTwoWeekLow())
+                        .fiftyTwoWeekHighChange(f.getFiftyTwoWeekHighChange())
+                        .fiftyTwoWeekLowChange(f.getFiftyTwoWeekLowChange())
+                        .epsCurrentYear(f.getEpsCurrentYear())
+                        .typeDisp(f.getQuoteType())
+                        .region(f.getRegion())
+                        .financialCurrency(f.getFinancialCurrency())
+                        .averageDailyVolume3Month(f.getAverageDailyVolume3Month())
+                        .averageDailyVolume10Day(f.getAverageDailyVolume10Day())
+                        .build()
+        );
+    }
+
+
+
+    public BanklassResponseEntity getWatchedList(int count, String scrIds){
+
+
+        List<FinanceQuote> watchedList = yhFinanceApiService.getWatchList(count, scrIds);
+
+        List<WatchedStockInfo> resultList = new ArrayList<>();
+
+
+        for(int i=0; i<watchedList.size(); i++){
+
+            FinanceQuote f = watchedList.get(i);
+
+            //display name없는 종목들이 가끔 있음
+            String title = f.getDisplayName();
+            if(title == null){
+                title = f.getShortName();
+            }
+            if(title==null){
+                title = f.getLongName();
+            }
+
+            double price = Math.round(f.getRegularMarketPrice()*100)/100.0;
+            double changePrice = Math.round(f.getRegularMarketChange()*100)/100.0;
+            double changePercent = Math.round(f.getRegularMarketChangePercent()*10)/10.0;
+
+            //0인경우 반영하지 않음
+            if(price == 0){
+                i--;
+                continue;
+            }
+
+            resultList.add(
+
+                    WatchedStockInfo.builder()
+                            .symbol(f.getSymbol())
+                            .stockTitle(title)
+                            .rank(i+1)
+                            .price(price)
+                            .changePercent(changePercent)
+                            .changePrice(changePrice)
+                            .build()
+
+
+            );
+
+
+        }
+
+        return responseService.successHandler(
+
+                WatchedListResponseDto.builder()
+                        .totalData(resultList.size())
+                        .watchedStockInfoList(resultList)
+                        .build()
+
+        );
+
+
+
+    }
 
 }

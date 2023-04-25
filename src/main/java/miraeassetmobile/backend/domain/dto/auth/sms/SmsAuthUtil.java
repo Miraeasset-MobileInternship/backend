@@ -20,6 +20,7 @@ public class SmsAuthUtil {
     private String fromNumber;
 
 
+    //second단위로 변경
     private long expiration = 60 * 3;
 
 }

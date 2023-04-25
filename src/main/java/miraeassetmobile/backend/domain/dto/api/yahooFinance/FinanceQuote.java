@@ -1,7 +1,6 @@
 package miraeassetmobile.backend.domain.dto.api.yahooFinance;
 
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,9 +18,9 @@ public class FinanceQuote {
     @Nullable
     int askSize;
     @Nullable
-    Long averageDailyVolume10Day;
+    Long averageDailyVolume10Day = 0L;
     @Nullable
-    Long averageDailyVolume3Month;
+    Long averageDailyVolume3Month = 0L;
     @Nullable
     String averageAnalystRating;
     @Nullable
@@ -68,27 +67,27 @@ public class FinanceQuote {
     @Nullable
     double fiftyDayAverageChangePercent;
     @Nullable
-    double fiftyTwoWeekHigh;
+    double fiftyTwoWeekHigh = 0;
     @Nullable
-    double fiftyTwoWeekHighChange;
+    double fiftyTwoWeekHighChange = 0;
     @Nullable
-    double fiftyTwoWeekHighChangePercent;
+    double fiftyTwoWeekHighChangePercent = 0;
     @Nullable
-    double fiftyTwoWeekLow;
+    double fiftyTwoWeekLow =0;
     @Nullable
-    double fiftyTwoWeekLowChange;
+    double fiftyTwoWeekLowChange =0;
     @Nullable
-    double fiftyTwoWeekLowChangePercent;
+    double fiftyTwoWeekLowChangePercent =0;
     @Nullable
     String fiftyTwoWeekRange;
     @Nullable
-    String financialCurrency;
+    String financialCurrency ="-";
     @Nullable
     Long firstTradeDateMilliseconds;
     @Nullable
     double forwardPE;
     @Nullable
-    String fullExchangeName;
+    String fullExchangeName ="-";
     @Nullable
     Long gmtOffSetMilliseconds;
     @Nullable
@@ -112,7 +111,7 @@ public class FinanceQuote {
     @Nullable
     Long postMarketTime;
     @Nullable
-    double priceEpsCurrentYear;
+    double priceEpsCurrentYear = 0;
     @Nullable
     int priceHint;
     @Nullable
@@ -124,7 +123,7 @@ public class FinanceQuote {
     @Nullable
     String typeDisp;
     @Nullable
-    String region;
+    String region = "-";
     @Nullable
     double regularMarketChange;
     @Nullable
@@ -251,6 +250,10 @@ public class FinanceQuote {
 
     @Nullable
     Long expireDate;
+
+
+    @Nullable
+    Long netAssets;
 
 }
 

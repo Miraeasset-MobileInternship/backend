@@ -9,8 +9,8 @@ import lombok.Getter;
 public class RecommendTrendGraphData {
 
     String id;
-    String label;
     int value;
-    String color; //hsl(124, 70%, 50%) 형식
+    String color;
+
 
 }

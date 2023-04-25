@@ -35,7 +35,7 @@ public class StockController {
 
 
     StockController(NaverTranslatorApiService naverTranslatorApiService, YhFinanceRapidApiService yhFinanceRapidApiService, StockService stockService, YhFinanceApiService yhFinanceApiService){
-        this.stockService=stockService;
+        this.stockService = stockService;
         this.yhFinanceApiService = yhFinanceApiService;
         this.yhFinanceRapidApiService = yhFinanceRapidApiService;
         this.naverTranslatorApiService=naverTranslatorApiService;
@@ -50,6 +50,7 @@ public class StockController {
                     @ApiResponse(responseCode = "E901", description = "학생이 보유하지 않은 주식종목을 조회한 경우", content = @Content),
                     @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
+                    @ApiResponse(responseCode = "E905", description = "존재하지 않는 종목이거나 서비스 할 수 없는 종목(가격이 0인경우)", content = @Content),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getStudentAccountInfo(@PathVariable(value = "student_id") Long studentId){
@@ -73,6 +74,7 @@ public class StockController {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = OwnStockInfoResponseDto.class))),
                     @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
+                    @ApiResponse(responseCode = "E905", description = "존재하지 않는 종목이거나 서비스 할 수 없는 종목(가격이 0인경우)", content = @Content),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getOwnedStockList(@PathVariable(value = "student_id") Long studentId,
@@ -94,6 +96,12 @@ public class StockController {
     }
 
 
+    @GetMapping("/search-stocks-list")
+    public ResponseEntity getSearchAutoCompleteList(){
+        return ResponseEntity.ok(stockService.getSearchAutoCompleteList()); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
+    }
+
+
     @GetMapping("/news/market")
 //    @Operation(description = "경제 뉴스 전체")
     @Operation(summary = "경제 뉴스 전체", description = "경제 뉴스 전체",
@@ -101,12 +109,11 @@ public class StockController {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = MarketNewsResponseDto.class))),
                     @ApiResponse(responseCode = "E504", description = "경제 뉴스 API 서버에서 발생한 에러", content = @Content),
                     @ApiResponse(responseCode = "E502", description = "번역 과정에서 naver api에서 발생한 에러", content = @Content),
-                    @ApiResponse(responseCode = "E50X", description = "parseException 업데이트 예정", content = @Content),
+//                    @ApiResponse(responseCode = "E50X", description = "parseException 업데이트 예정", content = @Content),
             })
     public ResponseEntity<BanklassResponseEntity> getMarketNews(@RequestParam(defaultValue = "en") String lang) throws ParseException {
         return ResponseEntity.ok(stockService.getMarketNews(lang)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
-
 
 
     @GetMapping("/check-selling")
@@ -118,9 +125,10 @@ public class StockController {
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content),
                     @ApiResponse(responseCode = "E503", description = "주식 API 서버에서 발생한 에러", content = @Content),
             })
-    public ResponseEntity<BanklassResponseEntity> checkBeforeSelling(@RequestParam String stockId, @RequestParam Long studentId) {
+    public ResponseEntity<BanklassResponseEntity> getSellAmount(@RequestParam String stockId, @RequestParam Long studentId) {
         return ResponseEntity.ok(stockService.checkBeforeSelling(stockId,studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
+
 
 
     @PostMapping("/sell")
@@ -136,7 +144,6 @@ public class StockController {
     public ResponseEntity<BanklassResponseEntity> getSell(@RequestBody @Valid StockSellingRequestDto stockSellingRequestDto) {
         return ResponseEntity.ok(stockService.sellshares(stockSellingRequestDto)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
-
 
     @GetMapping("/check-buying")
     @Operation(summary = "매수 가격 체크", description = "매수 가격 및 필요정보 체크",
@@ -163,88 +170,6 @@ public class StockController {
     public ResponseEntity<BanklassResponseEntity> buyStock(@RequestBody @Valid StockBuyingRequestDto stockBuyingRequestDto) {
         return ResponseEntity.ok(stockService.buyShares(stockBuyingRequestDto)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
     }
-
-
-
-
-
-//    @GetMapping("/check-price")
-//    @Operation(summary = "매수 가격 체크", description = "매도할 수 있는 주식의 수량 체크",
-//            responses = {
-//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SellingStockAmountResponseDto.class))),
-//                    @ApiResponse(responseCode = "E901", description = "학생이 보유하지 않은 주식종목을 조회한 경우", content = @Content),
-//                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
-//            })
-//    public ResponseEntity<BanklassResponseEntity> getPrice(@RequestParam String stockId) {
-//        return ResponseEntity.ok(stockService.checkPriceByStockId(stockId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-
-
-
-//    @PostMapping("/sell-stock")
-//    @Operation(summary = "매도 수량 체크", description = "매도할 수 있는 주식의 수량 체크",
-//            responses = {
-//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = .class))),
-//                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
-//            })
-//    public ResponseEntity<BanklassResponseEntity> BuyStock(@RequestBody @Valid StockBuyingRequestDto stockBuyingRequestDto) {
-//        return ResponseEntity.ok(stockService.buyStock(stockBuyingRequestDto)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-//
-//
-//    @PostMapping("/buy-stock")
-//    @Operation(summary = "매도 수량 체크", description = "매도할 수 있는 주식의 수량 체크",
-//            responses = {
-//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = .class))),
-//                    @ApiResponse(responseCode = "E402", description = "존재하지 않는 학생", content = @Content),
-//            })
-//    public ResponseEntity<BanklassResponseEntity> BuyStock(@RequestBody @Valid StockBuyingRequestDto stockBuyingRequestDto) {
-//        return ResponseEntity.ok(stockService.buyStock(stockBuyingRequestDto)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-
-//    @GetMapping("/student/{student_id}")
-//    @Operation(description = "보유 주식 종목별 정보, 학생 - 내 주식페이지 하단 보유 주식리스트 부분")
-//    public ResponseEntity<List<StudentStockInfoResponseDto>> getStudentAccountInfo(@PathVariable(value = "student_id") Long studentId){
-//        return ResponseEntity.ok(stockService.getStudentStockList(studentId)); //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-
-
-
-//    @GetMapping("/get/trending")
-//    @Operation(description = "야후 파이낸스 테스트용")
-//    public ResponseEntity<TrendingByRegion> trending(){
-//
-//        return yhFinanceApiService.getTrendingByRegion();
-//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-
-
-
-//    @GetMapping("/get/realtime")
-//    @Operation(description = "야후 파이낸스 테스트용")
-//    public void realtimeprice(@RequestParam String symbol) throws IOException {
-//
-//        yahooFinanceApiCallService.getRealtimePrice(symbol);
-//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-//
-//
-//    @GetMapping("/get/chart")
-//    @Operation(description = "야후 파이낸스 테스트용")
-//    public void realtimeprice(@RequestParam String period, @RequestParam String symbol) throws IOException {
-//
-//        yahooFinanceApiCallService.getChart(period,symbol);
-//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
-//
-//
-//    @GetMapping("/get/autocomplete")
-//    @Operation(description = "야후 파이낸스 테스트용")
-//    public void realtimeprice(@RequestParam String region, @RequestParam String lang, @RequestParam String query) throws IOException {
-//
-//        yahooFinanceApiCallService.getAutocomplete(region, lang, query);
-//        //api 에서는 1페이지 부턴데 우리는 0페이지부터로 합의함
-//    }
 
 
 }

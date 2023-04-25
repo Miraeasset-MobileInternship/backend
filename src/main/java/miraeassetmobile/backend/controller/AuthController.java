@@ -6,6 +6,7 @@ package miraeassetmobile.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,6 +16,7 @@ import miraeassetmobile.backend.domain.dto.auth.SignInRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.SignInResponseDto;
 import miraeassetmobile.backend.domain.dto.auth.SignUpRequestDto;
 import miraeassetmobile.backend.domain.dto.auth.sms.SendCodeRequestDto;
+import miraeassetmobile.backend.domain.dto.auth.token.TokenDto;
 import miraeassetmobile.backend.service.auth.AuthService;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +31,14 @@ public class AuthController {
 
     AuthService authService;
 
+
     public AuthController(AuthService authService){
         this.authService = authService;
     }
 
 
 
-
-
     @PostMapping("/start-signin")
-//    @Operation(description = "시작하기/로그인 - 가입진행된 유저일 경우(바로 로그인됨), 가입안된 유저의 경우(303 : 가입진행창으로 넘어가게)")
     @Operation(summary = "로그인, 시작하기", description = "로그인기능",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SignInResponseDto.class))),
@@ -81,7 +81,6 @@ public class AuthController {
     }
 
 
-
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "",
             responses = {
@@ -110,14 +109,15 @@ public class AuthController {
 
             })
     public ResponseEntity reissue(HttpServletRequest request,
-                                            @RequestHeader("refreshToken") String refreshToken) {
+                                  @RequestHeader("refreshToken") String refreshToken) {
         return ResponseEntity.ok(authService.reissue(request, refreshToken));
     }
 
 
 
 
-    // coolSMS 구현 로직 연결
+
+
     // coolSMS 구현 로직 연결
     @PostMapping("/sendSMS")
     @Operation(summary = "핸드폰 문자인증번호 받기", description = "",
@@ -130,6 +130,64 @@ public class AuthController {
         return ResponseEntity.ok(authService.sendMessage(sendCodeRequestDto));
     }
 
+
+
+    //로그인 로그아웃 - withoutClassInfo (프론트 요청으로 제작 but 사용되지 않음)
+//    @PostMapping("/start-signin-without-classinfo")
+////    @Operation(description = "시작하기/로그인 - 가입진행된 유저일 경우(바로 로그인됨), 가입안된 유저의 경우(303 : 가입진행창으로 넘어가게)")
+//    @Operation(summary = "로그인, 시작하기", description = "로그인기능",
+//            responses = {
+//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SignInResponseDtoV2.class))),
+//                    @ApiResponse(responseCode = "E101", description = "핸드폰 인증번호 맞지 않음", content = @Content ),
+//                    @ApiResponse(responseCode = "E306", description = "회원가입이 진행되지 않은 유저(이름 입력페이지로 넘어가 유저 정보로 가입진행되어야 함)", content = @Content ),
+//                    //로그인에서 발생할 수 있는 에러
+//                    @ApiResponse(responseCode = "E303", description = "권한이 없는 사용자", content = @Content ),
+//                    @ApiResponse(responseCode = "E301", description = "인증이 되지 않은 사용자", content = @Content ),
+//                    @ApiResponse(responseCode = "E809", description = "레디스에 토큰 저장과정에서의 에러(로그인 통합 에러)", content = @Content ),
+//                    @ApiResponse(responseCode = "E302", description = "올바르지 않은 핸드폰 번호(DB에 해당 번호가 없을 때)", content = @Content ),
+//                    //로그인 이후 반환 정보
+//                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+//                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+//            })
+//    public ResponseEntity getStartWithSignInWithoutClassInfo(@RequestBody @Valid SignInRequestDto signInRequestDto){
+//        return ResponseEntity.ok(authService.getStartWithoutClassInfo(signInRequestDto));
+//    }
+
+
+//    @PostMapping("/start-signup-without-classinfo")
+//    @Operation(summary = "회원가입 및 자동로그인", description = "",
+//            responses = {
+//                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(schema = @Schema(implementation = SignInResponseDtoV2.class))),
+//                    //회원가입 발생 에러
+//                    @ApiResponse(responseCode = "E305", description = "이미 해당 번호로 가입된 유저가 있음", content = @Content ),
+//                    @ApiResponse(responseCode = "E810", description = "회원 db저장 과정에서의 에러-회원가입 통합 에러", content = @Content ),
+//                    //로그인에서 발생할 수 있는 에러
+//                    @ApiResponse(responseCode = "E303", description = "권한이 없는 사용자", content = @Content ),
+//                    @ApiResponse(responseCode = "E301", description = "인증이 되지 않은 사용자", content = @Content ),
+//                    @ApiResponse(responseCode = "E809", description = "레디스에 토큰 저장과정에서의 에러(로그인 통합 에러)", content = @Content ),
+//                    @ApiResponse(responseCode = "E302", description = "올바르지 않은 핸드폰 번호(DB에 해당 번호가 없을 때)", content = @Content ),
+//
+//                    //로그인 이후 반환 정보
+//                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+//                    @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
+//            })
+//    public ResponseEntity getStartWithSignUpWithoutClassInfo(@RequestBody @Valid SignUpRequestDto signUpRequestDto){
+//        return ResponseEntity.ok(authService.startWithSignUpWithoutClassInfo(signUpRequestDto));
+//
+//    }
+
+
+
+    @GetMapping("/{user_id}/get-token")
+//    @Operation(description = "속해 있는 모든 학급 리스트를 반환 - 학생용")
+    @Operation(summary = "accessToken얻기", description = "userId를 이용해 accessToken얻기",
+            responses = {
+                    @ApiResponse(responseCode = "E000", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TokenDto.class)))),
+                    @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
+            })
+    public ResponseEntity<BanklassResponseEntity> getAccessToken(@PathVariable(value = "user_id") Long userId){
+        return ResponseEntity.ok(authService.loginForWebView(userId));
+    }
 
 
 

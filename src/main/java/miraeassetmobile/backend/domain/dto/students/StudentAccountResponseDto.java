@@ -23,6 +23,4 @@ public class StudentAccountResponseDto {
     int studentNumber;
 
     String schoolName;
-
-
 }

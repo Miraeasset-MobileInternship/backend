@@ -1,36 +1,38 @@
 api:
   data-go-kr:
-    key: {key}
-    url: {url}
+    key:
+    url:
   yahoo-finance:
-    key: {key}
-    yh-url: {url}
-    sa-url: {url}
+    key:
+    yh-url: https://yfapi.net
+    sa-url: https://alpha.financeapi.net
   rapid-api-yahoo-finance:
-    key: {key}
-    host: {host}
-    url: {url}
+    key:
+    host: mboum-finance.p.rapidapi.com
+    host-symbol: yahoo-finance15.p.rapidapi.com
+    url: https://mboum-finance.p.rapidapi.com
   naver-translator:
-    client-id: {client_id}
-    client-secret: {client_secret}
-    url: {url}
+    client-id:
+    client-secret:
+    url: https://openapi.naver.com
 
 jwt:
-  key: {key}
+  key:
 
 coolsms:
-  api-key: {key}
-  api-secret: {secret}
-  from-number: {phone_number}
+  api-key:
+  api-secret:
+  from-number:
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://{host}:{port}/{schema}?serverTimezone=Asia/Seoul
-    username: {username}
-    password: {password}
+    url: jdbc:mysql://{db}:{port}/{schema}?serverTimezone=Asia/Seoul
+    username:
+    password:
   redis:
-    host: {host}
-    port: {port}
+    host:
+    port:
   cache:
     type: redis
+

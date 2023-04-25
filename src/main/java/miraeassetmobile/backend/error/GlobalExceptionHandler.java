@@ -11,11 +11,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.ArrayList;
 
+import static miraeassetmobile.backend.error.exception.ErrorCode.SERVER_ERROR;
+
 @Slf4j
 @RestControllerAdvice // 모든 RestController error handling
+//Filter(JWT), Interceptor 단에서 발생하는 Exception을 처리할 수 없어 JWT Exception에는 부적합
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
+
+    //v2
     @ExceptionHandler(value = {ServiceException.class })
     public ResponseEntity<BanklassResponseEntity> handleException(ServiceException ue) {
         log.error("Exception : ", ue.getErrorCode().getDetail());
@@ -35,38 +40,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
-//    @ExceptionHandler(value = {NotExistException.class })
-//    public ResponseEntity<ErrorResponse> handleNotExistException(NotExistException ue) {
-//        log.error("handleNotExistException throw Exception : {}", ue.getErrorCode());
-//        return ErrorResponse.toResponseEntity(ue.getErrorCode());
-//    }
-//
-//
-//    @ExceptionHandler(value = {AlreadyExistException.class })
-//    public ResponseEntity<ErrorResponse> handleAlreadyExistException(AlreadyExistException ue) {
-//        log.error("handleAlreadyExistException throw Exception : {}", ue.getErrorCode());
-//        return ErrorResponse.toResponseEntity(ue.getErrorCode());
-//    }
-//
-//
-//    @ExceptionHandler(value = {ExternalErrorException.class })
-//    public ResponseEntity<ErrorResponse> handleExternalErrorException(ExternalErrorException ue) {
-//        log.error("handleExternalErrorException throw Exception : {}", ue.getErrorCode());
-//        return ErrorResponse.toResponseEntity(ue.getErrorCode());
-//    }
-//
-//
-//    @ExceptionHandler(value = {CustomLoginException.class })
-//    public ResponseEntity<ErrorResponse> handleCustomLoginException(CustomLoginException ue) {
-//        log.error("handleExternalErrorException throw Exception : {}", ue.getErrorCode());
-//        return ErrorResponse.toResponseEntity(ue.getErrorCode());
-//    }
 
 
-//    @ExceptionHandler(value = { Exception.class })
-//    public ResponseEntity<ErrorResponse> handleException() {
-//        log.error("Exception throw Exception : {}", SERVER_ERROR.getDetail());
+
+    @ExceptionHandler(value = { Exception.class })
+    public ResponseEntity<BanklassResponseEntity> handleException() {
+        log.error("Exception throw Exception : {}", SERVER_ERROR.getDetail());
 //        return ErrorResponse.toResponseEntity(SERVER_ERROR);
-//    }
+
+        return ResponseEntity.ok(
+                BanklassResponseEntity.builder()
+                        .status(
+                                StatusResponse.builder()
+                                        .status("E500")
+                                        .message("서버에러발생")
+                                        .build()
+                        )
+                        .result(
+                                new ArrayList<>()
+                        )
+                        .build()
+        );
+
+    }
+
 
 }

@@ -15,6 +15,7 @@ import miraeassetmobile.backend.error.exception.ErrorCode;
 import miraeassetmobile.backend.error.exception.ServiceException;
 import miraeassetmobile.backend.service.ResponseService;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,10 @@ public class YhFinanceRapidApiService {
 
 
     YhFinanceRapidApiUtils yhFinanceRapidApiUtils;
-    ResponseService responseService;
 
 
-    YhFinanceRapidApiService(YhFinanceRapidApiUtils yhFinanceRapidApiUtils, ResponseService responseService){
+    YhFinanceRapidApiService(YhFinanceRapidApiUtils yhFinanceRapidApiUtils){
         this.yhFinanceRapidApiUtils = yhFinanceRapidApiUtils;
-        this.responseService = responseService;
     }
 
 
@@ -50,16 +49,14 @@ public class YhFinanceRapidApiService {
 
         try {
 
-            String requestUrl = yhFinanceRapidApiUtils.getBaseUrl() + "/ne/news";
-
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(requestUrl))
+                    .uri(URI.create("https://yahoo-finance15.p.rapidapi.com/api/yahoo/ne/news"))
                     .header("X-RapidAPI-Key", yhFinanceRapidApiUtils.getApiKey())
-                    .header("X-RapidAPI-Host", yhFinanceRapidApiUtils.getHost())
+                    .header("X-RapidAPI-Host", yhFinanceRapidApiUtils.getHostSymbol())
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
             HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-
+//            System.out.println(response.body());
 
             JSONArray jsonArray = new JSONArray(response.body());
 
@@ -112,7 +109,7 @@ public class YhFinanceRapidApiService {
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
             HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.body());
+//            System.out.println(response.body());
 
 
             JSONObject jsonObject = new JSONObject(response.body());
@@ -144,7 +141,11 @@ public class YhFinanceRapidApiService {
 
             return stockNewsList;
 
-        } catch (Exception e) {
+        } catch (JSONException e) { //json exception이 발생하면 기사가 존재하지 않는 것임
+            e.printStackTrace();
+            throw new ServiceException(ErrorCode.NOT_PROVIDED_INFO_STOCK);
+        }
+        catch (Exception e) {
             e.printStackTrace();
             throw new ServiceException(ErrorCode.API_SEVER_ERROR_RAPID_YHFINANCE);
         }
@@ -152,6 +153,11 @@ public class YhFinanceRapidApiService {
 
 
     }
+
+
+
+
+
 
 }
 

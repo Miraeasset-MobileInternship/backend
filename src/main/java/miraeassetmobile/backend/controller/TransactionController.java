@@ -30,8 +30,6 @@ public class TransactionController {
 
 
 
-
-
     //
     @GetMapping("/student/{student_id}")
     @Operation(summary = "학생 거래 내역 조회", description = "해당 학생의 계좌 거래 내역을 조회(10개, 최신순, 입금(type=deposit),출금(type=withdraw) 구분), 학생 - 홈 화면 거래 내역",
@@ -58,8 +56,8 @@ public class TransactionController {
                     @ApiResponse(responseCode = "E410", description = "존재하지 않는 카테고리", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> getClassTransactionData(@PathVariable(value = "class_id") Long classId,
-                                                                               @RequestParam(defaultValue = "all") String type,
-                                                                               @RequestParam(defaultValue = "0") int page){
+                                                                          @RequestParam(defaultValue = "all") String type,
+                                                                          @RequestParam(defaultValue = "0") int page){
 
         return ResponseEntity.ok(transactionService.getClassTransactionDataWithType(classId,page,type));
 
@@ -186,11 +184,12 @@ public class TransactionController {
                     @ApiResponse(responseCode = "E407", description = "유효/존재하지 않는 transaction_id", content = @Content ),
                     @ApiResponse(responseCode = "E404", description = "유효/존재하지 않는 학급", content = @Content ),
                     @ApiResponse(responseCode = "E410", description = "유효/존재하지 않는 카테고리", content = @Content ),
+                    @ApiResponse(responseCode = "E409", description = "유효/존재하지 않는 프로필 이미지", content = @Content ),
                     @ApiResponse(responseCode = "E402", description = "유효/존재하지 학생(매니저/거래 학생)", content = @Content ),
                     @ApiResponse(responseCode = "E405", description = "유효/존재하지 직업(매니저/거래 학생의 직업)", content = @Content ),
+
             })
     public ResponseEntity<BanklassResponseEntity> getClassTransactionDetail(@PathVariable(value = "transaction_id") Long transactionId){
         return ResponseEntity.ok(transactionService.getClassTransactionDetail(transactionId));
     }
-
 }

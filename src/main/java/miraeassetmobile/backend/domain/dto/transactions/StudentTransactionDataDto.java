@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -24,6 +23,8 @@ public class StudentTransactionDataDto {
     boolean isDeposit; //입금:true / 출금:false
 
     int transactionMoney; //거래금액
+
+
 
 
 

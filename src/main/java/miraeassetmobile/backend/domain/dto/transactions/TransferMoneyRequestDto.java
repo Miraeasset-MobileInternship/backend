@@ -1,11 +1,14 @@
 package miraeassetmobile.backend.domain.dto.transactions;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.web.bind.annotation.RequestBody;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class TransferMoneyRequestDto {
 
 

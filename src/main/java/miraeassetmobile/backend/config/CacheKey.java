@@ -13,4 +13,8 @@ public class CacheKey {
     public static final String PhoneNumberCode = "PhoneNumberCode";
 
     public static final String ClassInvitationCode = "ClassInvitationCode";
+
+    public static final String YhFinanceErrorLog = "YhFinanceErrorLog";
+
+    public static final String SearchQuery = "SearchQuery";
 }

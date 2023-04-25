@@ -123,28 +123,6 @@ public class TokenProvider {
     // 토큰 정보 검증
     public boolean validateToken(String token) {
 
-        /*
-        error log:
-
-        IllegalArgumentException 은 정상적으로 serviceException이 작동하지만
-        나머지는 breakpoint : null 로 에러였다
-        -> 원인 : 나머지 4개는 RuntimeException(serviceException extends RuntimeException)
-        이 아니었기 때문..
-
-        우리는 ErrorCode를 사용해야하기 때문에 마찬가지로
-        JwtException 을 extend한 class를 하나 설정 한 뒤 해결하였다
-
-        참고로 RuntimeException은 filter, Intercept로 발생한 에러는 잡아내지 못한다
-
-
-        1. JWTCustomException생성
-        2. JWTException이 발생하는 구간 try-catch로 잡기
-        3. catch에서 JwtException이 발생하면 catch내에 response생성 함수로 보내기
-        4. response 생성 함수를 통해 같은 형식으로 내보내기
-
-         */
-
-
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;

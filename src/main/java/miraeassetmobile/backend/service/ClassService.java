@@ -28,17 +28,15 @@ public class ClassService {
 
 
 
-
     //레포
     ClassRepository classRepository;
     UserInfoRepository userInfoRepository;
-    StudentRepository studentRepository;
     ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository;
     ResponseService responseService;
-
+    StudentRepository studentRepository;
 
     ClassService(StudentRepository studentRepository, ResponseService responseService,ClassInvitationCodeRedisRepository classInvitationCodeRedisRepository, UserInfoRepository userInfoRepository, ClassRepository classRepository){
-        this.responseService=responseService;
+        this.responseService = responseService;
         this.classRepository = classRepository;
         this.userInfoRepository=userInfoRepository;
         this.classInvitationCodeRedisRepository =classInvitationCodeRedisRepository;
@@ -57,16 +55,16 @@ public class ClassService {
 
         return (
                 responseService.successHandler(
-                ClassAccountResponseDto.builder()
-                .classId(c.getId())
-                .classTitle(c.getTitle())
-                .classCurrency(c.getCurrency())
-                .classMoney(c.getMoney())
-                .teacherName(teacher.getUserName())
-                .classGrade(c.getGrade())
-                .classNumber(c.getClassNum())
-                .schoolName(c.getSchoolName())
-                .build())
+                        ClassAccountResponseDto.builder()
+                                .classId(c.getId())
+                                .classTitle(c.getTitle())
+                                .classCurrency(c.getCurrency())
+                                .classMoney(c.getMoney())
+                                .teacherName(teacher.getUserName())
+                                .classGrade(c.getGrade())
+                                .classNumber(c.getClassNum())
+                                .schoolName(c.getSchoolName())
+                                .build())
         );
 
     }
@@ -94,25 +92,25 @@ public class ClassService {
             Classes c = classRepository.save(newClass);
 
 
-        //초대 코드 생성
+            //초대 코드 생성
 
-        long expiration = 60 * 60 * 24 * 7; //유효기간 일주일
+            long expiration = 60 * 60 * 24 * 7; //유효기간 일주일
 
-        ClassInvitationCode classCode = ClassInvitationCode.builder()
-                .id(c.getId().toString()) //새로 생성된 클래스
-                .invitationCode(createInvitationCode())
-                .expiration(expiration)
-                .build();
+            ClassInvitationCode classCode = ClassInvitationCode.builder()
+                    .id(c.getId().toString()) //새로 생성된 클래스
+                    .invitationCode(createInvitationCode())
+                    .expiration(expiration)
+                    .build();
 
-        //redis에 유효기간 일주일로 저장
-        classInvitationCodeRedisRepository.save(classCode);
+            //redis에 유효기간 일주일로 저장
+            classInvitationCodeRedisRepository.save(classCode);
 
 
-        return responseService.successHandler(
-                CreatedUriDto.builder()
-                        .url(responseService.createUri(c.getId(), UriTypes.CLASS))
-                        .status("created")
-                        .build()
+            return responseService.successHandler(
+                    CreatedUriDto.builder()
+                            .url(responseService.createUri(c.getId(), UriTypes.CLASS))
+                            .status("created")
+                            .build()
             ); //반 신규 생성
 
         }catch(Exception e){ //저장 과정에서 에러난 경우
@@ -133,7 +131,7 @@ public class ClassService {
         Random random = new Random();
 
         StringBuffer code = new StringBuffer();
-        for (int i = 0; i < 15; i++) { //15자리암호
+        for (int i = 0; i < 8; i++) { //15자리암호
             code.append(numList.charAt(random.nextInt(alphaNumLength)));
         }
 
@@ -153,10 +151,10 @@ public class ClassService {
 
         return responseService.successHandler(
                 ClassInvitationCodeResponseDto.builder()
-                .classId(classId)
-                .invitationCode(classInvitationCode.getInvitationCode())
-                .build()
-                );
+                        .classId(classId)
+                        .invitationCode(classInvitationCode.getInvitationCode())
+                        .build()
+        );
     }
 
 
@@ -206,16 +204,17 @@ public class ClassService {
 
         return responseService.successHandler(
                 ClassValidInvitationResponseDto.builder()
-                .classId(c.getId())
-                .title(c.getTitle())
-                .schoolName(c.getSchoolName())
-                .grade(c.getGrade())
-                .classNumber(c.getClassNum())
-                .teacherName(teacher.getUserName())
-                .build()
+                        .classId(c.getId())
+                        .title(c.getTitle())
+                        .schoolName(c.getSchoolName())
+                        .grade(c.getGrade())
+                        .classNumber(c.getClassNum())
+                        .teacherName(teacher.getUserName())
+                        .build()
         );
 
     }
+
 
 
     public BanklassResponseEntity getClassCurrency(Long classId){
@@ -256,5 +255,6 @@ public class ClassService {
 
 
     }
+
 
 }

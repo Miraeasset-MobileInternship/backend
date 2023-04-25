@@ -53,6 +53,7 @@ public class ClassController {
 
 
 
+
     //선생님 직업조회 페이지 -> 해당 학급에서 가질 수 있는 모든 직업을 조회
     @GetMapping("/{class_id}/job/all")
 //    @Operation(description = "해당 학급에서 생성한 모든 직업과 공통 직업을 조회, 선생님 - 직업 변경 페이지(selector) 및 직업 조회 페이지")
@@ -71,7 +72,6 @@ public class ClassController {
     @Operation(summary = "아이들의 직업 현황", description = "해당 학급의 아이들과 아이들이 가진 직업 현황을 조회, 선생님 - 직업변경 페이지 / 학생 - 친구들의 직업",
             responses = {
                     @ApiResponse(responseCode = "E000", description = "Success",  content = @Content(schema = @Schema(implementation = StudentJobListResponseDto.class))),
-
                     @ApiResponse(responseCode = "E404", description = "존재하지 않는 학급", content = @Content ),
                     @ApiResponse(responseCode = "E405", description = "존재하지 않는 직업", content = @Content ),
                     @ApiResponse(responseCode = "E403", description = "존재하지 않는 유저", content = @Content ),
@@ -172,6 +172,7 @@ public class ClassController {
     }
 
 
+
     @GetMapping("/{class_id}/currency")
     @Operation(summary = "학급 화폐 단위 전송", description = "",
             responses = {
@@ -181,7 +182,6 @@ public class ClassController {
     public ResponseEntity<BanklassResponseEntity> getClassCurrency(@PathVariable(value = "class_id") Long classId){
         return ResponseEntity.ok(classService.getClassCurrency(classId));
     }
-
 
 
     @GetMapping("/enter-class/{class_id}")
@@ -196,5 +196,7 @@ public class ClassController {
                                                              @RequestParam(value = "user_id") Long userId){
         return ResponseEntity.ok(classService.getInfoToEnterClass(classId,userId));
     }
+
+
 
 }

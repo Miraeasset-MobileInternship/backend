@@ -1,8 +1,5 @@
 package miraeassetmobile.backend.domain.entity;
 
-
-//entity: DB와 직접적으로 연결됨
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,12 +7,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-
 @Entity
 @Table(name="job")
 @Getter
 @NoArgsConstructor
-public class Job extends BaseTimeEntity {
+public class Job extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //JPA 사용시 필요)
@@ -57,16 +53,6 @@ public class Job extends BaseTimeEntity {
     private boolean isModifyCredit = false;
 
 
-//    @Column(name="create_timestamp")
-//    @CreatedDate
-//    private Timestamp createTimestamp;
-//
-//
-//    @Column(name="modify_timestamp")
-//    @LastModifiedDate
-//    private Timestamp modifyTimestamp;
-
-
 
 
     @Builder
@@ -81,5 +67,5 @@ public class Job extends BaseTimeEntity {
 
 
 
-}
 
+}

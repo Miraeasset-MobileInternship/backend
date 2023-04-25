@@ -32,7 +32,6 @@ import static miraeassetmobile.backend.domain.enums.TransactionFromTypes.*;
 @Service
 public class TransactionService {
 
-
     TransactionDataRepository transactionDataRepository;
     TransactionCategoryRepository transactionCategoryRepository;
     StudentRepository studentRepository;
@@ -41,10 +40,10 @@ public class TransactionService {
     UserInfoRepository userInfoRepository;
 
     ResponseService responseService;
-
     ProfileImgRepository profileImgRepository;
 
-    TransactionService(ProfileImgRepository profileImgRepository,ResponseService responseService,UserInfoRepository userInfoRepository,  JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
+
+    TransactionService(ProfileImgRepository profileImgRepository, ResponseService responseService,UserInfoRepository userInfoRepository,  JobRepository jobRepository, ClassRepository classRepository, TransactionCategoryRepository transactionCategoryRepository, TransactionDataRepository transactionDataRepository, StudentRepository studentRepository){
         this.studentRepository=studentRepository;
         this.transactionCategoryRepository=transactionCategoryRepository;
         this.transactionDataRepository=transactionDataRepository;
@@ -57,53 +56,6 @@ public class TransactionService {
 
 
 
-    //학생별 거래내역 조회 -> 입출금 따로 조회 가능으로 대체되었지만 일단 임시로 살려둠(m-crew 버전에는 없음
-//    public StudentTransactionResponseDto getStudentTransactionData(Long studentId, int page){
-//
-//        int pageSize = 10;
-//
-//
-//        Pageable pageable = PageRequest.of(page,pageSize, Sort.by("createTimestamp").descending()); //최신순
-//        Page<TransactionData> transactions = transactionDataRepository.findByStudentId(studentId, pageable);
-//
-//
-//        int totalData = transactionDataRepository.countByStudentId(studentId);
-//
-//
-//        int maxPage = (int) Math.ceil(totalData/(double)pageSize) -1; //요청가능한 마지막 페이지
-//
-//
-//        List<StudentTransactionDataDto> studentTransactionDatas = new ArrayList<>();
-//
-//        for (TransactionData t: transactions) {
-//
-//
-//            boolean isDeposit = t.getFrom().equals("class"); //돈의 출처가 학생이면 출금
-//
-//
-//            StudentTransactionDataDto transaction = StudentTransactionDataDto.builder()
-//                    .transactionId(t.getId())
-//                    .category(transactionCategoryRepository.findById(t.getCategoryId()).get().getTitle())
-//                    .detail(t.getDetail())
-//                    .isDeposit(isDeposit)
-//                    .transactionMoney(t.getMoney())
-//                    .transactionDate(t.getCreateTimestamp().toLocalDateTime().toLocalDate())
-//                    .build();
-//
-//            studentTransactionDatas.add(transaction);
-//
-//        }
-//
-//        return StudentTransactionResponseDto.builder()
-//                .currentPage(page)
-//                .totalData(totalData)
-//                .maxPage(maxPage)
-//                .studentTransactionData(studentTransactionDatas)
-//                .build();
-//
-//    }
-
-
     //학생별 거래내역 조회 (입출금 분리)
     public BanklassResponseEntity getStudentTransactionDataWithType(Long studentId, int page, String type){
 
@@ -112,7 +64,7 @@ public class TransactionService {
         responseService.isExistStudent(studentId);
 
 
-        int pageSize = 10;
+        int pageSize = 100;
         int totalData = 0;
         Page<TransactionData> transactions;
 
@@ -196,7 +148,7 @@ public class TransactionService {
         responseService.isExistClass(classId);
 
 
-        int pageSize = 10;
+        int pageSize = 100;
         int totalData = 0;
         Page<TransactionData> transactions;
 
@@ -241,11 +193,8 @@ public class TransactionService {
             StudentJobDto studentDto = getStudentJobDto(t.getStudentId(), t.getStudentJobId());
 
 
-
-
             TransactionCategory category = transactionCategoryRepository.findById(t.getCategoryId())
                     .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY));
-
 
             ClassTransactionDataDto transaction = ClassTransactionDataDto.builder()
                     .transactionId(t.getId())
@@ -272,7 +221,6 @@ public class TransactionService {
                         .build()
         );
     }
-
 
 
     //student Id를 주면 stduentjobDto를 반환해주는 함수
@@ -334,12 +282,6 @@ public class TransactionService {
 
     public BanklassResponseEntity transferMoney(TransferMoneyRequestDto transferMoneyRequestDto){
 
-        //0원 인 경우 불가능
-        responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
-
-        //카테고리 확인
-        responseService.wrongTransactionCategoryForTransfer(transferMoneyRequestDto.getCategoryId());
-
                 /*
         1. 학생의 계좌의 잔고를 확인함
             -> 부족하면 에러 발생시켜야함
@@ -394,9 +336,9 @@ public class TransactionService {
 
             return responseService.successHandler(
                     CreatedUriDto.builder()
-                        .status("created")
-                        .url( responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
-                        .build()
+                            .status("created")
+                            .url( responseService.createUri(transactionData.getId(), UriTypes.TRANSACTION))
+                            .build()
             );
 
         }catch(Exception e){
@@ -408,13 +350,6 @@ public class TransactionService {
 
 
     public BanklassResponseEntity payMoney(TransferMoneyRequestDto transferMoneyRequestDto){
-
-
-        //0원 인 경우 불가능
-        responseService.unavailableTransferOrPayZero(transferMoneyRequestDto.getMoney());
-
-        //카테고리 확인
-        responseService.wrongTransactionCategoryForPay(transferMoneyRequestDto.getCategoryId());
 
         /*
         1. 국고의 잔고를 확인함
@@ -563,14 +498,14 @@ public class TransactionService {
     public BanklassResponseEntity getStudentTransactionDetail(Long transactionId){
 
 
-        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_TRANSACTION_DATA));
+        TransactionData t = transactionDataRepository.findById(transactionId).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         // class에서 온 돈이거나 주식 판 경우 -> 입금
         boolean isDeposit = t.getFrom().equals(CLASS.getTypeName())||t.getFrom().equals(SELL.getTypeName());
 
         //학급 화폐
-        Classes c = classRepository.findById(t.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CLASS));
+        Classes c = classRepository.findById(t.getClassId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         //거래 카테고리
@@ -578,11 +513,10 @@ public class TransactionService {
                 .orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_CATEGORY_TYPE)); //존재하지 않는 카테고리 타입
 
 
-
         //거래 본인
-        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_STUDENT));
-        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
-        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_JOB));
+        Student s = studentRepository.findById(t.getStudentId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        UserInfo su = userInfoRepository.findById(s.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
+        Job sj = jobRepository.findById(t.getStudentJobId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST));
 
 
         //아래 두가지는 투자의 경우 달라지는 내용들
@@ -720,18 +654,18 @@ public class TransactionService {
 
         return responseService.successHandler(
                 TransactionDetailResponseDto.builder()
-                .transactionId(t.getId())
-                .transactionMoney(t.getMoney())
-                .plus(isDeposit)
-                .currency(c.getCurrency())
-                .category(tc.getTitle())
-                .depositAccount(depositAccount)
-                .withdrawAccount(withdrawAccount)
-                .managerInfo(managerInfo)
-                .detail(t.getDetail())
-                .transactionDate(t.getCreateTimestamp().toLocalDateTime())
-                .leftMoney(t.getClassMoney()) //학급기준 거래잔금임
-                .build()
+                        .transactionId(t.getId())
+                        .transactionMoney(t.getMoney())
+                        .plus(isDeposit)
+                        .currency(c.getCurrency())
+                        .category(tc.getTitle())
+                        .depositAccount(depositAccount)
+                        .withdrawAccount(withdrawAccount)
+                        .managerInfo(managerInfo)
+                        .detail(t.getDetail())
+                        .transactionDate(t.getCreateTimestamp().toLocalDateTime())
+                        .leftMoney(t.getClassMoney()) //학급기준 거래잔금임
+                        .build()
         );
 
 
@@ -784,21 +718,21 @@ public class TransactionService {
 
             return responseService.successHandler(
                     MoneyChangeResponseDto.builder()
-                    .isPlus(true)
-                    .changeMoney(currentMoney-lastMoney)
-                    .lastDay(days)
-                    .build()
-                );
+                            .isPlus(true)
+                            .changeMoney(currentMoney-lastMoney)
+                            .lastDay(days)
+                            .build()
+            );
 
         }else{
 
             return responseService.successHandler(
                     MoneyChangeResponseDto.builder()
-                    .isPlus(false)
-                    .changeMoney(lastMoney-currentMoney)
-                    .lastDay(days)
-                    .build()
-                );
+                            .isPlus(false)
+                            .changeMoney(lastMoney-currentMoney)
+                            .lastDay(days)
+                            .build()
+            );
 
         }
 
@@ -859,15 +793,16 @@ public class TransactionService {
 
             return responseService.successHandler(
                     MoneyChangeResponseDto.builder()
-                    .isPlus(false)
-                    .changeMoney(lastMoney-currentMoney)
-                    .lastDay(days)
-                    .build()
-                );
+                            .isPlus(false)
+                            .changeMoney(lastMoney-currentMoney)
+                            .lastDay(days)
+                            .build()
+            );
         }
 
 
     }
+
 
 
 

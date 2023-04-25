@@ -35,8 +35,6 @@ public class JobController {
 
 
 
-
-
     //job id를 통한 직업조회
     //특정 직업의 정보를 넘겨줌 (직업 수정 화면 등등)
     @GetMapping("/{job_id}")
@@ -115,6 +113,5 @@ public class JobController {
     public ResponseEntity<BanklassResponseEntity> updateJobStudent(@RequestBody @Valid StudentJobUpdateRequestDto studentJobUpdateRequestDto){
         return ResponseEntity.ok(jobService.updateStudentJob(studentJobUpdateRequestDto)); //id를 같이 반환하기
     }
-
 
 }

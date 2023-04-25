@@ -8,10 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import miraeassetmobile.backend.domain.BanklassResponseEntity;
 import miraeassetmobile.backend.domain.dto.CreatedUriDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
-import miraeassetmobile.backend.domain.dto.students.StudentAccountResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentClassJoinRequestDto;
-import miraeassetmobile.backend.domain.dto.students.StudentJobResponseDto;
-import miraeassetmobile.backend.domain.dto.students.StudentSalaryResponseDto;
+import miraeassetmobile.backend.domain.dto.students.*;
 import miraeassetmobile.backend.domain.dto.transactions.MoneyChangeResponseDto;
 import miraeassetmobile.backend.service.StudentService;
 import miraeassetmobile.backend.service.TransactionService;
@@ -31,6 +28,8 @@ public class StudentController {
         this.studentService =studentService;
         this.transactionService=transactionService;
     }
+
+
 
 
 
@@ -99,13 +98,15 @@ public class StudentController {
 //    @Operation(description = "해당 학급에 가입시켜주는 API")
     @Operation(summary = "학급 가입", description = "초대코드를 통해 학생을 학급에 가입",
             responses = {
-                    @ApiResponse(responseCode = "E000", description = "Success - status: created", content = @Content(schema = @Schema(implementation = CreatedUriDto.class))),
+                    @ApiResponse(responseCode = "E000", description = "Success - status: created", content = @Content(schema = @Schema(implementation = StudentClassJoinResponseDto.class))),
                     @ApiResponse(responseCode = "E601", description = "해당 유저가 이미 해당 학급에 존재함", content = @Content ),
+                    @ApiResponse(responseCode = "E606", description = "이미 학급에서 누군가 사용중인 출석 번호임", content = @Content ),
                     @ApiResponse(responseCode = "E808", description = "해당 유저를 학급의 학생으로 등록시키는 DB저장(student table) 과정의 에러", content = @Content ),
             })
     public ResponseEntity<BanklassResponseEntity> joinClass(@RequestBody @Valid StudentClassJoinRequestDto studentClassJoinReqeustDto){
         return ResponseEntity.ok(studentService.createStudentInClass(studentClassJoinReqeustDto));
     }
+
 
 
 

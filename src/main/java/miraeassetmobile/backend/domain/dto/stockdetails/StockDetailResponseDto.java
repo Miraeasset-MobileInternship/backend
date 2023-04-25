@@ -1,6 +1,7 @@
 package miraeassetmobile.backend.domain.dto.stockdetails;
 
 
+
 import lombok.Builder;
 import lombok.Getter;
 import miraeassetmobile.backend.domain.dto.stocks.TagInfo;

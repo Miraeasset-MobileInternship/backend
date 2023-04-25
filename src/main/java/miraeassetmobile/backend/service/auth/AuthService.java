@@ -336,6 +336,9 @@ public class AuthService {
 
 
 
+
+
+
     @Transactional
     public BanklassResponseEntity logout(HttpServletRequest request) {
 
@@ -457,8 +460,8 @@ public class AuthService {
 
 
 
-    //문자전송
 
+    //문자전송
     public BanklassResponseEntity sendMessage(SendCodeRequestDto sendCodeRequestDto) {
 
         String toNumber = sendCodeRequestDto.getPhoneNumber();
@@ -480,7 +483,7 @@ public class AuthService {
         params.put("to", toNumber);
         params.put("from", smsAuthUtil.getFromNumber());
         params.put("type", "SMS");
-        params.put("text", "[MiraeAsset:Banklass]\n인증번호 ["+ code +"]를 입력하세요.\n인증번호는 3분 동안만 유효합니다.");
+        params.put("text", "[MiraeAsset:M-CLASS]\n인증번호 ["+ code +"]를 입력하세요.\n인증번호는 3분 동안만 유효합니다.");
         params.put("app_version", "test app 1.0"); // application name and version
 
         try {
@@ -514,7 +517,6 @@ public class AuthService {
         );
 
     }
-
 
 
 
@@ -555,5 +557,115 @@ public class AuthService {
     }
 
 
+
+
+    //클래스 인포 없는 버전
+
+    //2가지 리턴 경우의 수가 존재함..
+    @Transactional
+    public BanklassResponseEntity getStartWithoutClassInfo(SignInRequestDto signInRequestDto){
+
+
+        //1. 핸드폰 번호 유효성 인증 (코드가 맞는지 체크)
+        checkValidCode(signInRequestDto.getPhoneNum(),signInRequestDto.getCode());
+
+
+
+        //2. 유효한 핸드폰 번호 인경우
+
+        //1) 미가입자 오류
+//        가입안된 유저임 -> 303 SEE OTHER return
+        if(!userInfoRepository.existsByPhoneNum(signInRequestDto.getPhoneNum())){
+            //핸드폰 번호 포함-가입을 다시 진행하라는 의미
+
+            throw new ServiceException(ErrorCode.SIGN_UP_REQUIRED); //이게안된다
+        }
+
+
+        //2) 가입된 유저인 경우(로그인)
+        TokenDto t = login(signInRequestDto.getPhoneNum()); //이건잘딤
+
+        return responseService.successHandler(createSignInInfoWithoutClassInfo(t));
+
+    }
+
+
+    @Transactional
+    public BanklassResponseEntity startWithSignUpWithoutClassInfo(SignUpRequestDto signUpRequestDto){
+
+
+        //1. 가입시키기
+
+
+        //1) 가입 정보가 있는 유저인지 확인
+        responseService.alreadyExistUser(signUpRequestDto.getPhoneNum());
+
+
+
+        //2) 가입진행
+        signUp(signUpRequestDto);
+
+
+
+        //2. 로그인
+        TokenDto t = login(signUpRequestDto.getPhoneNum());
+
+
+
+        //3. 필요정보 수집
+        return responseService.successHandler(createSignInInfoWithoutClassInfo(t));
+
+
+
+    }
+
+
+    //클래스 인포 없는 버전
+    @Transactional
+    public SignInResponseDtoV2 createSignInInfoWithoutClassInfo(TokenDto tokenDto){
+
+        AccessTokenInfo accessTokenInfo = AccessTokenInfo.builder()
+                .accessToken(tokenDto.getAccessToken())
+                .grantType(tokenDto.getGrantType())
+                .accessTokenExpiresIn(tokenDto.getAccessTokenExpiresIn())
+                .refreshToken(tokenDto.getRefreshToken())
+                .build();
+
+
+        UserInfo u = userInfoRepository.findById(tokenDto.getUserId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_USER));
+
+
+        ProfileImg p = profileImgRepository.findById(u.getProfileImgId()).orElseThrow(() -> new ServiceException(ErrorCode.NOT_EXIST_IMAGE));
+
+
+
+        UserOnboardInfoV2 userOnboardInfo = UserOnboardInfoV2.builder()
+                .userId(u.getId())
+                .userName(u.getUserName())
+                .userRole(u.getUserRole())
+                .profileImg(p.getIconCode())
+                .build();
+
+
+        return SignInResponseDtoV2.builder()
+                .tokenInfo(accessTokenInfo)
+                .userInfo(userOnboardInfo)
+                .build();
+    }
+
+
+
+
+    public BanklassResponseEntity loginForWebView(Long userId){
+
+        //유저알아내기
+        UserInfo userInfo = userInfoRepository.getById(userId);
+
+        //2) 가입된 유저인 경우(로그인)
+        TokenDto t = login(userInfo.getPhoneNum());
+
+        return responseService.successHandler(t);
+
+    }
 
 }

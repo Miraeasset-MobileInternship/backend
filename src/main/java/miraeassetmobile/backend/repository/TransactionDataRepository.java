@@ -35,7 +35,6 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
 
     int countByStudentId(Long studentId);
 
-    int countByStudentIdAndFrom(Long studentId, String from);
     int countByStudentIdAndFromIn(Long studentId, Collection From); //
 
     int countByClassId(Long classId);
@@ -43,5 +42,6 @@ public interface TransactionDataRepository extends JpaRepository<TransactionData
 
     int countByClassIdAndAndFrom(Long classId, String from);
     int countByClassIdAndAndFromAndCategoryIdNot(Long classId, String from, Long categoryId);
+
 
 }

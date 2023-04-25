@@ -8,6 +8,7 @@ import miraeassetmobile.backend.domain.dto.jobs.JobCreateRequestDto;
 import miraeassetmobile.backend.domain.dto.jobs.JobDto;
 import miraeassetmobile.backend.domain.dto.jobs.StudentJobUpdateRequestDto;
 import miraeassetmobile.backend.domain.dto.students.StudentJobDto;
+import miraeassetmobile.backend.domain.dto.students.StudentJobListResponseDto;
 import miraeassetmobile.backend.domain.entity.Job;
 import miraeassetmobile.backend.domain.entity.ProfileImg;
 import miraeassetmobile.backend.domain.entity.Student;
@@ -30,8 +31,6 @@ import java.util.List;
 
 @Service
 public class JobService {
-
-
     private final JobRepository jobRepository;
     private final StudentRepository studentRepository;
     private final UserInfoRepository userInfoRepository;
@@ -143,7 +142,7 @@ public class JobService {
         responseService.isExistClass(classId);
 
 
-        List<Student> students = studentRepository.findByClassId(classId);
+        List<Student> students = studentRepository.findByClassIdOrderByNumber(classId);
 
         List<StudentJobDto> studentJobs = new ArrayList<StudentJobDto>();
 
@@ -166,7 +165,12 @@ public class JobService {
 
         }
 
-        return responseService.successHandler(studentJobs);
+        return responseService.successHandler(
+                StudentJobListResponseDto.builder()
+                        .totalData(studentJobs.size())
+                        .studentJobList(studentJobs)
+                        .build()
+        );
 
     }
 
@@ -181,14 +185,14 @@ public class JobService {
         //필요한 것만 dto에 담아서 전달
         return responseService.successHandler(
                 JobDto.builder().jobId(job.getId())
-                .title(job.getTitle())
-                .monthlySalary(job.getMonthlySalary())
-                .creditLimit(job.getCreditLimit())
-                .detail(job.getDetail())
-                .isWithdrawClass(job.isWithdrawClass())
-                .isWithdrawStudent(job.isWithdrawStudent())
-                .isModifyCredit(job.isModifyCredit())
-                .build()
+                        .title(job.getTitle())
+                        .monthlySalary(job.getMonthlySalary())
+                        .creditLimit(job.getCreditLimit())
+                        .detail(job.getDetail())
+                        .isWithdrawClass(job.isWithdrawClass())
+                        .isWithdrawStudent(job.isWithdrawStudent())
+                        .isModifyCredit(job.isModifyCredit())
+                        .build()
         );
 
     }
@@ -221,7 +225,7 @@ public class JobService {
     }
 
 
-   //신규직업등록
+    //신규직업등록
     public BanklassResponseEntity createJob(JobCreateRequestDto jobCreateRequestDto){
 
         //존재하는 학급인지
@@ -309,9 +313,4 @@ public class JobService {
         }
 
     }
-
-
-
-
-
 }

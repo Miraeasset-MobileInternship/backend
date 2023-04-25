@@ -11,6 +11,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     List<Student> findByClassId(Long classId);
 
+    List<Student> findByClassIdOrderByNumber(Long classId);
 
     Optional<Student> findById(Long id);
 
@@ -19,10 +20,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     List<Student> findByUserId(Long userId);
 
-
     boolean existsByClassIdAndUserId(Long classId, Long userId);
-
     Optional<Student> findByClassIdAndUserId(Long classId, Long userId);
+
+
+    boolean existsByClassIdAndNumber(Long classId, int number);
 
 
 }
