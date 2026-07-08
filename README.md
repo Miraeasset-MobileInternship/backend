@@ -190,22 +190,10 @@ The project used Redis for authentication-related token handling, phone verifica
 | `ClassInvitationCodeRedisRepository` | Stores invitation codes used when inviting students to a class | Class invitation |
 | `YhFinanceErrorLogRedisRepository` | Stores Yahoo Finance API error logs for temporary tracking/debugging | External API error log |
 | `SearchQueryLogRedisRepository` | Stores search query logs for later inspection | Search / query log |
-```mermaid
-flowchart TD
-    A[Spring Boot Backend] --> B[Redis]
 
-    B --> C[Authentication Token Data]
-    C --> C1[Logout Access Token]
-		C --> C2[Token Reissue-related Data]
+<img width="939" height="271" alt="스크린샷 2026-07-08 오전 11 04 11" src="https://github.com/user-attachments/assets/7ca91b32-1c16-4692-9885-2c202844a917" />
 
-    B --> D[Verification Data]
-    D --> D1[Phone Number Verification Code]
-    D --> D2[Class Invitation Code]
 
-    B --> E[Temporary Operational Logs]
-    E --> E1[Yahoo Finance API Error Log]
-    E --> E2[Search Query Log]
-```
 </br></br>
 
 ## External API Integration
