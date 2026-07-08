@@ -13,7 +13,6 @@ M-Class Backend is the Spring Boot server for a fintech education app that helps
 </br></br>
 
 ## Main Features
-</br>
 ### 1. Classroom Financial Education
 - Manage classroom information such as school name, grade, class number, class currency, and class fund
 - Manage students within each class
@@ -69,167 +68,8 @@ Related tables: `user_info`, `students`, `class`
 The original JPA entities used ID-based references such as `classId`, `studentId`, `jobId`, and `stockSymbol` instead of explicit `@ManyToOne` / `@OneToMany` mappings.  
 The ERD below represents logical relationships inferred from these reference columns.
 </br>
-```mermaid
-erDiagram
-    USER_INFO ||--o{ STUDENTS : owns
-    CLASSES ||--o{ STUDENTS : has
-    CLASSES ||--o{ JOB : has
-    CLASSES ||--o{ CLASS_STOCK : includes
-    CLASSES ||--o{ TRANSACTION_DATA : records
+<img width="2024" height="1940" alt="M-CLASS_ERD" src="https://github.com/user-attachments/assets/fa2b0df7-113d-4038-99b9-71884e38c96f" />
 
-    JOB ||--o{ STUDENTS : assigned_to
-    JOB ||--o{ TRANSACTION_DATA : manager_job
-    JOB ||--o{ TRANSACTION_DATA : student_job
-
-    STUDENTS ||--o{ STUDENT_STOCK : owns
-    STUDENTS ||--o{ STOCK_TRADING_DATA : trades
-    STUDENTS ||--o{ TRANSACTION_DATA : participates
-
-    TRANSACTION_CATEGORY ||--o{ TRANSACTION_DATA : categorizes
-
-    STOCK_BATCH ||--o{ STUDENT_STOCK : referenced_by
-    STOCK_BATCH ||--o{ STOCK_TRADING_DATA : traded_as
-    STOCK_BATCH ||--o{ CLASS_STOCK : registered_as
-
-    USER_INFO {
-        Long id PK
-        String user_name
-        String phone_number
-        String user_role
-        Long profile_img_id
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    CLASSES {
-        Long id PK
-        Long teacher_id FK
-        String school_name
-        String title
-        int grade
-        int class_number
-        String currency
-        int money
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    STUDENTS {
-        Long id PK
-        Long class_id FK
-        Long job_id FK
-        Long user_id FK
-        int number
-        int money
-        int credit_score
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    JOB {
-        Long id PK
-        Long class_id FK
-        String title
-        int monthly_salary
-        String detail
-        int credit_limitation
-        boolean is_withdraw_student
-        boolean is_withdraw_class
-        boolean is_modify_credit
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    CLASS_STOCK {
-        Long id PK
-        Long class_id FK
-        String isin_code
-        String title
-    }
-
-    STOCK_BATCH {
-        Long id PK
-        String stock_symbol
-        String title
-        double regular_market_price
-        String market_status
-        String type_display
-        String full_exchange_name
-        String custom_price_alert_confidence
-        double regular_market_change
-        double regular_market_change_percent
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    STUDENT_STOCK {
-        Long id PK
-        Long student_id FK
-        String stock_symbol FK
-        BigDecimal blended_price
-        int amount
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    STOCK_TRADING_DATA {
-        Long id PK
-        Long student_id FK
-        String stock_symbol FK
-        int amount
-        int price
-        boolean is_buying
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    TRANSACTION_CATEGORY {
-        Long id PK
-        String title
-        boolean is_transfer
-        boolean is_pay
-    }
-
-    TRANSACTION_DATA {
-        Long id PK
-        int transaction_money
-        int student_money
-        int class_money
-        Long manager_id FK
-        Long student_id FK
-        Long manager_job_id FK
-        Long student_job_id FK
-        Long category_id FK
-        Long class_id FK
-        String detail
-        String from_who
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    TRENDING_STOCKS {
-        Long id PK
-        String symbol
-        String title
-        String price
-        String change_price
-        String change_percent
-        int change_status
-        String tag_type
-        String tag_market
-        String tag_confidence
-        boolean is_open
-        DateTime created_at
-        DateTime updated_at
-    }
-
-    TRENDING_EVERY {
-        Long id PK
-        String data_string
-        DateTime created_at
-        DateTime updated_at
-    }
-```
 
 </br></br>
 
@@ -237,11 +77,10 @@ erDiagram
 
 This section summarises the main REST APIs implemented in the backend.  
 The APIs were grouped by product domain: authentication, classroom management, student/job management, banking transactions, stock trading, stock detail data, and user profile data.
-</br>
 > Note: The backend used a custom response wrapper, `BanklassResponseEntity`, and Swagger annotations for documenting response cases and domain-specific error codes.
 </br>
 ---
-</br>
+
 ### Authentication
 
 | Method | Endpoint | Description |
@@ -252,11 +91,10 @@ The APIs were grouped by product domain: authentication, classroom management, s
 | POST | `/api/auth/reissue` | Reissue access token using refresh token |
 | POST | `/api/auth/sendSMS` | Send phone verification code |
 | GET | `/api/auth/{user_id}/get-token` | Issue access token for WebView access |
-</br>
 --- 
-</br>
+
 ### Classroom Management
-</br>
+
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/class/create` | Create a new class |
@@ -266,11 +104,11 @@ The APIs were grouped by product domain: authentication, classroom management, s
 | GET | `/api/class/{class_id}/invitation-code` | Get or issue class invitation code |
 | GET | `/api/class/check/invitation-code` | Validate class invitation code |
 | GET | `/api/class/enter-class/{class_id}` | Enter a class and return the student ID used in that class |
-</br>
+
 ---
-</br>
+
 ### Student & Job Management
-</br>
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/class/{class_id}/job/all` | Get all common and class-specific jobs |
@@ -286,11 +124,10 @@ The APIs were grouped by product domain: authentication, classroom management, s
 | GET | `/api/student/{student_id}/job` | Get student job card information |
 | GET | `/api/student/{student_id}/change` | Get student balance change compared to the previous transaction |
 | GET | `/api/student/salary/{student_id}` | Get salary amount based on student job |
-</br>
 ---
-</br>
+
 ### Banking & Transactions
-</br>
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/transaction/student/{student_id}` | Get student transaction history with type filter and pagination |
@@ -300,11 +137,10 @@ The APIs were grouped by product domain: authentication, classroom management, s
 | POST | `/api/transaction/pay` | Pay money from class account to student account |
 | GET | `/api/transaction/student/detail/{transaction_id}` | Get transaction detail from student account perspective |
 | GET | `/api/transaction/class/detail/{transaction_id}` | Get transaction detail from class account perspective |
-</br>
 ---
-</br>
+
 ### Stock Portfolio & Trading
-</br>
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/stock/total-info/{student_id}` | Get student's total stock portfolio summary |
@@ -317,11 +153,10 @@ The APIs were grouped by product domain: authentication, classroom management, s
 | POST | `/api/stock/buy` | Create simulated stock buy order |
 | GET | `/api/stock/check-selling` | Check sellable amount and current price before selling |
 | POST | `/api/stock/sell` | Create simulated stock sell order |
-</br>
 ---
-</br>
+
 ### Stock Detail Data
-</br>
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/stock-detail/{stock_id}` | Get stock detail information |
@@ -332,23 +167,22 @@ The APIs were grouped by product domain: authentication, classroom management, s
 | GET | `/api/stock-detail/{stock_id}/company-info` | Get listed company information |
 | GET | `/api/stock-detail/{stock_id}/stock-info` | Get stock summary information |
 | GET | `/api/stock-detail/watch-list` | Get most watched / ranked stock list |
-</br>
 ---
-</br>
+
 ### User Profile
-</br>
+
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/user/profile-img-list` | Get available profile image list |
 | GET | `/api/user/{user_id}/header-info` | Get user name and profile image for header UI |
 | GET | `/api/user/{user_id}/student/join-class-list` | Get all classes joined by the user as a student |
-</br>
+
 ## Redis Usage
 </br>
 Redis was used to manage short-lived and temporary data that did not need to be stored permanently in MySQL.</br>
 
 The project used Redis for authentication-related token handling, phone verification codes, class invitation codes, Yahoo Finance API error logs, and search query logs.</br>
-</br>
+
 | Redis Repository | Purpose | Data Type |
 |---|---|---|
 | `LogoutAccessTokenRedisRepository` | Stores logged-out access tokens to prevent reused tokens after logout | Authentication / token blacklist |
@@ -356,7 +190,6 @@ The project used Redis for authentication-related token handling, phone verifica
 | `ClassInvitationCodeRedisRepository` | Stores invitation codes used when inviting students to a class | Class invitation |
 | `YhFinanceErrorLogRedisRepository` | Stores Yahoo Finance API error logs for temporary tracking/debugging | External API error log |
 | `SearchQueryLogRedisRepository` | Stores search query logs for later inspection | Search / query log |
-</br>
 ```mermaid
 flowchart TD
     A[Spring Boot Backend] --> B[Redis]
@@ -374,6 +207,7 @@ flowchart TD
     E --> E2[Search Query Log]
 ```
 </br></br>
+
 ## External API Integration
 
 Yahoo Finance API was integrated to provide stock-related data for the investment education flow.</br>
@@ -389,6 +223,7 @@ The backend retrieved and processed data such as:</br>
 </br>
 The processed data was then provided to the React WebView through backend REST APIs.
 </br></br>
+
 ## Current Project Status
 This backend was originally built as part of an internship project and was not publicly deployed. Some environment-specific configuration, database setup, or API credentials may need to be restored before running the full application locally.
 </br></br>
