@@ -7,11 +7,12 @@ You can find the other project repositories below: <br/>
 M-Class Backend is the Spring Boot server for a fintech education app that helps teenagers experience simulated banking and stock investment in a classroom environment.
 </br></br>
 ## Tech Stack
-!Java
-!Spring Boot
-!MySQL
-!Redis
-!Yahoo Finance
+
+![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
+![Yahoo Finance](https://img.shields.io/badge/Yahoo%20Finance-6001D2?style=flat-square&logo=yahoo&logoColor=white)
 </br></br>
 
 ## Main Features
